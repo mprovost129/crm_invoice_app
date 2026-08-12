@@ -5,8 +5,9 @@ Last reviewed: 2026-08-12
 ## Current Deployment State
 
 The repository provides a portable Docker/Gunicorn foundation, a committed GitHub Actions
-quality gate, configurable email/storage adapters, and a durable estimate/invoice/
-reminder/receipt outbox.
+quality gate, configurable email/storage adapters, a durable estimate/invoice/reminder/
+receipt outbox, communication health checks, date-derived notification synchronization,
+and financial reconciliation.
 It does not identify an active hosting platform or production environment and has no
 deployment automation, independently deployed worker/scheduler, cloud object-storage
 package, monitoring provider, backup automation, or documented production deployment.
@@ -142,12 +143,13 @@ Do not run migrations independently from every web replica. The current Procfile
 - Measure migration duration/locking with representative data.
 - Keep web and worker versions compatible during rolling deployment.
 
-Migrations through Phase 4 are generated and apply cleanly in dependency order. Phase 4
+Migrations through Phase 5 are generated and apply cleanly in dependency order. Phase 4
 adds Invoice/InvoiceLineItem and Payment/PaymentReversal; extends snapshots, links, files,
 deliveries, and activity with invoice/payment targets; and adjusts converted-estimate
 acceptance constraints. Activity and communications use split migrations to avoid circular
 dependencies. Back up existing data before applying migrations outside development, then
-run `python manage.py reconciliation_check` after the application rollout.
+run `python manage.py reconciliation_check` after the application rollout. Phase 5 adds
+Notification plus delivery/outbox operational indexes.
 
 ## Static Files and Media
 
@@ -163,6 +165,10 @@ behavior, and expose
 `python manage.py process_outbox --limit N` for pending/failed retries. Production must run
 that command through a supervised worker/scheduler until a dedicated queue consumer is
 introduced.
+
+Schedule `python manage.py sync_notifications` at least daily in the Business timezone
+window and run `python manage.py outbox_health_check --stale-minutes 15` through monitoring.
+The health command exits nonzero for failed deliveries and failed/stale outbox work.
 
 For background processing:
 

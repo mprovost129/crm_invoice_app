@@ -10,7 +10,8 @@ from django.utils import timezone
 from activity.models import ActivityEvent
 from activity.services import record_activity
 from catalog.models import ProductService
-from communications.models import PublicDocumentLink
+from communications.models import Notification, PublicDocumentLink
+from communications.notifications import notify_business_owner
 from communications.snapshots import create_estimate_snapshot
 from core.models import DocumentSequence
 from core.services import allocate_document_number
@@ -384,5 +385,13 @@ def record_manual_acceptance(
         summary=f"Recorded {method.replace('_', ' ')} acceptance for {estimate.number}.",
         estimate=estimate,
         metadata={"method": method},
+    )
+    notify_business_owner(
+        business=business,
+        kind=Notification.Kind.ESTIMATE_ACCEPTED,
+        title=f"Estimate {estimate.number} accepted",
+        body="The estimate was accepted and is ready to convert to an invoice.",
+        target_path=f"/app/estimates/{estimate.pk}/",
+        dedupe_key=f"estimate-accepted:{estimate.pk}",
     )
     return acceptance

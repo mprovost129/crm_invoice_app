@@ -44,7 +44,11 @@ def contact_financial_summary(*, business, contact):
     from invoices.models import Invoice
     from payments.models import Payment, PaymentReversal
 
-    invoices = Invoice.objects.for_business(business).filter(contact=contact)
+    invoices = (
+        Invoice.objects.for_business(business)
+        .filter(contact=contact)
+        .select_related("business")
+    )
     posted = Payment.objects.filter(
         business=business, invoice__contact=contact
     ).aggregate(total=Sum("amount"))["total"] or Decimal("0")

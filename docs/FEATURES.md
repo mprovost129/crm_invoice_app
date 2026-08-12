@@ -107,14 +107,14 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 | Feature | Status |
 | --- | --- |
-| Paid/outstanding/overdue/open-estimate cards | Not started |
-| Needs Attention and Recent Activity | Not started |
-| Internal notifications | Not started |
+| Paid/outstanding/overdue/open-estimate cards | Implemented from ledger/document facts |
+| Needs Attention and Recent Activity | Implemented |
+| Internal notifications | Implemented for acceptance, decline, payment, overdue, and delivery failure |
 | Email delivery tracking | Implemented for estimates, invoices, reminders, and receipts |
 | Secure revocable public links | Implemented for estimate view/respond and invoice view purposes |
 | Private file assets and document snapshots | Implemented for issued estimates/invoices and receipts; production storage provider remains open |
-| Minimal reports | Not started |
-| Client/invoice/payment CSV export | Not started |
+| Minimal reports | Implemented for collections, invoiced totals, receivables aging, and estimate performance |
+| Client/contact/invoice/payment CSV export | Implemented with tenant isolation and spreadsheet injection protection |
 | Terms and privacy pages | Not started |
 | Data export/account closure procedure | Not started |
 
@@ -140,7 +140,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Accessible messages/error pages | Partial | Shared templates exist; full accessibility pass pending |
 | HTMX foundation | Implemented | Self-hosted verified HTMX 2.0.10 with Django CSRF header integration |
 | Product branding/design system | Decision needed | Current UI is generic starter styling |
-| Search and pagination conventions | Not started | Apply per growing domain list |
+| Search and pagination conventions | Implemented | Core lists and delivery history use scoped search/filters and pagination |
 | Mobile application | Deferred | Responsive web and stable backend first |
 
 ## Explicitly Deferred Product Features
@@ -157,11 +157,13 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-One hundred three PostgreSQL-backed tests pass. They cover deterministic financial
+One hundred thirteen PostgreSQL-backed tests pass. They cover deterministic financial
 calculations, numbering/conversion/payment concurrency and rollback, immutable documents
 and ledger entries, acceptance evidence, derived states, reconciliation, secure public
 links, PDF/receipt rendering, durable email delivery, owner/public screens, the complete
-manual lead-to-paid workflow, and cross-tenant denial. External production providers,
-exports, accessibility, and production-like browser E2E remain future gates.
+manual lead-to-paid workflow, dashboard/report/CSV reconciliation, notifications,
+delivery-health alerts, spreadsheet injection defense, and cross-tenant denial. External
+production providers, full accessibility, and production-like browser E2E remain future
+gates.
 
 See [TEST_PLAN.md](TEST_PLAN.md) for required coverage and [ROADMAP.md](ROADMAP.md) for delivery order.

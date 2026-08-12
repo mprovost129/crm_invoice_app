@@ -4,10 +4,11 @@ Last reviewed: 2026-08-12
 
 ## Status and Architecture Direction
 
-The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 through 4
+The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 through 5
 implement the shared foundation, identity, workspace, trusted tenant boundary, CRM,
 catalog, estimate and invoice aggregates, immutable documents, manual payment/reversal
-ledger, public links, PDFs, receipts, and delivery outbox. See [FEATURES.md](FEATURES.md)
+ledger, public links, PDFs, receipts, delivery outbox, operational dashboard, notifications,
+reports, and CSV exports. See [FEATURES.md](FEATURES.md)
 for status.
 
 The supported baseline is Python 3.13 and Django 5.2 LTS, currently pinned to Django 5.2.16. The LTS choice is recorded in [DECISIONS.md](DECISIONS.md).
@@ -56,6 +57,7 @@ activity/               Append-only tenant activity events
 estimates/              Estimate aggregate, calculator, services, public workflow
 invoices/               Invoice aggregate, conversion, lifecycle, owner/public screens
 payments/               Immutable manual payment/reversal ledger and reconciliation
+dashboards/             Cross-domain financial read models, alerts, reports, exports
 communications/         Snapshots, public links, PDFs, email delivery, durable outbox
 templates/              Base, auth, onboarding, app, error, admin, shared templates
 static/                 Shared CSS, JavaScript, images, and admin styling
@@ -67,8 +69,8 @@ Procfile                Web and release/migration commands
 README.md               Canonical Docker setup and verification workflow
 ```
 
-Migrations through Phase 4 are generated and apply cleanly. The next domain boundary is
-cross-domain dashboard, operational communication visibility, reporting, and export.
+Migrations through Phase 5 are generated and apply cleanly. The next domain boundary is
+commercial entitlements, subscription billing, connected accounts, and online payments.
 
 ## Target Domain Applications
 
@@ -182,9 +184,9 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for operational procedures.
 
 ## Current Architecture Gaps
 
-The Phase 4 financial path uses trusted business context, scoped selectors, atomic and
+The Phase 5 financial path uses trusted business context, scoped selectors, atomic and
 row-locked conversion/payment services, immutable document/payment evidence, digest-only
 public tokens, configurable storage/email adapters, and a durable outbox. A dedicated
 production worker/scheduler, private cloud storage, transactional email provider,
-cross-domain dashboard/export read models, online payment provider, and full role policy
+online payment provider, commercial entitlement models, and full role policy
 remain later deployment or roadmap work.

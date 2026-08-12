@@ -4,6 +4,7 @@ from .models import (
     DocumentSnapshot,
     EmailDelivery,
     FileAsset,
+    Notification,
     OutboxEvent,
     PublicDocumentLink,
 )
@@ -100,3 +101,11 @@ class OutboxEventAdmin(ReadOnlyAdmin):
     list_filter = ("status", "event_type")
     search_fields = ("dedupe_key", "last_error")
     readonly_fields = tuple(field.name for field in OutboxEvent._meta.fields)
+
+
+@admin.register(Notification)
+class NotificationAdmin(ReadOnlyAdmin):
+    list_display = ("kind", "title", "recipient", "business", "read_at", "created_at")
+    list_filter = ("kind", "read_at")
+    search_fields = ("title", "body", "recipient__email", "business__display_name")
+    readonly_fields = tuple(field.name for field in Notification._meta.fields)

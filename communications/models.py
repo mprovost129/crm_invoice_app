@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
@@ -251,6 +252,10 @@ class EmailDelivery(BusinessOwnedModel):
 
     class Meta:
         ordering = ("-created_at",)
+        indexes = [
+            models.Index(fields=("business", "status", "created_at")),
+            models.Index(fields=("business", "kind", "created_at")),
+        ]
         constraints = [
             models.CheckConstraint(
                 condition=(
@@ -295,6 +300,53 @@ class EmailDelivery(BusinessOwnedModel):
             )
 
 
+class Notification(BusinessOwnedModel):
+    class Kind(models.TextChoices):
+        ESTIMATE_ACCEPTED = "estimate_accepted", "Estimate accepted"
+        ESTIMATE_DECLINED = "estimate_declined", "Estimate declined"
+        PAYMENT_RECEIVED = "payment_received", "Payment received"
+        INVOICE_OVERDUE = "invoice_overdue", "Invoice overdue"
+        DELIVERY_FAILED = "delivery_failed", "Delivery failed"
+
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="business_notifications",
+    )
+    kind = models.CharField(max_length=40, choices=Kind.choices)
+    title = models.CharField(max_length=160)
+    body = models.CharField(max_length=500)
+    target_path = models.CharField(max_length=500, blank=True)
+    dedupe_key = models.CharField(max_length=180)
+    read_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=("business", "dedupe_key"),
+                name="communications_notification_business_dedupe_unique",
+            )
+        ]
+        indexes = [models.Index(fields=("business", "recipient", "read_at"))]
+
+    def clean(self):
+        super().clean()
+        if (
+            self.recipient_id
+            and not self.recipient.memberships.filter(
+                workspace=self.business.workspace,
+                status="active",
+            ).exists()
+        ):
+            raise ValidationError(
+                "Notification recipient must belong to the workspace."
+            )
+
+    def __str__(self):
+        return self.title
+
+
 class OutboxEvent(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
@@ -325,7 +377,10 @@ class OutboxEvent(models.Model):
 
     class Meta:
         ordering = ("created_at",)
-        indexes = [models.Index(fields=("status", "available_at"))]
+        indexes = [
+            models.Index(fields=("status", "available_at")),
+            models.Index(fields=("business", "status", "available_at")),
+        ]
         constraints = [
             models.CheckConstraint(
                 condition=(

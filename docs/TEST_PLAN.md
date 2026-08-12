@@ -8,7 +8,7 @@ Testing must prove the product is financially correct, tenant-isolated, retry-sa
 
 ## Current Test Baseline
 
-One hundred three PostgreSQL-backed pytest tests pass through Phase 4. The suite includes:
+One hundred thirteen PostgreSQL-backed pytest tests pass through Phase 5. The suite includes:
 
 - Custom email user is configured and has no username field.
 - User creation normalizes email and hashes the password.
@@ -39,6 +39,9 @@ One hundred three PostgreSQL-backed pytest tests pass through Phase 4. The suite
   derived Paid/Partial/Overdue state, reconciliation, receipt PDF/email, and invoice links.
 - An automated full manual Lead -> Estimate -> Acceptance -> Invoice -> Deposit -> Partial
   payment -> Final payment -> Paid exit workflow.
+- Exact dashboard/report/CSV reconciliation after reversals, current AR aging, tenant-safe
+  export boundaries, spreadsheet formula neutralization, derived status QuerySets,
+  notification idempotency/isolation, delivery filtering, and stuck-job health checks.
 
 Real production-provider failure modes, export/reporting, accessibility, backup restore,
 and production-like browser E2E remain roadmap/launch gates.
@@ -92,6 +95,11 @@ caching, receipt evidence, invoice/reminder/receipt outbox completion, digest-on
 links, owner/public routes, and cross-tenant denial. Extended load testing, real provider
 failure modes, accessibility, and production-like browser/email delivery remain launch
 gates.
+
+Phase 5 automated coverage proves that cross-domain operational reads and exports share
+the ledger definitions documented in D-027, exclude foreign tenants, retain scalable
+QuerySets for derived filters, create deduplicated owner notifications, and turn failed or
+stale communication work into explicit health-check failures.
 
 ### Selector and Query Tests
 

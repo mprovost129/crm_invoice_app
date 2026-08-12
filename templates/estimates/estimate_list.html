@@ -5,7 +5,7 @@
 <div class="container py-4">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4"><div><p class="text-body-secondary mb-1">{{ ACTIVE_BUSINESS.display_name }}</p><h1 class="mb-0">Estimates</h1></div><a class="btn btn-primary" href="{% url 'estimates:create' %}">New estimate</a></div>
     <form method="get" class="row g-2 mb-4" role="search">
-        <div class="col-md-7"><label class="visually-hidden" for="estimate-search">Search estimates</label><input class="form-control" id="estimate-search" type="search" name="q" value="{{ search }}" placeholder="Search number or contact"></div>
+        <div class="col-md-7"><label class="visually-hidden" for="estimate-search">Search estimates</label><input class="form-control" id="estimate-search" type="search" name="q" value="{{ search }}" placeholder="Search number, contact, email, or phone"></div>
         <div class="col-md-3"><label class="visually-hidden" for="estimate-status">Status</label><select class="form-select" id="estimate-status" name="status"><option value="">All statuses</option>{% for value, label in status_choices %}<option value="{{ value }}"{% if status_filter == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
         <div class="col-md-2 d-grid"><button class="btn btn-outline-secondary" type="submit">Filter</button></div>
     </form>

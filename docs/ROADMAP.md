@@ -13,14 +13,14 @@ No percentage-complete estimate is used because the repository is not yet deep e
 
 ## Current Position
 
-**Milestone 4 - Invoice conversion and manual payments are complete.** An owner can
-convert an accepted estimate without re-entry, create a direct invoice, issue and deliver
-an immutable invoice, record deposits/partial/final payments, reverse corrections, send
-reminders/receipts, and reconcile invoice caches to the ledger. One hundred three
-PostgreSQL-backed tests pass locally.
+**Milestone 5 - Dashboard, communications, reporting, and export are complete.** An owner
+can see net monthly collections, receivables, overdue balances, open estimates, work
+requiring attention, notifications, recent activity, and delivery failures. Minimal
+financial/estimate reports and tenant-safe client/contact, invoice, and payment CSVs use
+the same ledger definitions. One hundred thirteen PostgreSQL-backed tests pass locally.
 
-The recommended next milestone is Phase 5 Dashboard, Communications, and Export,
-beginning with reconciled financial cards and Needs Attention read models.
+The recommended next milestone is Phase 6 SaaS Billing and Online Payments, beginning
+with configurable Plan/Subscription entitlements before any provider integration.
 
 ## Ordered Delivery Plan
 
@@ -31,7 +31,7 @@ beginning with reconciled financial cards and Needs Attention read models.
 | 2. CRM and catalog | P0 | Complete | Phase 1 | Business manages tenant-safe leads/clients/notes/services |
 | 3. Estimate workflow | P0 | Complete | Phase 2 | Accurate estimate can be issued, viewed, accepted/declined, and preserved |
 | 4. Invoice conversion and manual payments | P0 | Complete | Phase 3 | Complete manual lead-to-paid workflow passes |
-| 5. Dashboard, communications, and export | P1 | Not started | Phase 4 | Owner can understand cash/work status; exports reconcile |
+| 5. Dashboard, communications, and export | P1 | Complete | Phase 4 | Owner can understand cash/work status; exports reconcile |
 | 6. SaaS billing and online payments | P1 | Not started | Stable manual workflow and Phase 5 operations | Subscription and invoice payments are idempotent and separated |
 | 7. Launch hardening | P0 launch gate | Not started | All enabled V1 phases | Security, restore, migration, accessibility, monitoring, and E2E gates pass |
 | Post-V1 extensions | P2 | Deferred | Validated V1 and customer demand | Automation, recurrence, teams, multiple businesses, API/mobile |
@@ -145,7 +145,22 @@ Online payments must not start until this gate is reliable.
 
 ## Phase 5 - Dashboard, Communications, and Export
 
-Build financial cards, Needs Attention, activity, notifications, delivery state, search refinements, client/invoice/payment CSV exports, minimal reports, reconciliation command, and stuck-job alerts. Exit requires tenant-safe totals and exports that reconcile to the ledger.
+### Completed scope
+
+- Ledger-backed cards for net paid this month, outstanding/overdue receivables, and open
+  estimates, plus Needs Attention and recent tenant activity.
+- Idempotent owner notifications for acceptance, decline, payments, overdue invoices, and
+  delivery failure; read handling remains tenant-scoped.
+- Search refinements and paginated database-queryset filters for derived document states.
+- Delivery status/search screens, stuck/failed outbox detection, and a command suitable for
+  operational alerting.
+- Minimal collections, issued-invoice, accounts-receivable aging, and estimate-performance
+  reports.
+- BOM-compatible, formula-injection-hardened client/contact, invoice, and payment CSV
+  exports whose financial fields reconcile to invoice caches and net ledger values.
+
+The Phase 5 exit gate is satisfied by tenant-boundary, exact-total, reversal, export,
+notification, delivery-health, and web tests.
 
 ## Phase 6 - SaaS Billing and Online Payments
 

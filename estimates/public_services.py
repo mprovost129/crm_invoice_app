@@ -5,7 +5,8 @@ from django.utils import timezone
 
 from activity.models import ActivityEvent
 from activity.services import record_activity
-from communications.models import PublicDocumentLink
+from communications.models import Notification, PublicDocumentLink
+from communications.notifications import notify_business_owner
 
 from .models import Estimate, EstimateAcceptance
 
@@ -93,6 +94,14 @@ def accept_public_estimate(
         estimate=estimate,
         metadata={"method": EstimateAcceptance.Method.ONLINE},
     )
+    notify_business_owner(
+        business=estimate.business,
+        kind=Notification.Kind.ESTIMATE_ACCEPTED,
+        title=f"Estimate {estimate.number} accepted",
+        body="The customer accepted online. The estimate is ready to invoice.",
+        target_path=f"/app/estimates/{estimate.pk}/",
+        dedupe_key=f"estimate-accepted:{estimate.pk}",
+    )
     return acceptance
 
 
@@ -120,5 +129,13 @@ def decline_public_estimate(*, link, reason=""):
         event_type=ActivityEvent.EventType.ESTIMATE_DECLINED,
         summary=f"Customer declined estimate {estimate.number} online.",
         estimate=estimate,
+    )
+    notify_business_owner(
+        business=estimate.business,
+        kind=Notification.Kind.ESTIMATE_DECLINED,
+        title=f"Estimate {estimate.number} declined",
+        body="The customer declined the estimate online.",
+        target_path=f"/app/estimates/{estimate.pk}/",
+        dedupe_key=f"estimate-declined:{estimate.pk}",
     )
     return estimate

@@ -275,6 +275,24 @@ pages were rendered through Poppler and visually verified.
 
 **Rationale:** HTMX is the approved V1 enhancement layer. Self-hosting a pinned stable asset avoids runtime CDN availability and supply-chain drift without introducing a Node build pipeline during Phase 0.
 
+## D-027 - Operational Read Models and Exports Share Ledger Definitions
+
+**Status:** Accepted 2026-08-12
+
+**Decision:** Calculate collected cash as posted payments minus reversals in the selected
+business-local period. Calculate current accounts receivable from non-draft, non-void
+invoice balance caches that are continuously reconcilable to the immutable ledger. Use
+these same definitions in dashboard cards, reports, client summaries, and CSV exports.
+
+**Rationale:** Parallel definitions of paid, outstanding, or overdue values would cause
+screens, files, and operational checks to disagree. Central selectors and exact Decimal
+assertions make discrepancies visible instead of silently presenting conflicting totals.
+
+**Consequences:** Historical collection reports assign payments by `paid_on` and reversals
+by their recorded reversal timestamp. Receivables and aging are intentionally current
+operational views, not reconstructed historical accounting statements. CSV output is
+tenant-scoped, UTF-8 BOM compatible, non-cacheable, and neutralizes spreadsheet formulas.
+
 ## Deferred Provider and Product Decisions
 
 The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, error-monitoring provider, final component/design system, exact paid-plan launch timing, Premium differentiation/timing, Stripe account/product configuration, mobile technology, automatic reminder rules, recurring invoice rules, and privacy/retention policy.

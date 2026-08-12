@@ -8,6 +8,8 @@ from django.utils import timezone
 
 from activity.models import ActivityEvent
 from activity.services import record_activity
+from communications.models import Notification
+from communications.notifications import notify_business_owner
 from estimates.calculations import quantize_money
 from invoices.models import Invoice
 from workspaces.policies import owner_business_for_actor
@@ -80,6 +82,14 @@ def post_manual_payment(
         ),
         payment=payment,
         metadata={"invoice_id": str(invoice.pk), "invoice_number": invoice.number},
+    )
+    notify_business_owner(
+        business=business,
+        kind=Notification.Kind.PAYMENT_RECEIVED,
+        title=f"Payment recorded for {invoice.number}",
+        body=f"{invoice.currency} {amount:.2f} was recorded. Balance: {invoice.currency} {invoice.balance_due:.2f}.",
+        target_path=f"/app/invoices/{invoice.pk}/",
+        dedupe_key=f"payment-received:{payment.pk}",
     )
     if send_receipt:
         recipient = receipt_email.strip() or invoice.contact.email

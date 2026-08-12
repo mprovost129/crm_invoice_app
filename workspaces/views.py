@@ -3,13 +3,31 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from django.views.generic import FormView, TemplateView
 
+from dashboards.selectors import (
+    dashboard_summary,
+    needs_attention,
+    recent_activity,
+    unread_notifications,
+)
+
 from .forms import BusinessDefaultsForm, BusinessOnboardingForm, BusinessProfileForm
 from .mixins import OwnerTenantRequiredMixin, VerifiedUserMixin
 from .services import complete_business_onboarding, update_business_configuration
 
 
 class DashboardView(OwnerTenantRequiredMixin, TemplateView):
-    template_name = "workspaces/dashboard.html"
+    template_name = "dashboards/dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            "summary": dashboard_summary(business=self.request.business),
+            "attention_items": needs_attention(business=self.request.business),
+            "recent_activity": recent_activity(business=self.request.business),
+            "notifications": unread_notifications(
+                business=self.request.business, recipient=self.request.user
+            ),
+        }
 
 
 class BusinessOnboardingView(VerifiedUserMixin, FormView):

@@ -63,10 +63,11 @@ These flows must not share financial records or business logic.
 
 ## Current Repository State
 
-The repository has completed the identity, tenant, CRM, catalog, estimate, invoice, and
-manual-payment workflow. It now proves the core manual lead-to-paid product path, but is
-not yet a production-ready commercial V1 because dashboard/export, provider, operational,
-accessibility, backup/restore, and launch-hardening gates remain.
+The repository has completed the identity, tenant, CRM, catalog, estimate, invoice,
+manual-payment, dashboard, communication visibility, reporting, and export workflow. It
+proves the core manual lead-to-paid path and reconciled owner visibility, but is not yet a
+production-ready commercial V1 because provider, billing, accessibility, backup/restore,
+and launch-hardening gates remain.
 
 Implemented today:
 
@@ -92,6 +93,9 @@ Implemented today:
 - Immutable manual payment and additive reversal ledger supporting deposits, partial/final
   payments, receipts, cached balance updates, and reconciliation.
 - Client financial summaries and append-only invoice/payment activity history.
+- Ledger-backed owner dashboard, Needs Attention, recent activity, internal notifications,
+  delivery history/health, minimal financial and estimate reports, and reconciled CSV
+  exports.
 - Customer-centric staff admin.
 - Shared timestamp base model.
 - Separate liveness/readiness endpoints and request correlation IDs.
@@ -99,12 +103,10 @@ Implemented today:
 - Baseline production security, static-file, cache, logging, and email configuration.
 - Non-root multi-stage production container and health-checked Compose services.
 - GitHub Actions quality gate and reproducible Docker setup instructions.
-- One hundred three passing PostgreSQL-backed tests through Phase 4.
+- One hundred thirteen passing PostgreSQL-backed tests through Phase 5.
 
 Not yet implemented:
 
-- Cross-domain dashboard cards, Needs Attention, internal notifications, CSV exports, and
-  minimal reporting.
 - Production transactional email/private object storage, independently deployed outbox
   processing, monitoring, automated backups, and demonstrated restore.
 - Subscription billing, Stripe Connect, online payments, and webhook infrastructure.

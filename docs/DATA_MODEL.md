@@ -8,7 +8,7 @@ Last reviewed: 2026-08-12
 - **Planned:** approved V1 model, not yet implemented.
 - **Post-V1:** extension point intentionally not exposed in V1.
 
-The repository includes migrations through Phase 4 for `users`, `workspaces`, `core`,
+The repository includes migrations through Phase 5 for `users`, `workspaces`, `core`,
 `crm`, `catalog`, `activity`, `estimates`, `invoices`, `payments`, and `communications`
 with Django 5.2.16 against PostgreSQL 16.
 
@@ -202,9 +202,13 @@ Append-only business history supports explicit Contact, ProductService, Estimate
 Invoice, or Payment targets, optional actor, constrained event type, summary, minimal
 metadata, and occurrence timestamp.
 
-### `Notification` - Planned
+### `Notification` - Implemented
 
-Workspace/user notification optionally scoped to Business, with event type, title/body, internal target path, read timestamp, and creation date.
+Tenant-owned owner notification with a workspace-member recipient, constrained kind,
+title/body, internal target path, read timestamp, and business-scoped dedupe key. Current
+kinds cover estimate acceptance/decline, recorded payment, overdue invoice, and delivery
+failure. Event services create immediate notifications; an idempotent command synchronizes
+date-derived overdue notifications.
 
 ## Commercial and Integration Models
 

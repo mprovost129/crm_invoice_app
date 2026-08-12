@@ -2,6 +2,41 @@
 
 All meaningful completed changes are recorded here.
 
+## Unreleased - Phase 5 Complete (2026-08-12)
+
+### Added
+
+- Tenant-safe dashboard cards for net paid this month, current outstanding and overdue
+  receivables, and open-estimate value/count, all using established document/ledger rules.
+- Needs Attention for overdue invoices, accepted estimates awaiting conversion, failed
+  email, and stuck/failed outbox work, alongside recent cross-domain activity.
+- Business-scoped owner Notification model and idempotent notifications for estimate
+  acceptance/decline, recorded payments, overdue invoices, and delivery failures.
+- Delivery-history search/status/type screens plus `outbox_health_check` and
+  `sync_notifications` operator commands.
+- Minimal collections, issued-invoice, current AR-aging, and estimate-performance reports.
+- Tenant-safe client, all-contact, invoice, and payment CSV exports with UTF-8 BOM,
+  spreadsheet-formula neutralization, no-store headers, deterministic ordering, and
+  financial values that reconcile to invoice/ledger facts.
+- Composite indexes for delivery/outbox operational queries and Phase 5 dashboard,
+  reporting, export, notification, health, and tenant-isolation tests.
+
+### Changed
+
+- Estimate and invoice search now includes customer email and phone.
+- Derived Expired, Partial, Paid, and Overdue list filters remain database QuerySets so
+  pagination does not load the entire tenant dataset.
+- The owner dashboard now preserves CRM/catalog quick access while adding financial and
+  operational visibility.
+
+### Verification
+
+- One hundred thirteen tests pass against PostgreSQL 16.
+- Dashboard/report totals and all financial CSV columns are covered by exact Decimal
+  assertions including partial reversal behavior and foreign-tenant exclusion.
+- Ruff lint, migration generation/application/drift, Django checks, ledger reconciliation,
+  communication health, production deploy checks, and diff integrity pass locally.
+
 ## Unreleased - Phase 4 Complete (2026-08-12)
 
 ### Added

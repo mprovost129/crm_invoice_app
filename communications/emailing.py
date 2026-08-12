@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 
 from django.conf import settings
@@ -27,6 +28,7 @@ ESTIMATE_EMAIL_EVENT = "estimate.email"
 INVOICE_EMAIL_EVENT = "invoice.email"
 INVOICE_REMINDER_EVENT = "invoice.reminder"
 PAYMENT_RECEIPT_EVENT = "payment.receipt"
+logger = logging.getLogger(__name__)
 
 
 def _schedule(event):
@@ -263,6 +265,24 @@ def _mark_failed(*, event_id, delivery_id, error):
             status=EmailDelivery.Status.FAILED,
             failure_code=error.__class__.__name__[:80],
             failure_message=safe_message,
+        )
+    delivery = EmailDelivery.objects.select_related("business").get(pk=delivery_id)
+    try:
+        from .models import Notification
+        from .notifications import notify_business_owner
+
+        notify_business_owner(
+            business=delivery.business,
+            kind=Notification.Kind.DELIVERY_FAILED,
+            title=f"Email delivery failed: {delivery.subject}",
+            body=safe_message or "The email provider did not confirm delivery.",
+            target_path="/app/communications/",
+            dedupe_key=f"delivery-failed:{delivery.pk}",
+        )
+    except Exception:
+        logger.exception(
+            "Unable to create delivery-failure notification for delivery %s.",
+            delivery_id,
         )
 
 

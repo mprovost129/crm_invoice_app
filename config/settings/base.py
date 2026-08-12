@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "communications",
     "invoices",
     "payments",
+    "dashboards",
     "core",
 ]
 
