@@ -20,7 +20,7 @@ def test_auth_user_model_is_custom_email_user():
 def test_create_user_normalizes_email_and_hashes_password():
     User = get_user_model()
     user = User.objects.create_user("Test@EXAMPLE.COM", "safe-test-password")
-    assert user.email == "Test@example.com"
+    assert user.email == "test@example.com"
     assert user.check_password("safe-test-password")
     assert isinstance(user.pk, uuid.UUID)
 

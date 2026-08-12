@@ -13,7 +13,7 @@ select = ["E", "F", "W", "I"]
 ignore = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["core", "users"]
+known-first-party = ["core", "users", "workspaces"]
 
 [tool.ruff.lint.per-file-ignores]
 "config/settings/dev.py" = ["F403", "F405"]

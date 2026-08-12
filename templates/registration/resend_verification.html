@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Resend Verification Email{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h1>Resend verification email</h1>
+            <p>Enter the address used to create the account. The response will not reveal whether an account exists.</p>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn btn-primary" type="submit">Send verification email</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

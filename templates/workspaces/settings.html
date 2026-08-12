@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Business Settings{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-9">
+            <h1>Business settings</h1>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <h2 class="h4 mt-4">Business profile</h2>
+                {{ profile_form.as_p }}
+                <h2 class="h4 mt-5">Document defaults</h2>
+                {{ defaults_form.as_p }}
+                <button class="btn btn-primary" type="submit">Save settings</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

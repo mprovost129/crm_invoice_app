@@ -26,7 +26,9 @@ This is the architectural and product decision record. **Accepted** decisions go
 
 **Decision:** Build V1 with Django templates, progressive enhancement, HTMX where useful, and minimal focused JavaScript. Add a versioned REST API when a real client requires it; build mobile after backend behavior stabilizes.
 
-**Rationale:** This is the fastest route to a reliable, understandable product without duplicating logic. The current repository has Bootstrap but has not added HTMX.
+**Rationale:** This is the fastest route to a reliable, understandable product without
+duplicating logic. The repository uses Bootstrap and self-hosted HTMX as its current web
+foundation.
 
 ## D-004 - PostgreSQL Is the Only Application Database Target
 
@@ -43,6 +45,11 @@ This is the architectural and product decision record. **Accepted** decisions go
 **Decision:** Model `User -> Membership -> Workspace -> Business -> Business Data`. V1 exposes one owner and one active business, while the schema may support future users/businesses.
 
 **Rationale:** A human login is not a business or subscription. Separating these concepts prevents a disruptive redesign and creates an explicit data-isolation boundary.
+
+**Implemented (2026-08-12):** Registration creates User, Workspace, and owner Membership
+atomically. Verified onboarding adds one active Business, BusinessSettings, and document
+sequences. Database constraints and tenant-scoped request/service tests enforce the V1
+boundary.
 
 ## D-006 - Direct Business Ownership on Domain Rows
 

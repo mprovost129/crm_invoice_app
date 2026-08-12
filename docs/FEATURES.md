@@ -28,7 +28,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Logging | Partial | Console/file logging exists; not structured/centralized/redacted |
 | Ruff/pre-commit | Implemented | Configuration exists |
 | CI pipeline | Implemented | GitHub Actions runs Ruff, formatting, migration, PostgreSQL tests, and deploy checks |
-| Application migrations | Implemented | Initial UUID User/AccountProfile migration generated and applied |
+| Application migrations | Implemented | Phase 0/1 User, Workspace, Business, settings, and sequence migrations applied |
 | Background worker/outbox | Not started | Redis alone does not implement asynchronous work |
 | Error/uptime monitoring | Not started | Provider not selected |
 | Backup/restore automation | Not started | No repository procedure or evidence |
@@ -39,17 +39,17 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | --- | --- | --- |
 | Email-first custom user | Implemented | UUID custom model/manager, password hashing, admin forms |
 | Account-owner profile | Implemented | UUID `AccountProfile`, explicitly not a CRM Contact or tenant Business |
-| Login/logout | Implemented | Django auth URLs and login template |
-| Password reset | Implemented | Django auth URLs and reset templates; delivery depends on email config |
-| Registration | Not started | No public registration view/form/service |
-| Email verification | Not started | No field/workflow/provider integration |
+| Login/logout | Implemented | Namespaced auth routes, case-insensitive email login, and routing gates |
+| Password reset | Implemented | Namespaced routes/templates and expiring, password-invalidated tokens; delivery depends on email config |
+| Registration | Implemented | Validated public form and atomic User/Workspace/owner Membership service |
+| Email verification | Implemented | One-time token, resend path, verified timestamp, and onboarding gate |
 | Google login | Deferred | Recommended after basic auth, not required for core V1 |
-| Workspace and membership | Not started | Models/context/policies absent |
-| Business and business settings | Not started | Models/onboarding/settings absent |
-| One-owner/one-business V1 policy | Not started | Requires tenancy models/services |
-| Tenant request context and scoping | Not started | Critical blocker for all domain apps |
-| Business onboarding | Not started | No onboarding flow |
-| Customer-facing app shell/dashboard | Partial | Generic base/nav/home only |
+| Workspace and membership | Implemented | UUID models, active membership selectors, uniqueness constraints, staff admin |
+| Business and business settings | Implemented | UUID models, profile/default settings, validation, protected relationships |
+| One-owner/one-business V1 policy | Implemented | Partial database uniqueness plus owner-only onboarding/settings services |
+| Tenant request context and scoping | Implemented | Membership-derived middleware context, scoped querysets/selectors, isolation tests |
+| Business onboarding | Implemented | Verified-owner flow atomically creates Business, settings, and two sequences |
+| Customer-facing app shell/dashboard | Implemented | Verified/onboarded empty dashboard and owner business-settings screen |
 | Customer-centric staff admin | Implemented | Search, metrics, profile inline, related-record links |
 
 ## CRM and Catalog
@@ -72,7 +72,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 | Feature | Status |
 | --- | --- |
-| Transaction-safe document numbering | Not started |
+| Transaction-safe document numbering | Partial | Per-business estimate/invoice sequence rows exist; allocation begins with document aggregates |
 | Estimate and estimate-line models | Not started |
 | Decimal calculation and currency policy | Not started |
 | Draft builder/editing/preview | Not started |
@@ -156,6 +156,10 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-Twenty-one PostgreSQL-backed foundation tests pass. They cover the custom UUID user/account profile, email normalization/password hashing, superuser flags, admin search, liveness/readiness including database failure, request IDs, self-hosted HTMX, and environment/production-secret validation. No tenant, CRM, document, financial, provider, or V1 end-to-end test exists yet.
+Thirty-eight PostgreSQL-backed tests pass. In addition to the foundation suite, they
+cover atomic registration, verification and reset-token behavior, onboarding, settings,
+one-owner/one-business constraints, request gates, membership/business alignment, and
+cross-tenant selector/service denial. CRM, issued-document, financial, provider, export,
+and full V1 end-to-end coverage remain future phases.
 
 See [TEST_PLAN.md](TEST_PLAN.md) for required coverage and [ROADMAP.md](ROADMAP.md) for delivery order.

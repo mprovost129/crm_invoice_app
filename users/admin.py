@@ -13,7 +13,7 @@ class AccountProfileInline(admin.StackedInline):
     extra = 0
     max_num = 1
     can_delete = False
-    verbose_name_plural = "Customer profile"
+    verbose_name_plural = "Account profile"
     fields = ("company_name", "phone", "internal_notes", "created_at", "updated_at")
     readonly_fields = ("created_at", "updated_at")
 
@@ -32,6 +32,7 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "company",
         "account_status",
+        "email_verified_at",
         "is_staff",
         "date_joined",
         "last_login",
@@ -52,7 +53,17 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (_("Customer"), {"fields": ("email", "first_name", "last_name", "password")}),
-        (_("Account status"), {"fields": ("is_active", "last_login", "date_joined")}),
+        (
+            _("Account status"),
+            {
+                "fields": (
+                    "is_active",
+                    "email_verified_at",
+                    "last_login",
+                    "date_joined",
+                )
+            },
+        ),
         (
             _("Related customer records"),
             {
@@ -89,7 +100,12 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     )
-    readonly_fields = ("last_login", "date_joined", "related_customer_records")
+    readonly_fields = (
+        "email_verified_at",
+        "last_login",
+        "date_joined",
+        "related_customer_records",
+    )
 
     @admin.display(description="Customer", ordering="last_name")
     def customer_name(self, obj):

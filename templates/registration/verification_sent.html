@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Your Email{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h1>Check your email</h1>
+            <p>Use the verification link we sent before continuing to business setup. The link expires after 24 hours.</p>
+            <p><a href="{% url 'users:resend-verification' %}">Send another verification email</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

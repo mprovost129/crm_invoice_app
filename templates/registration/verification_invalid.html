@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Invalid Verification Link{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1>This verification link is invalid or expired</h1>
+    <p><a href="{% url 'users:resend-verification' %}">Request a new verification email.</a></p>
+</div>
+{% endblock %}

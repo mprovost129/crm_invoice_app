@@ -8,7 +8,8 @@ Last reviewed: 2026-08-12
 - **Planned:** approved V1 model, not yet implemented.
 - **Post-V1:** extension point intentionally not exposed in V1.
 
-The repository includes `users/migrations/0001_initial.py`, generated and applied with Django 5.2.16 against PostgreSQL.
+The repository includes and has applied Phase 1 migrations for `users`, `workspaces`,
+and `core` with Django 5.2.16 against PostgreSQL 16.
 
 ## Current Implemented Models
 
@@ -16,7 +17,9 @@ The repository includes `users/migrations/0001_initial.py`, generated and applie
 
 Email-first authentication identity based on `AbstractBaseUser` and `PermissionsMixin`.
 
-Important fields: UUID primary key, unique email, first/last name, active/staff flags, joined date, last login, password, groups, and permissions. `email` is the login identifier. The manager normalizes email and validates superuser flags.
+Important fields: UUID primary key, case-insensitively unique normalized email,
+first/last name, email-verification timestamp, active/staff flags, joined date, last
+login, password, groups, and permissions. `email` is the login identifier.
 
 This is a human login identity. Business data must not be attached directly to it.
 
@@ -26,9 +29,11 @@ UUID one-to-one supplementary profile for an authenticated user, containing comp
 
 This model is deliberately limited to login-owner/support metadata. It is not the planned CRM `Contact`, workspace `Business`, or customer/client record.
 
-### `core.TimeStampedModel` - Implemented abstract model
+### `core.TimeStampedModel` and `BusinessOwnedModel` - Implemented abstract models
 
-Optional abstract base providing indexed `created_at` and `updated_at` timestamps. The target architecture additionally calls for UUID identifiers and a business-owned abstract convention.
+`TimeStampedModel` provides indexed `created_at` and `updated_at` timestamps.
+`BusinessOwnedModel` adds a UUID primary key and required protected Business foreign key
+for future tenant-owned domain rows.
 
 ## Target Relationship Map
 
@@ -61,23 +66,25 @@ Domain transaction ----< OutboxEvent
 
 ## Identity and Tenancy
 
-### `Workspace` - Planned
+### `Workspace` - Implemented
 
 The SaaS account, subscription, and entitlement boundary. It has a globally unique slug and lifecycle status. One workspace has one active owner membership and one active business in V1; the schema may support more later.
 
-### `Membership` - Planned
+### `Membership` - Implemented
 
 Joins User and Workspace, with a unique pair plus role and status. Only the owner role is exposed in V1. Future admin/member roles must remain inaccessible until their permissions are implemented and tested.
 
-### `Business` - Planned
+### `Business` - Implemented
 
 The strict isolation boundary for contacts, catalog, documents, payments, files, and activity. It stores operating identity, contact/address data, currency, timezone, logo reference, active state, and archive lifecycle.
 
 Every business-owned entity below carries a direct business foreign key even when that relationship could be inferred through its parent.
 
-### `BusinessSettings` - Planned
+### `BusinessSettings` - Implemented
 
-One-to-one with Business. Stores estimate/invoice prefixes and defaults for terms, expiration, tax, notes, branding, and displayed next numbers. Number allocation itself belongs in `DocumentSequence`.
+One-to-one with Business. Stores validated estimate/invoice prefixes and defaults for
+terms, expiration, tax, and notes. Number allocation itself belongs in
+`DocumentSequence`; branding assets remain planned.
 
 ## CRM and Catalog
 
@@ -95,7 +102,7 @@ Document lines may retain a nullable protected source reference, but always copy
 
 ## Shared Financial Infrastructure
 
-### `DocumentSequence` - Planned
+### `DocumentSequence` - Implemented
 
 One row per `(business, document_type)` with prefix, next positive value, and padding width. Allocation locks the row and creates the target document in one transaction. Database uniqueness separately protects visible document numbers within a business.
 

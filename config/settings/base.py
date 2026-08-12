@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "axes",
     # Local
     "users",
+    "workspaces",
     "core",
 ]
 
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     "core.middleware.RequestIDMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "workspaces.middleware.TenantContextMiddleware",
     "axes.middleware.AxesMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -73,6 +75,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.i18n",
                 "core.context_processors.application",
+                "workspaces.context_processors.tenant_context",
             ],
         },
     },
@@ -117,8 +120,8 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = int(
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Auth
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "/app/"
 LOGOUT_REDIRECT_URL = "/"
 
 # Cache — overridden per environment
@@ -177,3 +180,4 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 SERVER_EMAIL = os.environ.get("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", 10))
+PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", 24 * 60 * 60))

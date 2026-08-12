@@ -4,10 +4,13 @@ from django.contrib.auth.base_user import BaseUserManager
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
+    def get_by_natural_key(self, username):
+        return self.get(**{f"{self.model.USERNAME_FIELD}__iexact": username})
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email address is required.")
-        email = self.normalize_email(email)
+        email = self.normalize_email(email).casefold()
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)

@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 from .managers import UserManager
@@ -17,6 +18,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=150, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    email_verified_at = models.DateTimeField(blank=True, null=True)
     date_joined = models.DateTimeField(default=timezone.now)
 
     objects = UserManager()
@@ -28,6 +30,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = "customer / user"
         verbose_name_plural = "customers / users"
         ordering = ("last_name", "first_name", "email")
+        constraints = [
+            models.UniqueConstraint(
+                Lower("email"), name="users_user_email_case_insensitive_unique"
+            )
+        ]
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
@@ -38,6 +45,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def display_name(self):
         return self.get_full_name() or self.email
+
+    @property
+    def is_email_verified(self):
+        return self.email_verified_at is not None
 
     def __str__(self):
         return self.display_name

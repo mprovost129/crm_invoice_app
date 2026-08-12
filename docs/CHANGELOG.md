@@ -1,6 +1,30 @@
 # Changelog
 
-All meaningful completed changes are recorded here. This repository snapshot is not available as a Git working tree, so the entries below are reconstructed from the current files and `TEMPLATE_UPDATES.md`; exact historical commit dates are unavailable.
+All meaningful completed changes are recorded here.
+
+## Unreleased - Phase 1 Complete (2026-08-12)
+
+### Added
+
+- Public registration with password validation and case-insensitive normalized email uniqueness.
+- One-time email verification and resend flow, verified-user routing gates, and namespaced login/logout/password-reset paths.
+- Atomic registration service creating a UUID Workspace and active owner Membership with the User.
+- UUID Workspace, Membership, Business, and BusinessSettings tenancy models with protected relationships and database constraints for one active owner and one active business in V1.
+- Verified-owner onboarding that atomically creates the Business, editable defaults, and per-business estimate/invoice DocumentSequence rows.
+- Tenant request middleware, context processor, scoped querysets/selectors, verified/tenant/owner view mixins, and an empty authenticated dashboard.
+- Owner-only business profile/default settings screen and read-only sequence administration.
+- Phase 1 migrations and PostgreSQL-backed tests for identity, onboarding, constraints, request gates, settings, and cross-tenant isolation.
+
+### Changed
+
+- Email login and persistence now normalize the complete address consistently.
+- Password-reset emails use the configured site identity and reset links expire after the configured timeout or any password change.
+- Application navigation now reflects anonymous, verification, onboarding, and active-business states.
+
+### Verification
+
+- Thirty-eight tests pass against PostgreSQL 16.
+- Ruff lint/format, Django checks, migration drift, migrations, and production deploy checks pass locally.
 
 ## Unreleased - Phase 0 Complete (2026-08-12)
 
@@ -34,9 +58,9 @@ All meaningful completed changes are recorded here. This repository snapshot is 
 - Shared templates use generic application identity instead of a hard-coded product name.
 - Production host/origin parsing, email timeout, server email, upload limits, and configurable media backend were hardened.
 
-### Known Incomplete Areas
+### Known Incomplete Areas at Phase 0
 
-- No registration, email verification, tenancy, business onboarding, or customer-facing authenticated app.
+- Registration, email verification, tenancy, business onboarding, and the empty authenticated app are completed in Phase 1 above.
 - No CRM, catalog, estimate, invoice, payment, communication, billing, integration, export, or reporting domain implementation.
 - No background worker/outbox, persistent production object storage selection, monitoring provider, automated backup, or restore evidence.
 

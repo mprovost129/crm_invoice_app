@@ -25,8 +25,8 @@ User = get_user_model()
 
 Avoid `user.user`. If a model already has a field named `user`, that object is the
 authenticated user. Use `user.account_profile` for supplementary owner metadata.
-Business identity belongs to the future tenant `Business` model, and customer/client
-data belongs to the future CRM `Contact` model. `AccountProfile` replaces neither.
+Business identity belongs to the tenant `workspaces.Business` model, and customer/client
+data will belong to the CRM `Contact` model. `AccountProfile` replaces neither.
 
 ## Customer-centric admin
 

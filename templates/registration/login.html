@@ -3,7 +3,9 @@
 {% block title %}Log In{% endblock %}
 
 {% block content %}
-<h1>Log In</h1>
+<div class="container py-5">
+<div class="row justify-content-center"><div class="col-md-7 col-lg-5">
+<h1>Log in</h1>
 
 <form method="post">
     {% csrf_token %}
@@ -11,5 +13,7 @@
     <button type="submit">Log In</button>
 </form>
 
-<p><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
+<p><a href="{% url 'users:password_reset' %}">Forgot your password?</a></p>
+<p>New here? <a href="{% url 'users:register' %}">Create an account.</a></p>
+</div></div></div>
 {% endblock %}

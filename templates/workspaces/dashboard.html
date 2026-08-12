@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <p class="text-body-secondary mb-1">{{ ACTIVE_BUSINESS.display_name }}</p>
+            <h1 class="mb-0">Dashboard</h1>
+        </div>
+        <a class="btn btn-outline-secondary" href="{% url 'workspaces:settings' %}">Business settings</a>
+    </div>
+
+    <div class="alert alert-info" role="status">
+        Your tenant-safe workspace is ready. Client and catalog features begin in Phase 2.
+    </div>
+</div>
+{% endblock %}

@@ -13,16 +13,20 @@ No percentage-complete estimate is used because the repository is not yet deep e
 
 ## Current Position
 
-**Milestone 0 - Repository and quality foundation is complete.** The canonical Docker setup builds, the initial migration applies to PostgreSQL 16, all services become healthy, 21 tests pass, Ruff/migration/production checks pass, and the GitHub Actions quality gate mirrors those checks.
+**Milestone 1 - Identity, workspace, and onboarding is complete.** Registration creates
+the owner tenancy atomically, verification gates onboarding, one active business receives
+validated defaults and document sequences, and the verified owner reaches a tenant-safe
+empty dashboard. Thirty-eight PostgreSQL-backed tests pass locally.
 
-Milestone 1 identity work is partially present through the custom user, admin, login/logout, and password-reset foundation. Workspace tenancy, registration, verification, onboarding, and tenant context have not started.
+The recommended next milestone is Phase 2 CRM and catalog, beginning with tenant-safe
+Contact and ProductService models and service boundaries.
 
 ## Ordered Delivery Plan
 
 | Phase | Priority | Status | Depends on | Exit outcome |
 | --- | --- | --- | --- | --- |
 | 0. Repository and quality foundation | P0 | Complete | None | Reproducible PostgreSQL app boots; checks/tests/migrations pass in CI |
-| 1. Identity, workspace, and onboarding | P0 | In progress (identity foundation only) | Phase 0 | Verified owner reaches an empty tenant-safe dashboard |
+| 1. Identity, workspace, and onboarding | P0 | Complete | Phase 0 | Verified owner reaches an empty tenant-safe dashboard |
 | 2. CRM and catalog | P0 | Not started | Phase 1 | Business manages tenant-safe leads/clients/notes/services |
 | 3. Estimate workflow | P0 | Not started | Phase 2 | Accurate estimate can be issued, viewed, accepted/declined, and preserved |
 | 4. Invoice conversion and manual payments | P0 | Not started | Phase 3 | Complete manual lead-to-paid workflow passes |
@@ -61,15 +65,12 @@ P0 means required for a safe core release; P1 may be sequenced after the manual 
 
 ## Phase 1 - Identity, Workspace, and Onboarding
 
-### Implemented foundation
+### Completed scope
 
 - Email-first custom user and manager.
 - Custom admin forms and customer-centric support admin.
 - Django login/logout/password-reset routing and templates.
 - User/core foundation tests.
-
-### Remaining P0 work
-
 - Registration and email verification.
 - Workspace, Membership, Business, BusinessSettings, and DocumentSequence models/migrations.
 - Atomic registration service creating the owner tenancy hierarchy.
@@ -79,7 +80,8 @@ P0 means required for a safe core release; P1 may be sequenced after the manual 
 - Tenant-scoped query/policy helpers and isolation test utilities.
 - Empty authenticated dashboard and Phase 1 smoke test.
 
-Do not begin Contact implementation until the Phase 1 tenant boundary is proven.
+The Phase 1 boundary is proven by database constraints plus request, selector, service,
+and cross-tenant tests. Phase 2 may now begin.
 
 ## Phase 2 - CRM and Catalog
 

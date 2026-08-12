@@ -4,7 +4,10 @@ Last reviewed: 2026-08-12
 
 ## Status and Architecture Direction
 
-The approved target is a modular Django monolith backed by PostgreSQL. Phase 0 implements the shared Django foundation and user/admin layer; business-domain components remain target architecture. See [FEATURES.md](FEATURES.md) for status.
+The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 and 1
+implement the shared foundation, identity, workspace, business onboarding, and trusted
+tenant boundary. CRM and financial components remain target architecture. See
+[FEATURES.md](FEATURES.md) for status.
 
 The supported baseline is Python 3.13 and Django 5.2 LTS, currently pinned to Django 5.2.16. The LTS choice is recorded in [DECISIONS.md](DECISIONS.md).
 
@@ -43,10 +46,10 @@ config/                 Django settings, URL routing, ASGI, and WSGI
   settings/base.py      Shared environment-driven settings
   settings/dev.py       Debug toolbar and development overrides
   settings/prod.py      HTTPS, Redis cache, WhiteNoise, and production overrides
-core/                   Shared timestamp model, home, health check, middleware
-users/                  Custom user, account profile, admin, forms, and tests
-  migrations/0001...    Initial UUID User and AccountProfile schema
-templates/              Base, auth, error, admin, and shared templates
+core/                   Shared models, document sequences, health, middleware
+users/                  Identity, registration, verification, password flows, admin
+workspaces/             Workspace, membership, business, settings, tenant context
+templates/              Base, auth, onboarding, app, error, admin, shared templates
 static/                 Shared CSS, JavaScript, images, and admin styling
 docs/                   Product and engineering documentation
 Dockerfile              Python 3.13/Gunicorn production image
@@ -56,7 +59,8 @@ Procfile                Web and release/migration commands
 README.md               Canonical Docker setup and verification workflow
 ```
 
-The initial `users` migration is committed. No product-domain apps exist beyond `core` and `users`.
+The Phase 1 `users`, `workspaces`, and `core` migrations are committed. The next domain
+boundary is CRM and catalog.
 
 ## Target Domain Applications
 
@@ -170,4 +174,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for operational procedures.
 
 ## Current Architecture Gaps
 
-Milestone 1 now depends on workspace/business tenancy, registration/verification/onboarding, trusted tenant request context, and tenant-safe helpers/policies. Subsequent domain apps depend on that boundary.
+The Phase 1 tenant boundary is implemented and covered by PostgreSQL-backed isolation
+tests. Phase 2 must keep all Contact and ProductService reads/writes behind this trusted
+business context. Full role policy, outbox/worker infrastructure, object storage,
+financial calculators, and provider adapters remain later roadmap work.

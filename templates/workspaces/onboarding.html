@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Set Up Your Business{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-9">
+            <h1>Set up your business</h1>
+            <p class="text-body-secondary">These values become the defaults for future estimates and invoices and remain editable.</p>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn btn-primary" type="submit">Complete setup</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

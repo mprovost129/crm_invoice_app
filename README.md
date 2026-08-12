@@ -1,8 +1,8 @@
 # CRM and Invoicing SaaS
 
 A Django/PostgreSQL application for the service-business workflow from lead through
-estimate, acceptance, invoice, and payment. The repository is currently completing its
-foundation phase; see [Project Overview](docs/PROJECT_OVERVIEW.md),
+estimate, acceptance, invoice, and payment. The repository has completed its identity,
+workspace, and onboarding foundation; see [Project Overview](docs/PROJECT_OVERVIEW.md),
 [Roadmap](docs/ROADMAP.md), and [Features](docs/FEATURES.md).
 
 ## Prerequisites

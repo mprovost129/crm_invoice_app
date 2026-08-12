@@ -8,7 +8,7 @@ Testing must prove the product is financially correct, tenant-isolated, retry-sa
 
 ## Current Test Baseline
 
-Twenty-one PostgreSQL-backed pytest tests pass in the Phase 0 container:
+Thirty-eight PostgreSQL-backed pytest tests pass through Phase 1:
 
 - Custom email user is configured and has no username field.
 - User creation normalizes email and hashes the password.
@@ -19,8 +19,15 @@ Twenty-one PostgreSQL-backed pytest tests pass in the Phase 0 container:
 - Request ID is preserved on the response.
 - The base application uses self-hosted HTMX rather than a runtime HTMX CDN.
 - Required, CSV, boolean, and production-secret environment validation is deterministic.
+- Registration atomically creates the normalized User, Workspace, and active owner Membership.
+- Verification tokens are one-time, reset tokens are password-invalidated, and routing gates unverified users.
+- Onboarding atomically creates Business, BusinessSettings, and estimate/invoice sequences.
+- One-active-owner and one-active-business constraints reject invalid tenancy states.
+- Tenant selectors, settings services, request context, and owner-only settings deny cross-tenant or underprivileged access.
+- A verified owner can complete onboarding and reach the empty tenant-safe dashboard.
 
-No tenant, CRM, catalog, document, financial, public-link, provider, export, or V1 end-to-end tests exist yet; those follow the roadmap dependencies.
+CRM, catalog, issued-document, financial, public-link, provider, export, and full V1
+end-to-end tests do not exist yet; those follow the roadmap dependencies.
 
 ## Test Environments and Tooling
 

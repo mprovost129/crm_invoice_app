@@ -63,7 +63,8 @@ These flows must not share financial records or business logic.
 
 ## Current Repository State
 
-The repository is presently a Django starter foundation, not a working CRM/invoicing V1.
+The repository has completed the identity and tenant foundation, but is not yet a
+working CRM/invoicing V1.
 
 Implemented today:
 
@@ -73,6 +74,11 @@ Implemented today:
 - UUID one-to-one account-owner profile, explicitly separate from CRM contacts/businesses.
 - Committed initial user/account-profile migration.
 - Django login, logout, and password-reset routes/templates.
+- Public registration and email verification.
+- Atomic owner Workspace/Membership creation during registration.
+- Business onboarding, editable defaults, and document-sequence initialization.
+- Active workspace/business request context and tenant-scoped query helpers.
+- An authenticated tenant-safe empty dashboard.
 - Customer-centric staff admin.
 - Shared timestamp base model.
 - Separate liveness/readiness endpoints and request correlation IDs.
@@ -80,11 +86,10 @@ Implemented today:
 - Baseline production security, static-file, cache, logging, and email configuration.
 - Non-root multi-stage production container and health-checked Compose services.
 - GitHub Actions quality gate and reproducible Docker setup instructions.
-- Twenty-one passing PostgreSQL-backed foundation tests.
+- Thirty-eight passing PostgreSQL-backed foundation and Phase 1 tests.
 
 Not yet implemented:
 
-- Registration, email verification, workspace/business onboarding, and tenancy.
 - CRM contacts and catalog.
 - Estimates, invoices, calculations, document snapshots, and PDFs.
 - Payments, reminders, notifications, exports, and reporting.

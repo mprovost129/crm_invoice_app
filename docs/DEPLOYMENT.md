@@ -64,8 +64,6 @@ Web and workers should scale independently and use the same application image/co
 - `config.settings.prod`: secure HTTPS/cookies/HSTS, WhiteNoise static files, Redis cache, persistent database connections, strict hosts/origins, and optional trusted reverse-proxy header.
 - `config.wsgi` and `config.asgi`: default to production settings.
 
-The Docker build installs compilation/PostgreSQL headers. It does not currently use a non-root runtime user or multi-stage build; review container hardening before production.
-
 ## Configuration and Secrets
 
 Required application/database settings:
@@ -90,7 +88,7 @@ Email settings:
 
 - `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_PORT`
 - `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`
-- `DEFAULT_FROM_EMAIL`, `SERVER_EMAIL`, `EMAIL_TIMEOUT`
+- `DEFAULT_FROM_EMAIL`, `SERVER_EMAIL`, `EMAIL_TIMEOUT`, `PASSWORD_RESET_TIMEOUT`
 
 Future provider credentials, webhook secrets, signing keys, storage credentials, and monitoring DSNs must be platform-managed secrets with environment isolation and rotation procedures. Do not log or expose plaintext secrets.
 
@@ -138,7 +136,9 @@ Do not run migrations independently from every web replica. The current Procfile
 - Measure migration duration/locking with representative data.
 - Keep web and worker versions compatible during rolling deployment.
 
-The initial UUID User/AccountProfile migration is committed. Workspace/business boundaries must be finalized in Milestone 1 before business-domain data exists.
+The Phase 1 User verification, Workspace/Membership, Business/BusinessSettings, and
+DocumentSequence migrations are committed and apply cleanly after the initial user
+migration. Back up existing data before applying them outside development.
 
 ## Static Files and Media
 
