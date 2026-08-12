@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}500 | {{ APP_NAME }}{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+    <h1>500</h1>
+    <p>{% block error_message %}We couldn't complete that request.{% endblock %}</p>
+    <a class="btn btn-primary" href="{% url 'core:home' %}">Return home</a>
+</div>
+{% endblock %}

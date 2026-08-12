@@ -1,0 +1,22 @@
+.customer-dashboard { margin-bottom: 28px; }
+.customer-hero { padding: 24px; display: grid; gap: 20px; grid-template-columns: minmax(220px, .8fr) minmax(320px, 1.2fr); align-items: end; }
+.customer-hero h1 { margin: 0 0 6px; font-size: 24px; }
+.customer-hero p { margin: 0; color: var(--body-quiet-color); }
+.customer-search label { display: block; font-weight: 600; margin-bottom: 8px; }
+.customer-search-row { display: flex; gap: 8px; }
+.customer-search input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--body-bg); color: var(--body-fg); }
+.customer-search button { border: 0; border-radius: 4px; padding: 10px 16px; background: var(--button-bg); color: var(--button-fg); cursor: pointer; }
+.customer-metrics { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 12px; margin: 16px 0; }
+.metric-card { display: flex; flex-direction: column; gap: 4px; padding: 16px; border: 1px solid var(--hairline-color); border-radius: 6px; background: var(--darkened-bg); text-decoration: none; }
+.metric-card strong { font-size: 24px; color: var(--body-fg); }
+.metric-card span { color: var(--body-quiet-color); }
+.customer-shortcuts { padding: 18px 24px; }
+.customer-shortcuts h2 { margin-top: 0; }
+.shortcut-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.shortcut-grid a { display: inline-block; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; }
+.customer-related-row { margin: 0 0 6px; }
+@media (max-width: 767px) {
+  .customer-hero { grid-template-columns: 1fr; }
+  .customer-search-row { flex-direction: column; }
+  .customer-metrics { grid-template-columns: repeat(2, 1fr); }
+}

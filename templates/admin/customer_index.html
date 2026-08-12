@@ -1,0 +1,52 @@
+{% extends "admin/index.html" %}
+{% load i18n static customer_admin %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/customer_admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="customer-dashboard">
+  <section class="customer-hero module">
+    <div>
+      <h1>Customer Support</h1>
+      <p>Find the customer first, then manage their account and related records from one place.</p>
+    </div>
+    <form action="{% url 'admin:users_user_changelist' %}" method="get" class="customer-search">
+      <label for="customer-q">Find a customer</label>
+      <div class="customer-search-row">
+        <input id="customer-q" type="search" name="q" placeholder="Name, email, company, or phone" autofocus>
+        <button type="submit">Search customers</button>
+      </div>
+    </form>
+  </section>
+
+  {% customer_admin_metrics as metrics %}
+  <section class="customer-metrics" aria-label="Customer account summary">
+    <a class="metric-card" href="{% url 'admin:users_user_changelist' %}">
+      <strong>{{ metrics.total }}</strong><span>Total customers</span>
+    </a>
+    <a class="metric-card" href="{% url 'admin:users_user_changelist' %}?is_active__exact=1">
+      <strong>{{ metrics.active }}</strong><span>Active</span>
+    </a>
+    <a class="metric-card" href="{% url 'admin:users_user_changelist' %}?is_active__exact=0">
+      <strong>{{ metrics.inactive }}</strong><span>Inactive</span>
+    </a>
+    <a class="metric-card" href="{% url 'admin:users_user_changelist' %}?is_staff__exact=1">
+      <strong>{{ metrics.staff }}</strong><span>Staff</span>
+    </a>
+  </section>
+
+  <section class="customer-shortcuts module">
+    <h2>Customer tools</h2>
+    <div class="shortcut-grid">
+      <a href="{% url 'admin:users_user_changelist' %}">Browse customers</a>
+      <a href="{% url 'admin:users_user_add' %}">Add customer</a>
+      <a href="{% url 'admin:users_accountprofile_changelist' %}">Advanced profile list</a>
+    </div>
+  </section>
+</div>
+
+{{ block.super }}
+{% endblock %}

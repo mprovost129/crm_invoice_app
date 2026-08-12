@@ -1,0 +1,6 @@
+<div class="container py-4 border-top mt-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 small text-body-secondary">
+        <span>&copy; {% now "Y" %} {{ APP_NAME }}</span>
+        {% if SUPPORT_EMAIL %}<a href="mailto:{{ SUPPORT_EMAIL }}">Support</a>{% endif %}
+    </div>
+</div>

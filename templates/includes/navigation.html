@@ -1,0 +1,18 @@
+<nav class="navbar navbar-expand-lg border-bottom">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'core:home' %}">{{ APP_NAME }}</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation" aria-controls="mainNavigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavigation">
+            <div class="navbar-nav ms-auto">
+                {% block navigation_links %}{% endblock %}
+                {% if user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>

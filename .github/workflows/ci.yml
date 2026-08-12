@@ -1,0 +1,71 @@
+name: Quality Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: app_test
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      SECRET_KEY: ci-only-secret-key-that-is-long-enough-for-deploy-checks-123456789
+      DB_NAME: app_test
+      DB_USER: app
+      DB_PASSWORD: test-password
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      ALLOWED_HOSTS: example.com
+      CSRF_TRUSTED_ORIGINS: https://example.com
+      REDIS_URL: redis://127.0.0.1:6379/1
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install pinned dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Verify formatting
+        run: ruff format --check .
+
+      - name: Verify migration state
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations
+        run: python manage.py migrate --noinput
+
+      - name: Run tests
+        run: pytest
+
+      - name: Check production configuration
+        run: python manage.py check --deploy --settings=config.settings.prod

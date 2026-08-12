@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Django
+*.log
+logs/*.log
+staticfiles/
+media/*
+!media/.gitkeep
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+__MACOSX/
+
+# Test / coverage
+.coverage
+htmlcov/
