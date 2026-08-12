@@ -60,6 +60,7 @@ class PublicDocumentLink(BusinessOwnedModel):
     class Purpose(models.TextChoices):
         VIEW = "view", "View"
         RESPOND = "respond", "View and respond"
+        PAY = "pay", "Pay"
 
     estimate = models.ForeignKey(
         "estimates.Estimate",
@@ -108,8 +109,11 @@ class PublicDocumentLink(BusinessOwnedModel):
             raise ValidationError("Public link and estimate must share a business.")
         if self.invoice_id and self.business_id != self.invoice.business_id:
             raise ValidationError("Public link and invoice must share a business.")
-        if self.invoice_id and self.purpose != self.Purpose.VIEW:
-            raise ValidationError("Invoice links support view access only.")
+        if self.invoice_id and self.purpose not in (
+            self.Purpose.VIEW,
+            self.Purpose.PAY,
+        ):
+            raise ValidationError("Invoice links support view or pay access only.")
 
 
 class FileAsset(BusinessOwnedModel):

@@ -1,8 +1,13 @@
 def enforce_contact_creation_allowed(*, business):
-    """Stable hook for configurable plan limits introduced in the billing phase.
+    from billing.entitlements import entitlements_for_business
 
-    Phase 2 has no Plan or Subscription model, so active contacts are intentionally
-    unlimited. Contact creation still calls this hook so future backend entitlement
-    enforcement cannot be bypassed by web, API, admin service actions, or jobs.
-    """
-    return None
+    from .models import Contact
+
+    entitlements = entitlements_for_business(business=business)
+    limit = entitlements.plan.active_contact_limit
+    if limit is not None and Contact.objects.for_business(business).active().count() >= limit:
+        from django.core.exceptions import ValidationError
+
+        raise ValidationError(
+            f"The {entitlements.plan.name} plan allows {limit} active contacts. Archive a contact or change plans."
+        )

@@ -1,5 +1,6 @@
 from django.utils import timezone
 
+from billing.models import Plan, Subscription
 from core.models import DocumentSequence
 from users.models import User
 from workspaces.models import Business, BusinessSettings, Membership, Workspace
@@ -52,6 +53,21 @@ def create_owner_tenancy(email="owner@example.com", *, verified=True):
         status=Membership.Status.ACTIVE,
         accepted_at=timezone.now(),
     )
+    plan, _ = Plan.objects.get_or_create(
+        code="starter",
+        defaults={
+            "name": "Starter",
+            "active_contact_limit": 1000,
+            "monthly_estimate_limit": 1000,
+            "monthly_invoice_limit": 1000,
+            "allow_online_payments": True,
+            "allow_custom_branding": True,
+            "allow_reminders": True,
+            "allow_reporting": True,
+            "allow_exports": True,
+        },
+    )
+    Subscription.objects.create(workspace=workspace, plan=plan)
     return user, workspace, membership
 
 

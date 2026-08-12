@@ -45,6 +45,29 @@ def post_manual_payment(
         raise ValidationError("Issue the invoice before recording payment.")
     if invoice.status == Invoice.Status.VOID:
         raise ValidationError("Void invoices cannot receive payments.")
+    from .models import InvoicePaymentAttempt
+
+    now = timezone.now()
+    InvoicePaymentAttempt.objects.filter(
+        invoice=invoice,
+        status__in=(
+            InvoicePaymentAttempt.Status.PENDING,
+            InvoicePaymentAttempt.Status.OPEN,
+        ),
+        expires_at__lte=now,
+    ).update(status=InvoicePaymentAttempt.Status.EXPIRED)
+    if InvoicePaymentAttempt.objects.filter(
+        invoice=invoice,
+        status__in=(
+            InvoicePaymentAttempt.Status.PENDING,
+            InvoicePaymentAttempt.Status.OPEN,
+            InvoicePaymentAttempt.Status.PROCESSING,
+        ),
+        expires_at__gt=now,
+    ).exists():
+        raise ValidationError(
+            "An online checkout is active for this invoice. Wait for it to finish or expire before recording a manual payment."
+        )
     amount = quantize_money(amount)
     if amount <= 0:
         raise ValidationError("Payment amount must be greater than zero.")

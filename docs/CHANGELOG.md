@@ -2,6 +2,44 @@
 
 All meaningful completed changes are recorded here.
 
+## Unreleased - Phase 6 Complete (2026-08-12)
+
+### Added
+
+- Configurable Plan and one-per-Workspace Subscription models with Free/Starter seed data,
+  provider price identifiers, feature flags, usage limits, and inactive-paid-plan fallback.
+- Backend enforcement for contact, business-local monthly estimate/invoice, reminder,
+  reporting, export, and online-payment entitlements.
+- Stripe Billing hosted subscription Checkout adapter plus separate verified platform
+  webhook inbox, subscription synchronization, duplicate handling, and retry command.
+- Stripe Express connected-account onboarding/readiness sync and hosted direct-charge
+  invoice Checkout using separate Pay-purpose public links.
+- InvoicePaymentAttempt reservation/idempotency records, exact minor-unit conversion,
+  connected-account webhook validation, duplicate-safe immutable Online Payment posting,
+  automatic receipt delivery, link revocation, and public payment throttling.
+- Separate Connect webhook inbox/retry command and local/provider reconciliation commands
+  for both SaaS subscriptions and client invoice payments.
+- Phase 6 model, service, entitlement, tenant/account boundary, replay, ledger, race, and
+  provider-adapter tests.
+
+### Changed
+
+- Registration creates the workspace's default Free Subscription atomically.
+- Manual payment posting rejects an amount while a non-expired hosted checkout reserves
+  the same invoice balance, preventing unsupported overpayment races.
+- Invoice emails include a distinct secure payment link only when the tenant's plan and
+  connected account are both ready; platform billing never writes invoice Payment rows.
+- Settings expose subscription and online-payment operations while keeping final pricing
+  and provider activation configurable.
+
+### Verification
+
+- More than 120 PostgreSQL-backed tests pass across Phases 0-6.
+- Ruff, migration drift, Django checks, exact financial tests, tenant isolation, webhook
+  replay/account matching, and local Stripe reconciliation pass.
+- Real Stripe test-mode onboarding, signatures, Checkout, live reconciliation, and outage
+  drills remain required Phase 7 staging evidence.
+
 ## Unreleased - Phase 5 Complete (2026-08-12)
 
 ### Added

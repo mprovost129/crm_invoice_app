@@ -13,14 +13,16 @@ No percentage-complete estimate is used because the repository is not yet deep e
 
 ## Current Position
 
-**Milestone 5 - Dashboard, communications, reporting, and export are complete.** An owner
-can see net monthly collections, receivables, overdue balances, open estimates, work
-requiring attention, notifications, recent activity, and delivery failures. Minimal
-financial/estimate reports and tenant-safe client/contact, invoice, and payment CSVs use
-the same ledger definitions. One hundred thirteen PostgreSQL-backed tests pass locally.
+**Milestone 6 - SaaS billing and online payments is complete at the application layer.**
+Configurable Free/Starter plans drive backend entitlements and limits. Stripe Billing
+subscription state and Stripe Connect invoice receipts use separate models, endpoints,
+identifiers, webhook inboxes, retry commands, and reconciliation checks. Express-account
+onboarding, purpose-scoped payment links, hosted direct-charge Checkout, idempotent ledger
+posting, automatic receipts, and manual/online race protection are implemented.
 
-The recommended next milestone is Phase 6 SaaS Billing and Online Payments, beginning
-with configurable Plan/Subscription entitlements before any provider integration.
+The recommended next milestone is Phase 7 Launch Hardening. Exact paid pricing, Stripe
+product/price IDs, live credentials, and provider activation remain explicit deployment
+decisions and are not fabricated in seed data.
 
 ## Ordered Delivery Plan
 
@@ -32,7 +34,7 @@ with configurable Plan/Subscription entitlements before any provider integration
 | 3. Estimate workflow | P0 | Complete | Phase 2 | Accurate estimate can be issued, viewed, accepted/declined, and preserved |
 | 4. Invoice conversion and manual payments | P0 | Complete | Phase 3 | Complete manual lead-to-paid workflow passes |
 | 5. Dashboard, communications, and export | P1 | Complete | Phase 4 | Owner can understand cash/work status; exports reconcile |
-| 6. SaaS billing and online payments | P1 | Not started | Stable manual workflow and Phase 5 operations | Subscription and invoice payments are idempotent and separated |
+| 6. SaaS billing and online payments | P1 | Complete | Stable manual workflow and Phase 5 operations | Subscription and invoice payments are idempotent and separated |
 | 7. Launch hardening | P0 launch gate | Not started | All enabled V1 phases | Security, restore, migration, accessibility, monitoring, and E2E gates pass |
 | Post-V1 extensions | P2 | Deferred | Validated V1 and customer demand | Automation, recurrence, teams, multiple businesses, API/mobile |
 
@@ -164,7 +166,23 @@ notification, delivery-health, and web tests.
 
 ## Phase 6 - SaaS Billing and Online Payments
 
-Build configurable plans/subscriptions/entitlements, Stripe Billing sync, Stripe Connect onboarding, hosted invoice payments, verified webhook inbox, idempotent processing, online receipts, and provider reconciliation.
+Completed application scope:
+
+- Configurable Plan/Subscription records, Free/Starter seeds, status-aware backend feature
+  enforcement, active-contact limits, and business-local monthly document limits.
+- Stripe Billing Checkout adapter and subscription/checkout webhook synchronization.
+- Stripe Express onboarding and readiness tracking for direct charges owned by each
+  connected service business.
+- Separate pay-purpose public links and hosted Checkout for the exact locked invoice
+  balance; successful provider events create one immutable online Payment and receipt.
+- Separate signature-verified Billing and Connect webhook inboxes, unique provider event
+  IDs, row-locked processors, failed-event retention, and bounded retry commands.
+- Manual-payment exclusion while an online checkout is active, exact minor-unit conversion,
+  connected-account matching, link revocation after payment, throttling, and local/provider
+  reconciliation commands.
+
+Provider activation remains operational work: set final pricing, Stripe product/price IDs,
+test/live credentials, and both webhook destinations, then complete staging reconciliation.
 
 Manual payments remain independent and available.
 

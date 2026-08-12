@@ -7,7 +7,8 @@ Last reviewed: 2026-08-12
 The repository provides a portable Docker/Gunicorn foundation, a committed GitHub Actions
 quality gate, configurable email/storage adapters, a durable estimate/invoice/reminder/
 receipt outbox, communication health checks, date-derived notification synchronization,
-and financial reconciliation.
+financial reconciliation, separate Stripe webhook inboxes, and provider-aware billing/
+invoice-payment reconciliation.
 It does not identify an active hosting platform or production environment and has no
 deployment automation, independently deployed worker/scheduler, cloud object-storage
 package, monitoring provider, backup automation, or documented production deployment.
@@ -58,7 +59,8 @@ Required services at the relevant product phase:
 - Separate background worker process when outbox/email/PDF/webhook work is introduced.
 - Private persistent object storage for logos, PDFs, and exports.
 - Transactional email provider.
-- Stripe Billing and Stripe Connect when commercial integrations launch.
+- Stripe Billing and Stripe Connect (application integration is implemented; live provider
+  accounts/configuration are not yet activated).
 - Centralized structured logs, error monitoring, metrics, uptime checks, and alerting.
 
 Web and workers should scale independently and use the same application image/config version.
@@ -88,7 +90,8 @@ Production/security settings:
 - `DJANGO_LOG_LEVEL`
 - `TRUST_X_FORWARDED_PROTO` only behind a correctly configured trusted proxy
 - `MEDIA_STORAGE_BACKEND` plus provider-specific credentials/configuration
-- `PUBLIC_DOCUMENT_LINK_TTL_DAYS`, `PUBLIC_DOCUMENT_VIEW_LIMIT`
+- `PUBLIC_DOCUMENT_LINK_TTL_DAYS`, `PUBLIC_DOCUMENT_VIEW_LIMIT`,
+  `PUBLIC_PAYMENT_ATTEMPT_LIMIT`
 - Upload memory limits when defaults are unsuitable
 
 Email settings:
@@ -97,7 +100,17 @@ Email settings:
 - `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`
 - `DEFAULT_FROM_EMAIL`, `SERVER_EMAIL`, `EMAIL_TIMEOUT`, `PASSWORD_RESET_TIMEOUT`
 
-Future provider credentials, webhook secrets, signing keys, storage credentials, and monitoring DSNs must be platform-managed secrets with environment isolation and rotation procedures. Do not log or expose plaintext secrets.
+Stripe settings:
+
+- `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_PLATFORM_WEBHOOK_SECRET` for `/webhooks/stripe/platform/`
+- `STRIPE_CONNECT_WEBHOOK_SECRET` for `/webhooks/stripe/connect/`
+- `STRIPE_LIVE_MODE=false` in local/test/staging and `true` only with live credentials
+- Monthly/annual Stripe Price IDs configured on Plan rows, not hard-coded in settings
+
+Provider credentials, webhook secrets, signing keys, storage credentials, and monitoring
+DSNs must be platform-managed secrets with environment isolation and rotation procedures.
+Do not log or expose plaintext secrets.
 
 ## Deployment Preconditions
 
@@ -143,13 +156,16 @@ Do not run migrations independently from every web replica. The current Procfile
 - Measure migration duration/locking with representative data.
 - Keep web and worker versions compatible during rolling deployment.
 
-Migrations through Phase 5 are generated and apply cleanly in dependency order. Phase 4
+Migrations through Phase 6 are generated and apply cleanly in dependency order. Phase 4
 adds Invoice/InvoiceLineItem and Payment/PaymentReversal; extends snapshots, links, files,
 deliveries, and activity with invoice/payment targets; and adjusts converted-estimate
 acceptance constraints. Activity and communications use split migrations to avoid circular
 dependencies. Back up existing data before applying migrations outside development, then
 run `python manage.py reconciliation_check` after the application rollout. Phase 5 adds
-Notification plus delivery/outbox operational indexes.
+Notification plus delivery/outbox operational indexes. Phase 6 creates Plan, Subscription,
+and Billing webhook records; deterministically seeds configurable Free/Starter plans and
+backfills existing workspaces to Free; adds Pay link purpose; then creates connected
+accounts, online payment attempts, and the Connect webhook inbox.
 
 ## Static Files and Media
 
@@ -169,6 +185,22 @@ introduced.
 Schedule `python manage.py sync_notifications` at least daily in the Business timezone
 window and run `python manage.py outbox_health_check --stale-minutes 15` through monitoring.
 The health command exits nonzero for failed deliveries and failed/stale outbox work.
+
+Run `python manage.py process_billing_webhooks --limit N` and
+`python manage.py process_connect_webhooks --limit N` from a supervised worker/scheduler
+for retained pending/failed provider events. These processors are required whenever
+Stripe integration is enabled because HTTP callbacks only verify and durably persist.
+Monitor nonzero exits. Run
+`python manage.py stripe_billing_reconciliation_check --json` and
+`python manage.py stripe_reconciliation_check --json` after deployments; add `--provider`
+in staging/production to compare with Stripe using the correct account context.
+
+Stripe event destinations must subscribe only to required events. Platform Billing:
+`checkout.session.completed`, `customer.subscription.created`,
+`customer.subscription.updated`, and `customer.subscription.deleted`. Connect events on
+connected accounts: `account.updated`, Checkout completed/expired/async success/failure,
+and PaymentIntent success/failure. Test and live modes need isolated secrets and explicit
+`livemode` monitoring.
 
 For background processing:
 
@@ -218,6 +250,16 @@ For expand-and-contract releases, keep old columns/paths until the new version i
 ### Corrupt or Incorrect Business Data
 
 Stop the faulty writer, preserve evidence, identify affected tenant/records, and use an audited corrective migration/service or provider reconciliation. Do not silently edit/delete issued documents, payments, reversals, or provider events. Restore the entire database only when scoped correction is unsafe and the business accepts the recovery-point data loss.
+
+### Stripe Integration Failure
+
+Disable online-payment entitlements on affected Plans to stop new payment links/checkouts;
+do not delete connected accounts, attempts, webhook events, or provider identifiers. Let
+already-open Checkout sessions complete or expire, drain both inbox retry commands, and
+run provider reconciliation before re-enabling. If subscription Checkout is affected,
+remove unavailable Price IDs from Plan configuration to suppress new upgrade actions while
+preserving local subscription evidence. Rotate a webhook secret only after deploying the
+matching environment value and updating the Stripe endpoint in a coordinated window.
 
 ### Provider/Worker Failure
 

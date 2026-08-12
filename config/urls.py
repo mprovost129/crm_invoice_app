@@ -7,10 +7,12 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("users.urls")),
     path("", include("workspaces.urls")),
+    path("", include("billing.urls")),
     path("", include("crm.urls")),
     path("", include("catalog.urls")),
     path("", include("estimates.urls")),
     path("", include("invoices.urls")),
+    path("", include("payments.urls")),
     path("", include("dashboards.urls")),
     path("", include("core.urls")),
 ]

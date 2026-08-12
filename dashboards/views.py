@@ -1,11 +1,13 @@
 from zoneinfo import ZoneInfo
 
+from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
+from billing.entitlements import Feature, entitlements_for_business
 from communications.models import EmailDelivery, Notification
 from workspaces.mixins import OwnerTenantRequiredMixin
 
@@ -19,6 +21,13 @@ from .selectors import (
 
 class ReportsView(OwnerTenantRequiredMixin, TemplateView):
     template_name = "dashboards/reports.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not entitlements_for_business(business=request.business).allows(
+            Feature.REPORTING
+        ):
+            raise PermissionDenied("Reporting is not included in the current plan.")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,6 +120,10 @@ class ExportView(OwnerTenantRequiredMixin, View):
     }
 
     def get(self, request, export_type):
+        if not entitlements_for_business(business=request.business).allows(
+            Feature.EXPORTS
+        ):
+            raise PermissionDenied("Exports are not included in the current plan.")
         exporter = self.exporters.get(export_type)
         if exporter is None:
             raise Http404("Export not found.")

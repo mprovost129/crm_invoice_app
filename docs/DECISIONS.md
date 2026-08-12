@@ -293,8 +293,29 @@ by their recorded reversal timestamp. Receivables and aging are intentionally cu
 operational views, not reconstructed historical accounting statements. CSV output is
 tenant-scoped, UTF-8 BOM compatible, non-cacheable, and neutralizes spreadsheet formulas.
 
+## D-028 - Stripe Express Direct Charges for Client Invoice Payments
+
+**Status:** Accepted 2026-08-12
+
+**Decision:** Use hosted Stripe Checkout with direct charges on one Express connected
+account per Business. The connected service business owns the client charge and receives
+the funds. Do not collect an application fee in V1. Use the platform Stripe account only
+for the workspace's SaaS subscription. Terminate Billing and Connect events at separate
+signed endpoints and persist them in separate inbox models.
+
+**Rationale:** The service business is the seller to its client; the application is SaaS,
+not a marketplace merchant. Direct charges align charge ownership, connected-account
+branding, refunds/disputes, and funds with that relationship while preserving D-016's
+strict accounting separation.
+
+**Consequences:** Direct-charge PaymentIntent/Checkout objects must be queried in the
+connected-account context. A top-level webhook account ID must match the tenant's stored
+connection before ledger mutation. The browser redirect never confirms payment; only a
+verified provider event can create an Online Payment. Final Connect liability settings,
+countries, payment methods, platform terms, and live activation require launch review.
+
 ## Deferred Provider and Product Decisions
 
-The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, error-monitoring provider, final component/design system, exact paid-plan launch timing, Premium differentiation/timing, Stripe account/product configuration, mobile technology, automatic reminder rules, recurring invoice rules, and privacy/retention policy.
+The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, error-monitoring provider, final component/design system, exact paid pricing/discounts and launch timing, Stripe product/price IDs and live-account configuration, Premium differentiation/timing, mobile technology, automatic reminder rules, recurring invoice rules, and privacy/retention policy.
 
 Record each final choice here with date, alternatives, rationale, and consequences.

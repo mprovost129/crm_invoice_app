@@ -3,7 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from config.env import required_env
+from config.env import bool_env, required_env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # config/Settings/base.py -> .parent = Settings, .parent = config, .parent = project root
@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # Local
     "users",
     "workspaces",
+    "billing",
     "crm",
     "catalog",
     "activity",
@@ -191,3 +192,16 @@ EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", 10))
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", 24 * 60 * 60))
 PUBLIC_DOCUMENT_LINK_TTL_DAYS = int(os.environ.get("PUBLIC_DOCUMENT_LINK_TTL_DAYS", 90))
 PUBLIC_DOCUMENT_VIEW_LIMIT = int(os.environ.get("PUBLIC_DOCUMENT_VIEW_LIMIT", 120))
+PUBLIC_PAYMENT_ATTEMPT_LIMIT = int(
+    os.environ.get("PUBLIC_PAYMENT_ATTEMPT_LIMIT", 20)
+)
+
+# Stripe Billing and Stripe Connect use the same platform secret key but deliberately
+# separate webhook endpoints and signing secrets.
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+STRIPE_PLATFORM_WEBHOOK_SECRET = os.environ.get(
+    "STRIPE_PLATFORM_WEBHOOK_SECRET", ""
+)
+STRIPE_CONNECT_WEBHOOK_SECRET = os.environ.get("STRIPE_CONNECT_WEBHOOK_SECRET", "")
+STRIPE_LIVE_MODE = bool_env("STRIPE_LIVE_MODE", default=False)

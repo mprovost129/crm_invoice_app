@@ -65,7 +65,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Catalog search/filter/archive | Implemented |
 | Catalog-to-line snapshot behavior | Implemented |
 | Custom document line items | Implemented |
-| CRM/catalog entitlement hooks | Implemented - backend hooks exist; Plan/Subscription rules begin in Phase 6 |
+| CRM/catalog entitlement hooks | Implemented - configurable Plan/Subscription limits are enforced by backend services |
 
 `AccountProfile` represents supplementary application-owner metadata, not a client/contact CRM implementation.
 
@@ -122,15 +122,15 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 | Feature | Status |
 | --- | --- |
-| Configurable plans and subscriptions | Not started |
-| Free/Starter entitlement policies | Not started |
-| Usage counters/reconciliation | Not started |
-| Stripe Billing | Not started |
-| Stripe Connect onboarding | Not started |
-| Online invoice payment | Not started |
-| Verified webhook inbox | Not started |
-| Idempotent webhook processor | Not started |
-| Provider reconciliation | Not started |
+| Configurable plans and subscriptions | Implemented - pricing, price IDs, limits, and features remain operator-configurable |
+| Free/Starter entitlement policies | Implemented - backend feature and usage-limit enforcement |
+| Usage counters/reconciliation | Implemented without counter caches - authoritative business-local queries plus reconciliation commands |
+| Stripe Billing | Implemented - hosted subscription Checkout and webhook-driven state sync; provider configuration pending |
+| Stripe Connect onboarding | Implemented - Express onboarding, return/refresh handling, readiness sync |
+| Online invoice payment | Implemented - purpose-scoped link, hosted direct-charge Checkout, online ledger entry, receipt |
+| Verified webhook inbox | Implemented separately for platform Billing and connected-account events |
+| Idempotent webhook processor | Implemented - unique event IDs, row locks, retries, duplicate-safe payment posting |
+| Provider reconciliation | Implemented - local checks with optional live Stripe comparison; staging evidence pending |
 
 ## User Experience
 

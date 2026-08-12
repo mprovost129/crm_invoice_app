@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from activity.models import ActivityEvent
 from activity.services import record_activity
+from billing.entitlements import entitlements_for_business
 from catalog.models import ProductService
 from communications.models import PublicDocumentLink
 from communications.snapshots import create_invoice_snapshot
@@ -144,6 +145,22 @@ def _promote_contact_if_needed(*, contact, business, actor):
 @transaction.atomic
 def create_invoice(*, actor, business_id, data):
     business = owner_business_for_actor(actor=actor, business_id=business_id, lock=True)
+    entitlements = entitlements_for_business(business=business)
+    monthly_limit = entitlements.plan.monthly_invoice_limit
+    if monthly_limit is not None:
+        business_zone = ZoneInfo(business.timezone)
+        local_month_start = _business_today(business).replace(day=1)
+        next_month = (local_month_start.replace(day=28) + timedelta(days=4)).replace(
+            day=1
+        )
+        month_start = datetime.combine(local_month_start, time.min, business_zone)
+        month_end = datetime.combine(next_month, time.min, business_zone)
+        if Invoice.objects.for_business(business).filter(
+            created_at__gte=month_start, created_at__lt=month_end
+        ).count() >= monthly_limit:
+            raise ValidationError(
+                f"The {entitlements.plan.name} plan allows {monthly_limit} invoices per month."
+            )
     contact = _contact_for_business(business=business, contact_id=data["contact_id"])
     today = _business_today(business)
     invoice = Invoice(

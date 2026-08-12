@@ -4,11 +4,12 @@ Last reviewed: 2026-08-12
 
 ## Status and Architecture Direction
 
-The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 through 5
+The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 through 6
 implement the shared foundation, identity, workspace, trusted tenant boundary, CRM,
 catalog, estimate and invoice aggregates, immutable documents, manual payment/reversal
 ledger, public links, PDFs, receipts, delivery outbox, operational dashboard, notifications,
-reports, and CSV exports. See [FEATURES.md](FEATURES.md)
+reports, CSV exports, commercial entitlements, subscription synchronization, connected
+accounts, and online invoice payments. See [FEATURES.md](FEATURES.md)
 for status.
 
 The supported baseline is Python 3.13 and Django 5.2 LTS, currently pinned to Django 5.2.16. The LTS choice is recorded in [DECISIONS.md](DECISIONS.md).
@@ -57,6 +58,7 @@ activity/               Append-only tenant activity events
 estimates/              Estimate aggregate, calculator, services, public workflow
 invoices/               Invoice aggregate, conversion, lifecycle, owner/public screens
 payments/               Immutable manual payment/reversal ledger and reconciliation
+billing/                Plans, subscriptions, entitlements, Stripe Billing inbox/adapter
 dashboards/             Cross-domain financial read models, alerts, reports, exports
 communications/         Snapshots, public links, PDFs, email delivery, durable outbox
 templates/              Base, auth, onboarding, app, error, admin, shared templates
@@ -69,8 +71,8 @@ Procfile                Web and release/migration commands
 README.md               Canonical Docker setup and verification workflow
 ```
 
-Migrations through Phase 5 are generated and apply cleanly. The next domain boundary is
-commercial entitlements, subscription billing, connected accounts, and online payments.
+Migrations through Phase 6 are generated and apply cleanly. Launch hardening is the next
+boundary.
 
 ## Target Domain Applications
 
@@ -83,11 +85,11 @@ commercial entitlements, subscription billing, connected accounts, and online pa
 | `catalog` | Reusable products and services |
 | `estimates` | Estimate aggregate, calculations, acceptance, conversion entry point |
 | `invoices` | Invoice aggregate, effective status, balance behavior |
-| `payments` | Payment/reversal ledger and connected account state |
+| `payments` | Payment/reversal ledger, Connect account, hosted-payment attempts/inbox |
 | `activity` | Append-only business activity |
 | `communications` | Public links, file assets, snapshots, email, notifications |
 | `billing` | Plans, subscriptions, usage/entitlement rules |
-| `integrations` | Webhook inboxes and external-provider adapters |
+| `integrations` | Optional future cross-provider composition; current Stripe adapters remain in their owning billing/payment domains |
 | `dashboard` | Cross-domain read models and reports |
 | `api` | Future versioned REST composition |
 
@@ -153,6 +155,17 @@ Network calls must not occur inside database transactions. Email, PDFs, exports,
 - Webhooks verify signatures against the raw request, persist unique provider event IDs before processing, return quickly, and process idempotently.
 - Webhook order is not trusted; affected financial rows are locked and provider state is fetched when required.
 - Stripe Billing subscription records and Stripe Connect invoice-payment records remain separate.
+- Client invoice Checkout uses a direct charge on the business's Express connected
+  account. Platform subscription Checkout runs only on the platform account.
+- Billing and Connect events terminate at different signed endpoints and persist to
+  different inbox tables. Provider event IDs are unique before any state mutation.
+- Webhook requests return after verified inbox persistence; supervised processor commands
+  perform idempotent domain work outside the callback request.
+- An event whose `livemode` does not match the environment is rejected before persistence
+  or processing.
+- Online checkout reserves the current invoice balance; manual posting is rejected until
+  that attempt completes, fails, or expires. A confirmed event posts exactly one immutable
+  online ledger row and revokes outstanding pay links.
 - The application never stores full card data.
 
 ## Web and API Conventions
@@ -184,9 +197,9 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for operational procedures.
 
 ## Current Architecture Gaps
 
-The Phase 5 financial path uses trusted business context, scoped selectors, atomic and
+The Phase 6 financial path uses trusted business context, scoped selectors, atomic and
 row-locked conversion/payment services, immutable document/payment evidence, digest-only
-public tokens, configurable storage/email adapters, and a durable outbox. A dedicated
-production worker/scheduler, private cloud storage, transactional email provider,
-online payment provider, commercial entitlement models, and full role policy
-remain later deployment or roadmap work.
+public tokens, configurable storage/email/Stripe adapters, durable outbox and webhook
+inboxes, and local/provider reconciliation commands. A dedicated production
+worker/scheduler, private cloud storage, transactional email provider, live Stripe
+configuration, monitoring, and full role policy remain launch work.

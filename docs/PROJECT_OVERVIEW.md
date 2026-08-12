@@ -103,13 +103,14 @@ Implemented today:
 - Baseline production security, static-file, cache, logging, and email configuration.
 - Non-root multi-stage production container and health-checked Compose services.
 - GitHub Actions quality gate and reproducible Docker setup instructions.
-- One hundred thirteen passing PostgreSQL-backed tests through Phase 5.
+- More than 120 passing PostgreSQL-backed tests through Phase 6.
 
 Not yet implemented:
 
 - Production transactional email/private object storage, independently deployed outbox
   processing, monitoring, automated backups, and demonstrated restore.
-- Subscription billing, Stripe Connect, online payments, and webhook infrastructure.
+- Launch activation of the implemented Stripe Billing/Connect paths: final pricing and
+  price IDs, test/live credentials, webhook registration, and production reconciliation.
 - Production-like browser E2E, responsive/accessibility review, terms/privacy, and the
   remaining launch-hardening boundary.
 

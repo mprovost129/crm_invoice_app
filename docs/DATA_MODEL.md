@@ -8,7 +8,7 @@ Last reviewed: 2026-08-12
 - **Planned:** approved V1 model, not yet implemented.
 - **Post-V1:** extension point intentionally not exposed in V1.
 
-The repository includes migrations through Phase 5 for `users`, `workspaces`, `core`,
+The repository includes migrations through Phase 6 for `users`, `workspaces`, `core`,
 `crm`, `catalog`, `activity`, `estimates`, `invoices`, `payments`, and `communications`
 with Django 5.2.16 against PostgreSQL 16.
 
@@ -41,7 +41,7 @@ for future tenant-owned domain rows.
 ```text
 User 1 ----< Membership >---- 1 Workspace ----< Business
                                   |
-                                  +---- 1 Subscription
+                                  +---- 1 Subscription ---- 1 Plan
 
 Business 1 ---- 1 BusinessSettings
 Business 1 ----< DocumentSequence
@@ -62,7 +62,9 @@ Estimate/Invoice/Payment ----< EmailDelivery
 Business ----< ActivityEvent
 Workspace/User ----< Notification
 Business ---- 0..1 ConnectedAccount
-Provider ----< WebhookEvent
+Invoice ----< InvoicePaymentAttempt
+Stripe platform ----< PlatformWebhookEvent
+Stripe connected accounts ----< ConnectWebhookEvent
 Domain transaction ----< OutboxEvent
 ```
 
@@ -112,6 +114,17 @@ active/archive consistency. Estimate lines may retain its protected source while
 all customer-visible values.
 
 ## Shared Financial Infrastructure
+
+### `Plan` and `Subscription` - Implemented
+
+Plan is configurable reference data for display pricing, provider monthly/annual price
+IDs, active-contact/monthly-document limits, and feature flags. Seeded Free and Starter
+values are hypotheses and can be changed without code. Subscription is one-to-one with
+Workspace and stores the selected Plan, provider customer/subscription identifiers,
+billing interval, provider status/period/cancellation facts, and sync timestamp.
+
+Only Active and Trialing subscriptions grant paid-plan features. Other paid statuses
+fall back to Free entitlements while retaining provider evidence for recovery/support.
 
 ### `DocumentSequence` - Implemented
 
@@ -173,11 +186,34 @@ the payment and invoice and prevents aggregate reversals exceeding the posted am
 
 Payment rows plus reversals are the source of truth. Invoice paid/balance caches exist for read performance and must reconcile to the ledger.
 
+### `ConnectedAccount` - Implemented
+
+One-to-one tenant-owned Stripe Express connection. Stores the connected account ID,
+details/charges/payout readiness, current requirements and disable reason, derived local
+status, and last provider sync time. A database constraint prevents Ready state unless
+details, charges, and payouts are all enabled.
+
+### `InvoicePaymentAttempt` - Implemented
+
+Tenant-owned hosted Checkout reservation tied to exactly one issued Invoice and one Pay
+purpose link. It snapshots amount/currency, unique idempotency key, Checkout Session and
+PaymentIntent identifiers, hosted URL, expiry, completion, and failure state. Pending,
+Open, and Processing attempts reserve the balance against concurrent manual posting.
+
+### Stripe webhook inboxes - Implemented and separate
+
+`billing.PlatformWebhookEvent` stores verified Stripe Billing events.
+`payments.ConnectWebhookEvent` stores verified events on connected accounts, including
+the top-level connected account ID. Both retain raw structured payload, unique provider
+event ID, live/test mode, attempts, status, verification/processing timestamps, and a
+bounded safe error. They do not share subscription and invoice-payment persistence.
+
 ## Communications and Audit
 
 ### `PublicDocumentLink` - Implemented for estimates and invoices
 
-Purpose-scoped, revocable access to exactly one Estimate or Invoice. Stores only a unique
+Purpose-scoped, revocable access to exactly one Estimate or Invoice. Invoice View and Pay
+permissions are distinct. Stores only a unique
 token digest plus purpose, expiration/revocation, and access data. Estimate view/respond
 and invoice view links are separate; raw tokens are never persisted.
 

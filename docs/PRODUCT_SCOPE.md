@@ -126,6 +126,11 @@ Deliver a responsive web application that allows one owner to operate one servic
 - Server-side entitlement enforcement; templates may explain limits but never be the only enforcement.
 - Stripe Billing for SaaS subscriptions and Stripe Connect for invoice payments, with separate models, provider identifiers, webhooks, and reconciliation.
 
+**Implementation status (2026-08-12):** The application-layer Phase 6 scope is complete.
+Free/Starter rules remain configurable; no final paid price was guessed. Stripe Billing
+and Connect require environment-specific products, price IDs, credentials, webhook
+destinations, and staging/live activation before customer use.
+
 ## Locked Financial Rules
 
 - One default business currency; each estimate, invoice, and payment snapshots its currency.
@@ -174,4 +179,3 @@ V1 includes tenant-isolation tests, concurrency tests for numbering/conversion/p
 V1 is complete only when all core features work together in a production-like environment, financial and tenant-safety suites pass, backups restore successfully, and this workflow is proven without customer or line-item re-entry:
 
 > Lead -> Estimate -> Acceptance -> Invoice -> Deposit -> Partial payment -> Final payment -> Paid
-

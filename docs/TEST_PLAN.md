@@ -8,7 +8,7 @@ Testing must prove the product is financially correct, tenant-isolated, retry-sa
 
 ## Current Test Baseline
 
-One hundred thirteen PostgreSQL-backed pytest tests pass through Phase 5. The suite includes:
+More than 120 PostgreSQL-backed pytest tests pass through Phase 6. The suite includes:
 
 - Custom email user is configured and has no username field.
 - User creation normalizes email and hashes the password.
@@ -30,7 +30,7 @@ One hundred thirteen PostgreSQL-backed pytest tests pass through Phase 5. The su
 - Contact/catalog create, update, archive, restore, search, filter, and web operations remain tenant-scoped.
 - Product/service rates, units, and archive state are validated in services and PostgreSQL constraints.
 - Contact notes and CRM/catalog activity are tenant-aligned; activity events reject updates.
-- Future entitlement enforcement hooks are invoked by Contact and catalog creation services.
+- Plan/Subscription entitlements and usage limits are enforced by backend services.
 - Estimate calculations, transactional numbering, immutable snapshots, public viewing,
   acceptance evidence, PDF generation, email outbox behavior, and owner/customer routes.
 - Atomic idempotent estimate conversion, concurrent conversion, rollback, immutable
@@ -42,9 +42,12 @@ One hundred thirteen PostgreSQL-backed pytest tests pass through Phase 5. The su
 - Exact dashboard/report/CSV reconciliation after reversals, current AR aging, tenant-safe
   export boundaries, spreadsheet formula neutralization, derived status QuerySets,
   notification idempotency/isolation, delivery filtering, and stuck-job health checks.
+- Separate Billing/Connect webhook inboxes, subscription synchronization, exact provider
+  minor units, connected-account matching, duplicate-safe online posting, payment-link
+  purpose/revocation, and active-checkout/manual-payment exclusion.
 
-Real production-provider failure modes, export/reporting, accessibility, backup restore,
-and production-like browser E2E remain roadmap/launch gates.
+Real production-provider failure modes, accessibility, backup restore, and
+production-like browser E2E remain roadmap/launch gates.
 
 ## Test Environments and Tooling
 
@@ -101,6 +104,13 @@ the ledger definitions documented in D-027, exclude foreign tenants, retain scal
 QuerySets for derived filters, create deduplicated owner notifications, and turn failed or
 stale communication work into explicit health-check failures.
 
+Phase 6 automated coverage proves configurable entitlement fallback, Free report denial,
+platform subscription sync/replay behavior, retained failed inbox events, exact minor-unit
+conversion, hosted invoice-payment success, duplicate suppression, cross-account rejection,
+account readiness sync, and manual/online balance-race exclusion. Staging must still prove
+test/live mode rejection, real Stripe signatures, CLI forwarding, onboarding, test-mode Checkout, event ordering,
+provider outages, disputes/refunds, and both reconciliation commands with `--provider`.
+
 ### Selector and Query Tests
 
 Prove correct tenant filtering, derived statuses, timezone boundaries, aggregate totals, pagination, ordering, filter/search results, prefetch/select behavior, and bounded query counts.
@@ -143,7 +153,7 @@ The suite must prove:
 
 For each business-owned resource, test list, retrieve, create, update, archive/void, allowed delete, search, filter, export, foreign-key attachment, and custom actions.
 
-Resources include BusinessSettings, Contact, ProductService, Estimate/LineItem/Acceptance, Invoice/LineItem, Payment/Reversal, ActivityEvent, PublicDocumentLink, DocumentSnapshot, FileAsset, EmailDelivery, ConnectedAccount, and exports.
+Resources include BusinessSettings, Contact, ProductService, Estimate/LineItem/Acceptance, Invoice/LineItem, Payment/Reversal, ActivityEvent, PublicDocumentLink, DocumentSnapshot, FileAsset, EmailDelivery, ConnectedAccount, InvoicePaymentAttempt, both Stripe webhook inboxes, and exports.
 
 Each operation must assert:
 

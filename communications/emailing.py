@@ -77,6 +77,10 @@ def queue_estimate_email(*, actor, business_id, estimate_id, recipient):
 @transaction.atomic
 def queue_invoice_email(*, actor, business_id, invoice_id, recipient, reminder=False):
     business = owner_business_for_actor(actor=actor, business_id=business_id)
+    if reminder:
+        from billing.entitlements import Feature, require_feature
+
+        require_feature(business=business, feature=Feature.REMINDERS)
     invoice = (
         Invoice.objects.select_for_update()
         .for_business(business)
@@ -205,6 +209,25 @@ def _invoice_message(delivery):
     view_url = (
         f"{settings.SITE_URL}{reverse('invoices:public-view', kwargs={'token': token})}"
     )
+    payment_paragraph = ""
+    if invoice.balance_due > 0 and invoice.status != invoice.Status.VOID:
+        from billing.entitlements import Feature, entitlements_for_business
+        from payments.models import ConnectedAccount
+
+        if entitlements_for_business(business=invoice.business).allows(
+            Feature.ONLINE_PAYMENTS
+        ) and ConnectedAccount.objects.filter(
+            business=invoice.business,
+            status=ConnectedAccount.Status.READY,
+        ).exists():
+            _, pay_token = create_public_link(
+                invoice=invoice, purpose=PublicDocumentLink.Purpose.PAY
+            )
+            pay_url = (
+                f"{settings.SITE_URL}"
+                f"{reverse('payments:public-payment', kwargs={'token': pay_token})}"
+            )
+            payment_paragraph = f"\n\nPay securely online: {pay_url}"
     if delivery.kind == EmailDelivery.Kind.REMINDER:
         opening = (
             f"This is a reminder that invoice {invoice.number} has a balance of "
@@ -216,7 +239,7 @@ def _invoice_message(delivery):
         EmailMessage(
             subject=delivery.subject,
             body=(
-                f"{opening}\n\nView invoice: {view_url}\n\n"
+                f"{opening}\n\nView invoice: {view_url}{payment_paragraph}\n\n"
                 "The invoice link is private. Do not forward it."
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,

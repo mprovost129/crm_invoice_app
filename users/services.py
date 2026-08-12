@@ -10,6 +10,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.text import slugify
 
+from billing.services import create_default_subscription
 from workspaces.models import Membership, Workspace
 
 from .models import User
@@ -61,6 +62,7 @@ def register_user(*, email, password, first_name, last_name):
             slug_base = slugify(user.display_name) or "workspace"
             workspace.slug = f"{slug_base[:60]}-{workspace.id.hex[:8]}"
             workspace.save()
+            create_default_subscription(workspace=workspace)
             Membership.objects.create(
                 workspace=workspace,
                 user=user,
