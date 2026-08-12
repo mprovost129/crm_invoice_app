@@ -1,0 +1,15 @@
+CONTACT_DATA = {
+    "first_name": "Jordan",
+    "last_name": "Taylor",
+    "company_name": "Taylor Renovations",
+    "email": "jordan@example.com",
+    "phone": "555-0134",
+    "address_line_1": "200 Main Street",
+    "address_line_2": "Suite 3",
+    "city": "Boston",
+    "region": "MA",
+    "postal_code": "02108",
+    "country_code": "US",
+    "notes": "Referred by an existing customer.",
+    "initial_status": "lead",
+}

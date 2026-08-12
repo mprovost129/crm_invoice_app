@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Catalog | {{ APP_NAME }}{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div><p class="text-body-secondary mb-1">{{ ACTIVE_BUSINESS.display_name }}</p><h1 class="mb-0">Products and services</h1></div>
+        <a class="btn btn-primary" href="{% url 'catalog:item-create' %}">Add item</a>
+    </div>
+
+    <form method="get" class="row g-2 mb-4" role="search">
+        <div class="col-md-5"><label class="visually-hidden" for="catalog-search">Search catalog</label><input class="form-control" id="catalog-search" type="search" name="q" value="{{ search }}" placeholder="Search name or description"></div>
+        <div class="col-md-3"><label class="visually-hidden" for="catalog-type">Type</label><select class="form-select" id="catalog-type" name="type"><option value="">All types</option>{% for value, label in type_choices %}<option value="{{ value }}"{% if type_filter == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div class="col-md-2"><label class="visually-hidden" for="catalog-status">Status</label><select class="form-select" id="catalog-status" name="status"><option value="active"{% if status_filter == 'active' %} selected{% endif %}>Active</option><option value="archived"{% if status_filter == 'archived' %} selected{% endif %}>Archived</option><option value="all"{% if status_filter == 'all' %} selected{% endif %}>All</option></select></div>
+        <div class="col-md-2 d-grid"><button class="btn btn-outline-secondary" type="submit">Filter</button></div>
+    </form>
+
+    {% if items %}
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Name</th><th>Type</th><th>Unit</th><th>Default rate</th><th>Taxable</th><th>Status</th><th></th></tr></thead>
+            <tbody>{% for item in items %}<tr>
+                <td><strong>{{ item.name }}</strong>{% if item.description %}<div class="small text-body-secondary">{{ item.description|truncatechars:80 }}</div>{% endif %}</td>
+                <td>{{ item.get_item_type_display }}</td><td>{{ item.unit_label }}</td><td>{{ ACTIVE_BUSINESS.default_currency }} {{ item.default_rate }}</td><td>{{ item.is_taxable|yesno:"Yes,No" }}</td><td>{{ item.is_active|yesno:"Active,Archived" }}</td>
+                <td class="text-end"><div class="d-flex justify-content-end gap-2"><a class="btn btn-sm btn-outline-secondary" href="{% url 'catalog:item-update' item.id %}">Edit</a>{% if item.is_active %}<form method="post" action="{% url 'catalog:item-status' item.id 'archive' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Archive</button></form>{% else %}<form method="post" action="{% url 'catalog:item-status' item.id 'restore' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">Restore</button></form>{% endif %}</div></td>
+            </tr>{% endfor %}</tbody>
+        </table>
+    </div>
+    {% else %}<div class="border rounded p-5 text-center"><h2 class="h4">No catalog items found</h2><p class="text-body-secondary">Add a reusable service or product, or adjust the current filters.</p><a class="btn btn-primary" href="{% url 'catalog:item-create' %}">Add item</a></div>{% endif %}
+
+    {% if is_paginated %}<nav aria-label="Catalog pages" class="mt-4"><ul class="pagination justify-content-center">{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?q={{ search|urlencode }}&type={{ type_filter|urlencode }}&status={{ status_filter|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}<li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?q={{ search|urlencode }}&type={{ type_filter|urlencode }}&status={{ status_filter|urlencode }}&page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}</ul></nav>{% endif %}
+</div>
+{% endblock %}

@@ -4,11 +4,11 @@ from django.shortcuts import redirect, render
 from django.views.generic import FormView, TemplateView
 
 from .forms import BusinessDefaultsForm, BusinessOnboardingForm, BusinessProfileForm
-from .mixins import OwnerTenantRequiredMixin, TenantRequiredMixin, VerifiedUserMixin
+from .mixins import OwnerTenantRequiredMixin, VerifiedUserMixin
 from .services import complete_business_onboarding, update_business_configuration
 
 
-class DashboardView(TenantRequiredMixin, TemplateView):
+class DashboardView(OwnerTenantRequiredMixin, TemplateView):
     template_name = "workspaces/dashboard.html"
 
 

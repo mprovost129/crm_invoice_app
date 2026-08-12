@@ -136,9 +136,10 @@ Do not run migrations independently from every web replica. The current Procfile
 - Measure migration duration/locking with representative data.
 - Keep web and worker versions compatible during rolling deployment.
 
-The Phase 1 User verification, Workspace/Membership, Business/BusinessSettings, and
-DocumentSequence migrations are committed and apply cleanly after the initial user
-migration. Back up existing data before applying them outside development.
+The Phase 1 User/tenancy migrations and Phase 2 CRM, catalog, and activity migrations are
+generated and apply cleanly in dependency order. Activity uses a two-step initial migration
+to add explicit Contact/ProductService targets without a circular dependency. Back up
+existing data before applying migrations outside development.
 
 ## Static Files and Media
 

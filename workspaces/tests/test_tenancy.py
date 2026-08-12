@@ -150,7 +150,8 @@ def test_onboarding_view_reaches_tenant_safe_dashboard(client):
     dashboard = client.get(response.url)
     assert dashboard.status_code == 200
     assert b"Provost Home Design" in dashboard.content
-    assert b"tenant-safe workspace is ready" in dashboard.content
+    assert b"Manage leads and clients" in dashboard.content
+    assert b"Open catalog" in dashboard.content
 
 
 @pytest.mark.django_db

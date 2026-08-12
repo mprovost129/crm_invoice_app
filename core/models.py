@@ -7,6 +7,8 @@ from django.core.validators import (
 )
 from django.db import models
 
+from .querysets import BusinessOwnedQuerySet
+
 
 class TimeStampedModel(models.Model):
     """Optional abstract base for the common created/updated timestamp pattern."""
@@ -27,6 +29,8 @@ class BusinessOwnedModel(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="%(app_label)s_%(class)s_records",
     )
+
+    objects = BusinessOwnedQuerySet.as_manager()
 
     class Meta:
         abstract = True

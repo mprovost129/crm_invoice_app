@@ -2,6 +2,24 @@
 
 All meaningful completed changes are recorded here.
 
+## Unreleased - Phase 2 Complete (2026-08-12)
+
+### Added
+
+- Tenant-owned Contact model with database-constrained Lead, Client, and Archived lifecycle states.
+- Contact list/search/status filters, create/edit/profile screens, same-record lead promotion, and archive/restore actions.
+- Protected authored ContactNote records and append-only ActivityEvent history for contact and catalog workflows.
+- Tenant-owned ProductService catalog with product/service type, standard/custom units, non-negative default rate, taxability, and active/archive lifecycle.
+- Catalog search/type/status filters, create/edit/archive/restore screens, and owner-only navigation.
+- Scoped selectors, explicit atomic write services, owner policy resolution, and stable backend entitlement hooks for future Plan rules.
+- Safe staff administration for Contacts, notes, catalog items, and read-only activity events.
+- Phase 2 CRM, catalog, and activity migrations plus cross-tenant service/web tests.
+
+### Verification
+
+- Fifty-two tests pass against PostgreSQL 16.
+- Ruff lint/format, Django checks, migration drift/application, and production deploy checks pass locally.
+
 ## Unreleased - Phase 1 Complete (2026-08-12)
 
 ### Added

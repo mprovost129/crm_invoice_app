@@ -8,8 +8,9 @@ Last reviewed: 2026-08-12
 - **Planned:** approved V1 model, not yet implemented.
 - **Post-V1:** extension point intentionally not exposed in V1.
 
-The repository includes and has applied Phase 1 migrations for `users`, `workspaces`,
-and `core` with Django 5.2.16 against PostgreSQL 16.
+The repository includes and has applied migrations through Phase 2 for `users`,
+`workspaces`, `core`, `crm`, `catalog`, and `activity` with Django 5.2.16 against
+PostgreSQL 16.
 
 ## Current Implemented Models
 
@@ -88,17 +89,25 @@ terms, expiration, tax, and notes. Number allocation itself belongs in
 
 ## CRM and Catalog
 
-### `Contact` - Planned
+### `Contact` - Implemented
 
 One record represents either a lead or client using a status field. Stores one V1 contact name, company, email, phone, address, notes, creator, conversion timestamp, and archive lifecycle.
 
 Relationships: belongs to Business; referenced with deletion protection by estimates and invoices; related client history is read from estimates, invoices, payments, and activities. Financially referenced contacts are archived rather than deleted.
 
-### `ProductService` - Planned
+The implemented lifecycle constraint keeps Lead, Client, and Archived timestamps/state
+consistent. Promotion updates the same UUID record, and archive/restore remembers whether
+the contact was a lead or client. `ContactNote` stores protected, tenant-owned authored
+notes without exposing edit/delete workflows.
+
+### `ProductService` - Implemented
 
 Reusable catalog record belonging to Business. Stores name, description, product/service type, unit, rate, taxability, active state, and archive lifecycle.
 
 Document lines may retain a nullable protected source reference, but always copy the item values into snapshot fields.
+
+The implemented catalog validates non-negative default rates, standard/custom units, and
+active/archive consistency. Document-line snapshot relationships begin in Phase 3.
 
 ## Shared Financial Infrastructure
 
@@ -172,9 +181,11 @@ Immutable versioned rendering payload for one issued estimate or invoice, option
 
 Tracks recipient, template, optional estimate/invoice/payment, queued/sent/delivered/failed state, provider message ID, timestamps, and failure code.
 
-### `ActivityEvent` - Planned
+### `ActivityEvent` - Implemented foundation
 
-Append-only business history with explicit optional foreign keys to Contact, Estimate, Invoice, and Payment; optional actor; event type; summary; constrained metadata; and occurrence timestamp.
+Append-only business history currently supports explicit Contact and ProductService
+targets, optional actor, constrained event type, summary, minimal metadata, and occurrence
+timestamp. Estimate, Invoice, and Payment target fields will be added with their domains.
 
 ### `Notification` - Planned
 

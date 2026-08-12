@@ -56,15 +56,16 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 | Feature | Status |
 | --- | --- |
-| Lead/client `Contact` model and lifecycle | Not started |
-| Client list, filters, create/edit/archive | Not started |
-| Client profile and financial summary | Not started |
-| Notes and automatic activity | Not started |
-| Tenant-safe client search | Not started |
-| Product/service catalog | Not started |
-| Catalog search/filter/archive | Not started |
+| Lead/client `Contact` model and lifecycle | Implemented |
+| Client list, filters, create/edit/archive | Implemented |
+| Client profile and financial summary | Partial - profile and explicit zero state exist; document/payment totals depend on later domains |
+| Notes and automatic activity | Implemented for Contact and catalog lifecycle events |
+| Tenant-safe client search | Implemented |
+| Product/service catalog | Implemented |
+| Catalog search/filter/archive | Implemented |
 | Catalog-to-line snapshot behavior | Not started |
 | Custom document line items | Not started |
+| CRM/catalog entitlement hooks | Implemented - backend hooks exist; Plan/Subscription rules begin in Phase 6 |
 
 `AccountProfile` represents supplementary application-owner metadata, not a client/contact CRM implementation.
 
@@ -156,10 +157,10 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-Thirty-eight PostgreSQL-backed tests pass. In addition to the foundation suite, they
-cover atomic registration, verification and reset-token behavior, onboarding, settings,
-one-owner/one-business constraints, request gates, membership/business alignment, and
-cross-tenant selector/service denial. CRM, issued-document, financial, provider, export,
-and full V1 end-to-end coverage remain future phases.
+Fifty-two PostgreSQL-backed tests pass. In addition to the Phase 0/1 suite, they cover
+Contact lifecycle constraints, same-record lead promotion, archive/restore, durable notes,
+append-only activity, catalog validation/lifecycle, entitlement hook invocation, owner
+authorization, searches/filters, customer screens, and cross-tenant denial. Issued-document,
+financial, provider, export, and full V1 end-to-end coverage remain future phases.
 
 See [TEST_PLAN.md](TEST_PLAN.md) for required coverage and [ROADMAP.md](ROADMAP.md) for delivery order.

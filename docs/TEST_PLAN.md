@@ -8,7 +8,7 @@ Testing must prove the product is financially correct, tenant-isolated, retry-sa
 
 ## Current Test Baseline
 
-Thirty-eight PostgreSQL-backed pytest tests pass through Phase 1:
+Fifty-two PostgreSQL-backed pytest tests pass through Phase 2:
 
 - Custom email user is configured and has no username field.
 - User creation normalizes email and hashes the password.
@@ -25,9 +25,15 @@ Thirty-eight PostgreSQL-backed pytest tests pass through Phase 1:
 - One-active-owner and one-active-business constraints reject invalid tenancy states.
 - Tenant selectors, settings services, request context, and owner-only settings deny cross-tenant or underprivileged access.
 - A verified owner can complete onboarding and reach the empty tenant-safe dashboard.
+- Contact lifecycle constraints reject inconsistent Lead, Client, and Archived states.
+- Lead-to-client promotion retains one UUID, notes, and activity history.
+- Contact/catalog create, update, archive, restore, search, filter, and web operations remain tenant-scoped.
+- Product/service rates, units, and archive state are validated in services and PostgreSQL constraints.
+- Contact notes and CRM/catalog activity are tenant-aligned; activity events reject updates.
+- Future entitlement enforcement hooks are invoked by Contact and catalog creation services.
 
-CRM, catalog, issued-document, financial, public-link, provider, export, and full V1
-end-to-end tests do not exist yet; those follow the roadmap dependencies.
+Issued-document, financial, public-link, provider, export, and full V1 end-to-end tests do
+not exist yet; those follow the roadmap dependencies.
 
 ## Test Environments and Tooling
 

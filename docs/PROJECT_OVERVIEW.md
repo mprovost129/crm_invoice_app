@@ -63,8 +63,8 @@ These flows must not share financial records or business logic.
 
 ## Current Repository State
 
-The repository has completed the identity and tenant foundation, but is not yet a
-working CRM/invoicing V1.
+The repository has completed the identity, tenant, CRM, and catalog foundation, but is
+not yet a working invoicing V1.
 
 Implemented today:
 
@@ -79,6 +79,9 @@ Implemented today:
 - Business onboarding, editable defaults, and document-sequence initialization.
 - Active workspace/business request context and tenant-scoped query helpers.
 - An authenticated tenant-safe empty dashboard.
+- Tenant-safe Contact records with Lead, Client, and Archived lifecycle states.
+- Contact search, filtering, profile, durable notes, and append-only activity history.
+- Reusable products/services with units, rates, tax defaults, search, filters, and archive/restore behavior.
 - Customer-centric staff admin.
 - Shared timestamp base model.
 - Separate liveness/readiness endpoints and request correlation IDs.
@@ -86,11 +89,10 @@ Implemented today:
 - Baseline production security, static-file, cache, logging, and email configuration.
 - Non-root multi-stage production container and health-checked Compose services.
 - GitHub Actions quality gate and reproducible Docker setup instructions.
-- Thirty-eight passing PostgreSQL-backed foundation and Phase 1 tests.
+- Fifty-two passing PostgreSQL-backed tests through Phase 2.
 
 Not yet implemented:
 
-- CRM contacts and catalog.
 - Estimates, invoices, calculations, document snapshots, and PDFs.
 - Payments, reminders, notifications, exports, and reporting.
 - Subscription billing, Stripe Connect, webhooks, background work, and reconciliation.

@@ -13,13 +13,14 @@ No percentage-complete estimate is used because the repository is not yet deep e
 
 ## Current Position
 
-**Milestone 1 - Identity, workspace, and onboarding is complete.** Registration creates
-the owner tenancy atomically, verification gates onboarding, one active business receives
-validated defaults and document sequences, and the verified owner reaches a tenant-safe
-empty dashboard. Thirty-eight PostgreSQL-backed tests pass locally.
+**Milestone 2 - CRM and catalog is complete.** An owner can manage tenant-safe leads and
+clients, promote one Contact without copying it, archive/restore records, add durable
+notes, review activity, and manage reusable products/services. Fifty-two PostgreSQL-backed
+tests pass locally.
 
-The recommended next milestone is Phase 2 CRM and catalog, beginning with tenant-safe
-Contact and ProductService models and service boundaries.
+The recommended next milestone is Phase 3 Estimate Workflow, beginning with the
+centralized Decimal calculator and transaction-safe number allocation service before the
+estimate builder.
 
 ## Ordered Delivery Plan
 
@@ -27,7 +28,7 @@ Contact and ProductService models and service boundaries.
 | --- | --- | --- | --- | --- |
 | 0. Repository and quality foundation | P0 | Complete | None | Reproducible PostgreSQL app boots; checks/tests/migrations pass in CI |
 | 1. Identity, workspace, and onboarding | P0 | Complete | Phase 0 | Verified owner reaches an empty tenant-safe dashboard |
-| 2. CRM and catalog | P0 | Not started | Phase 1 | Business manages tenant-safe leads/clients/notes/services |
+| 2. CRM and catalog | P0 | Complete | Phase 1 | Business manages tenant-safe leads/clients/notes/services |
 | 3. Estimate workflow | P0 | Not started | Phase 2 | Accurate estimate can be issued, viewed, accepted/declined, and preserved |
 | 4. Invoice conversion and manual payments | P0 | Not started | Phase 3 | Complete manual lead-to-paid workflow passes |
 | 5. Dashboard, communications, and export | P1 | Not started | Phase 4 | Owner can understand cash/work status; exports reconcile |
@@ -81,11 +82,23 @@ P0 means required for a safe core release; P1 may be sequenced after the manual 
 - Empty authenticated dashboard and Phase 1 smoke test.
 
 The Phase 1 boundary is proven by database constraints plus request, selector, service,
-and cross-tenant tests. Phase 2 may now begin.
+and cross-tenant tests. That boundary now supports the completed Phase 2 domains.
 
 ## Phase 2 - CRM and Catalog
 
-Build Contact, lead/client/archive lifecycle, client list/profile/notes/activity, ProductService, search, filters, and entitlement hooks. Exit requires tenant isolation for every operation and proof that lead-to-client reuses one record.
+### Completed scope
+
+- Contact with database-constrained Lead, Client, and Archived lifecycle.
+- Tenant-scoped list, search, filters, create, edit, archive, and restore workflows.
+- Same-record lead-to-client promotion with preserved notes and history.
+- Contact profile with contact data, future-financial zero state, durable notes, and activity.
+- ProductService catalog with types, units/custom units, non-negative rates, taxability, and archive/restore.
+- Owner policy, scoped selectors, explicit atomic services, and future entitlement hooks.
+- Append-only activity for Contact and ProductService creation, edits, notes, and status changes.
+- PostgreSQL constraints plus service and web cross-tenant denial tests.
+
+The Phase 2 exit gate is satisfied. Phase 3 can depend on Contact and ProductService while
+copying their values into document-line and issued-document snapshots.
 
 ## Phase 3 - Estimate Workflow
 

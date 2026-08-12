@@ -33,6 +33,9 @@ INSTALLED_APPS = [
     # Local
     "users",
     "workspaces",
+    "crm",
+    "catalog",
+    "activity",
     "core",
 ]
 

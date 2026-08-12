@@ -67,6 +67,10 @@ boundary.
 
 **Rationale:** The owner enters customer data once. Lead-to-client conversion changes status without copying the record or breaking its document/payment history.
 
+**Implemented (2026-08-12):** Contact uses one UUID across Lead and Client states. Atomic
+services manage promotion, archive, and restore; PostgreSQL lifecycle constraints and
+tests prove notes and activity remain attached to the original record.
+
 ## D-008 - Estimate and Invoice Are Separate Aggregates
 
 **Status:** Accepted
