@@ -13,14 +13,13 @@ No percentage-complete estimate is used because the repository is not yet deep e
 
 ## Current Position
 
-**Milestone 2 - CRM and catalog is complete.** An owner can manage tenant-safe leads and
-clients, promote one Contact without copying it, archive/restore records, add durable
-notes, review activity, and manage reusable products/services. Fifty-two PostgreSQL-backed
-tests pass locally.
+**Milestone 3 - Estimate workflow is complete.** An owner can build a tenant-safe estimate,
+issue an immutable numbered snapshot, generate or email its PDF, create secure public
+links, track views, and record online or manual acceptance/decline evidence. Eighty-one
+PostgreSQL-backed tests pass locally.
 
-The recommended next milestone is Phase 3 Estimate Workflow, beginning with the
-centralized Decimal calculator and transaction-safe number allocation service before the
-estimate builder.
+The recommended next milestone is Phase 4 Invoice Conversion and Manual Payments,
+beginning with the idempotent accepted-estimate conversion boundary and invoice ledger.
 
 ## Ordered Delivery Plan
 
@@ -29,7 +28,7 @@ estimate builder.
 | 0. Repository and quality foundation | P0 | Complete | None | Reproducible PostgreSQL app boots; checks/tests/migrations pass in CI |
 | 1. Identity, workspace, and onboarding | P0 | Complete | Phase 0 | Verified owner reaches an empty tenant-safe dashboard |
 | 2. CRM and catalog | P0 | Complete | Phase 1 | Business manages tenant-safe leads/clients/notes/services |
-| 3. Estimate workflow | P0 | Not started | Phase 2 | Accurate estimate can be issued, viewed, accepted/declined, and preserved |
+| 3. Estimate workflow | P0 | Complete | Phase 2 | Accurate estimate can be issued, viewed, accepted/declined, and preserved |
 | 4. Invoice conversion and manual payments | P0 | Not started | Phase 3 | Complete manual lead-to-paid workflow passes |
 | 5. Dashboard, communications, and export | P1 | Not started | Phase 4 | Owner can understand cash/work status; exports reconcile |
 | 6. SaaS billing and online payments | P1 | Not started | Stable manual workflow and Phase 5 operations | Subscription and invoice payments are idempotent and separated |
@@ -102,9 +101,25 @@ copying their values into document-line and issued-document snapshots.
 
 ## Phase 3 - Estimate Workflow
 
-Build transactional document sequences, calculator, Estimate/LineItem, draft builder, issue snapshot, PDF, email, secure public view, view tracking, optional online/manual acceptance, decline, and effective expiration.
+### Completed scope
 
-Dependencies that must be selected before completion: transactional email provider, private object storage, and PDF renderer.
+- Transaction-locked tenant numbering and a centralized Decimal/half-up calculator.
+- Draft estimate and line-item builder with discounts, tax-after-discount, deposits,
+  notes, terms, dates, custom lines, and copied catalog values.
+- Atomic issue transition with immutable canonical snapshot and append-only activity.
+- ReportLab PDF renderer, configurable Django storage, attachment delivery, and reusable
+  checksum-addressed file metadata.
+- Durable email delivery/outbox records, after-commit processing, and retry command.
+- High-entropy purpose-scoped public links stored only as SHA-256 digests, with expiry,
+  revocation, throttling, no-referrer/no-index headers, and non-enumerating errors.
+- View tracking, business-local derived expiration, optional online accept/decline, and
+  immutable manual/online acceptance evidence.
+- PostgreSQL constraints plus calculator, rollback, isolation, public-link, delivery,
+  PDF, service, and web workflow tests.
+
+ReportLab is the selected renderer. Django's email and storage interfaces are the provider
+boundaries; actual production transactional-email and private object-storage services
+remain deployment choices required before real customer documents are sent.
 
 ## Phase 4 - Invoice Conversion and Manual Payments
 
@@ -154,8 +169,8 @@ Manual payments remain independent and available.
 | Decision | Needed before |
 | --- | --- |
 | Final customer-facing component styling beyond Bootstrap/HTMX | Broad product screens |
-| Email provider | Estimate delivery |
-| Object storage and PDF renderer | Issued estimate snapshot/PDF |
+| Transactional email provider | Production launch (Django email adapter is implemented) |
+| Private object storage provider | Production launch (Django storage adapter is implemented) |
 | Stripe account/product structure | Phase 6 |
 | Hosting/worker/managed database platform | Launch rehearsal |
 | Privacy, retention, and deletion policy | Real customer data |

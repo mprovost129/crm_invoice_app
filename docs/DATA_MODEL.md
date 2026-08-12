@@ -8,8 +8,8 @@ Last reviewed: 2026-08-12
 - **Planned:** approved V1 model, not yet implemented.
 - **Post-V1:** extension point intentionally not exposed in V1.
 
-The repository includes and has applied migrations through Phase 2 for `users`,
-`workspaces`, `core`, `crm`, `catalog`, and `activity` with Django 5.2.16 against
+The repository includes migrations through Phase 3 for `users`, `workspaces`, `core`,
+`crm`, `catalog`, `activity`, `estimates`, and `communications` with Django 5.2.16 against
 PostgreSQL 16.
 
 ## Current Implemented Models
@@ -107,7 +107,8 @@ Reusable catalog record belonging to Business. Stores name, description, product
 Document lines may retain a nullable protected source reference, but always copy the item values into snapshot fields.
 
 The implemented catalog validates non-negative default rates, standard/custom units, and
-active/archive consistency. Document-line snapshot relationships begin in Phase 3.
+active/archive consistency. Estimate lines may retain its protected source while copying
+all customer-visible values.
 
 ## Shared Financial Infrastructure
 
@@ -117,7 +118,7 @@ One row per `(business, document_type)` with prefix, next positive value, and pa
 
 ## Estimates
 
-### `Estimate` - Planned
+### `Estimate` - Implemented
 
 Belongs to Business and protected Contact. Stores sequence/visible number, workflow status, currency, issue/expiration dates, discount and deposit configuration, persisted subtotal/discount/tax/total, notes/terms, acceptance requirement, transition timestamps, and creator.
 
@@ -125,13 +126,13 @@ Workflow values: Draft, Sent, Viewed, Accepted, Declined, Converted. Expired is 
 
 Key constraints: `(business, number)` unique; non-negative monetary values; bounded percentages; valid timestamp/state combinations; only one conversion.
 
-### `EstimateLineItem` - Planned
+### `EstimateLineItem` - Implemented
 
 Belongs to Estimate and directly to Business. Stores position, optional source catalog item, copied name/description/unit/rate/tax fields, quantity, and calculated line totals.
 
 Key constraints: unique position per estimate, positive quantity, non-negative values, and child business equal to parent business.
 
-### `EstimateAcceptance` - Planned
+### `EstimateAcceptance` - Implemented
 
 Immutable, one-to-one proof of acceptance. Stores method, optional accepting identity, timestamp, optional IP/user agent under a retention policy, recording user, terms/total snapshots, and constrained metadata.
 
@@ -165,27 +166,27 @@ Payment rows plus reversals are the source of truth. Invoice paid/balance caches
 
 ## Communications and Audit
 
-### `PublicDocumentLink` - Planned
+### `PublicDocumentLink` - Implemented for estimates
 
 Purpose-scoped, revocable access to exactly one Estimate or Invoice. Stores a unique token digest, purpose, optional expiration/revocation, and access data. Viewing, accepting, and paying are separate purposes.
 
-### `FileAsset` - Planned
+### `FileAsset` - Implemented for estimate PDFs
 
 Metadata for private object storage: optional Business, asset kind, storage key, content type, size, checksum, creator, and timestamp. Used for logos, PDFs, and exports.
 
-### `DocumentSnapshot` - Planned
+### `DocumentSnapshot` - Implemented for estimates
 
 Immutable versioned rendering payload for one issued estimate or invoice, optionally linked to a generated PDF asset. Legitimate revisions create new versions; historical documents are not silently regenerated from current defaults.
 
-### `EmailDelivery` - Planned
+### `EmailDelivery` - Implemented for estimates
 
 Tracks recipient, template, optional estimate/invoice/payment, queued/sent/delivered/failed state, provider message ID, timestamps, and failure code.
 
 ### `ActivityEvent` - Implemented foundation
 
-Append-only business history currently supports explicit Contact and ProductService
+Append-only business history supports explicit Contact, ProductService, and Estimate
 targets, optional actor, constrained event type, summary, minimal metadata, and occurrence
-timestamp. Estimate, Invoice, and Payment target fields will be added with their domains.
+timestamp. Invoice and Payment targets will be added with their domains.
 
 ### `Notification` - Planned
 

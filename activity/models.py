@@ -23,6 +23,14 @@ class ActivityEvent(models.Model):
         CATALOG_CREATED = "catalog.created", "Catalog item created"
         CATALOG_UPDATED = "catalog.updated", "Catalog item updated"
         CATALOG_STATUS_CHANGED = "catalog.status_changed", "Catalog status changed"
+        ESTIMATE_CREATED = "estimate.created", "Estimate created"
+        ESTIMATE_UPDATED = "estimate.updated", "Estimate updated"
+        ESTIMATE_LINE_CHANGED = "estimate.line_changed", "Estimate line changed"
+        ESTIMATE_ISSUED = "estimate.issued", "Estimate issued"
+        ESTIMATE_EMAIL_QUEUED = "estimate.email_queued", "Estimate email queued"
+        ESTIMATE_VIEWED = "estimate.viewed", "Estimate viewed"
+        ESTIMATE_ACCEPTED = "estimate.accepted", "Estimate accepted"
+        ESTIMATE_DECLINED = "estimate.declined", "Estimate declined"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     business = models.ForeignKey(
@@ -51,6 +59,13 @@ class ActivityEvent(models.Model):
         blank=True,
         null=True,
     )
+    estimate = models.ForeignKey(
+        "estimates.Estimate",
+        on_delete=models.PROTECT,
+        related_name="activity_events",
+        blank=True,
+        null=True,
+    )
     event_type = models.CharField(max_length=64, choices=EventType.choices)
     summary = models.CharField(max_length=255)
     metadata = models.JSONField(default=dict, blank=True)
@@ -68,8 +83,21 @@ class ActivityEvent(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    Q(contact__isnull=False, product_service__isnull=True)
-                    | Q(contact__isnull=True, product_service__isnull=False)
+                    Q(
+                        contact__isnull=False,
+                        product_service__isnull=True,
+                        estimate__isnull=True,
+                    )
+                    | Q(
+                        contact__isnull=True,
+                        product_service__isnull=False,
+                        estimate__isnull=True,
+                    )
+                    | Q(
+                        contact__isnull=True,
+                        product_service__isnull=True,
+                        estimate__isnull=False,
+                    )
                 ),
                 name="activity_event_exactly_one_target",
             )
@@ -77,7 +105,7 @@ class ActivityEvent(models.Model):
 
     def clean(self):
         super().clean()
-        target = self.contact or self.product_service
+        target = self.contact or self.product_service or self.estimate
         if target and target.business_id != self.business_id:
             raise ValidationError("Activity target must belong to the same business.")
 

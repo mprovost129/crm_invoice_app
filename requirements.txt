@@ -23,6 +23,7 @@ python-discovery==1.2.1
 python-dotenv==1.2.2
 PyYAML==6.0.3
 redis==7.4.0
+reportlab==5.0.0
 ruff==0.15.9
 sqlparse==0.5.5
 tzdata==2026.1

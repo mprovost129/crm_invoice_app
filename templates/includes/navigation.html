@@ -13,6 +13,7 @@
                     {% if ACTIVE_MEMBERSHIP.role == "owner" %}
                     <a class="nav-link" href="{% url 'crm:contact-list' %}">Contacts</a>
                     <a class="nav-link" href="{% url 'catalog:item-list' %}">Catalog</a>
+                    <a class="nav-link" href="{% url 'estimates:list' %}">Estimates</a>
                     <a class="nav-link" href="{% url 'workspaces:settings' %}">Settings</a>
                     {% endif %}
                     {% endif %}

@@ -2,6 +2,34 @@
 
 All meaningful completed changes are recorded here.
 
+## Unreleased - Phase 3 Complete (2026-08-12)
+
+### Added
+
+- Tenant-owned Estimate, EstimateLineItem, and immutable EstimateAcceptance models with
+  database constraints and business-local derived expiration.
+- Centralized Decimal calculator with half-up rounding, proportional discount allocation,
+  tax-after-discount, deposit calculation, and provider minor-unit conversion.
+- Owner estimate builder, line editing, atomic issue workflow, transaction-locked numbering,
+  immutable JSON snapshots, list/search/status views, print/PDF, and manual acceptance.
+- ReportLab 5.0.0 estimate PDFs generated from immutable snapshots and stored through
+  Django's configurable storage backend with checksummed FileAsset metadata.
+- Durable estimate-email delivery and outbox records, after-commit processing, PDF
+  attachment delivery, failure state, and retry management command.
+- High-entropy, digest-only, purpose-scoped public links with expiry/revocation,
+  non-enumerating errors, rate limiting, view tracking, online accept/decline, and privacy
+  headers.
+- Estimate activity events, migrations, read-only support administration, navigation, and
+  focused PDF layout QA tooling.
+
+### Verification
+
+- Eighty-one tests pass against PostgreSQL 16.
+- Ruff lint/format, Django checks, migration drift, migration application, and production
+  deploy checks pass locally.
+- A representative estimate PDF was rendered to PNG and visually inspected; numeric
+  columns, totals, notes, terms, and page footer fit without clipping or overlap.
+
 ## Unreleased - Phase 2 Complete (2026-08-12)
 
 ### Added

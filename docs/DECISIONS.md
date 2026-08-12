@@ -87,6 +87,10 @@ tests prove notes and activity remain attached to the original record.
 
 **Rationale:** Later edits to business settings, contacts, products/services, prices, or tax defaults must not rewrite what a customer was sent.
 
+**Implemented (2026-08-12):** Issuing an estimate atomically creates one canonical JSON
+snapshot with a SHA-256 content digest. Snapshot and acceptance records reject updates,
+and PDFs render from the snapshot rather than current CRM/catalog data.
+
 ## D-010 - Decimal and Centralized Calculation Policy
 
 **Status:** Accepted
@@ -94,6 +98,10 @@ tests prove notes and activity remain attached to the original record.
 **Decision:** Never use floating point for financial or quantity values. Centralize the documented calculation order, discount allocation, tax-after-discount behavior, currency quantization, and provider minor-unit conversion.
 
 **Rationale:** Financial results must be deterministic across web, jobs, exports, tests, and payment providers. Scattered arithmetic causes rounding and reconciliation errors.
+
+**Implemented (2026-08-12):** The estimate calculator uses Decimal exclusively, four-place
+intermediate values, half-up currency quantization, proportional document-discount
+allocation, tax after discount, and explicit minor-unit conversion.
 
 ## D-011 - Payments Are an Immutable Ledger
 
@@ -119,6 +127,10 @@ tests prove notes and activity remain attached to the original record.
 
 **Rationale:** `count() + 1` and application-only checks fail under concurrency. Numbers need only be unique within a business, not globally.
 
+**Implemented (2026-08-12):** Estimate issue locks the tenant's sequence row, allocates the
+number, persists the issue state, and creates the snapshot in one transaction; failures
+roll back both the state and sequence increment.
+
 ## D-014 - Important Workflows Use Explicit Services
 
 **Status:** Accepted
@@ -135,6 +147,11 @@ tests prove notes and activity remain attached to the original record.
 
 **Rationale:** This prevents messages for rolled-back transactions, missing jobs after successful commits, and duplicate side effects during retries. Network calls must not extend database transactions.
 
+**Implemented foundation (2026-08-12):** Estimate email writes delivery and deduplicated
+outbox rows atomically, processes after commit, records attempt/failure/completion state,
+and supports command-driven retry. A dedicated production worker and retry scheduler are
+still required before launch.
+
 ## D-016 - Separate Subscription Billing from Invoice Payments
 
 **Status:** Accepted
@@ -150,6 +167,24 @@ tests prove notes and activity remain attached to the original record.
 **Decision:** Use high-entropy, non-sequential public tokens, store digests where practical, and scope each link to one document and action such as view, accept, or pay.
 
 **Rationale:** Customers should not need accounts in V1, but public access must resist guessing, enumeration, replay, and privilege escalation while supporting immediate revocation.
+
+**Implemented (2026-08-12):** Estimate links use cryptographically random URL-safe tokens;
+only SHA-256 digests are stored. View and respond purposes are distinct, links expire and
+can be revoked, response links are revoked after a terminal response, and public routes
+use throttling plus non-enumerating errors and privacy headers.
+
+## D-026 - ReportLab and Framework Provider Adapters for Phase 3
+
+**Status:** Accepted 2026-08-12
+
+**Decision:** Pin ReportLab 5.0.0 for server-side estimate PDFs. Use Django's email and
+default-storage interfaces as the Phase 3 provider boundaries rather than coupling domain
+services to a specific transactional-email or object-storage vendor.
+
+**Rationale:** ReportLab produces deterministic PDFs directly from immutable snapshots.
+Django's adapters keep local testing reliable and let deployment select private storage
+and transactional email without rewriting estimate workflows. Provider selection and
+credentials remain launch operations decisions, not domain-model concerns.
 
 ## D-018 - V1 Is Not Accounting or ERP Software
 
@@ -217,6 +252,6 @@ tests prove notes and activity remain attached to the original record.
 
 ## Deferred Provider and Product Decisions
 
-The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, PDF renderer, error-monitoring provider, final component/design system, exact paid-plan launch timing, Premium differentiation/timing, Stripe account/product configuration, mobile technology, automatic reminder rules, recurring invoice rules, and privacy/retention policy.
+The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, error-monitoring provider, final component/design system, exact paid-plan launch timing, Premium differentiation/timing, Stripe account/product configuration, mobile technology, automatic reminder rules, recurring invoice rules, and privacy/retention policy.
 
 Record each final choice here with date, alternatives, rationale, and consequences.

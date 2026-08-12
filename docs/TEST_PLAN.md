@@ -77,6 +77,14 @@ For every important service, test authorized success, unauthorized actor, cross-
 
 High-risk services include registration/tenant creation, document number allocation, issuing, acceptance, estimate conversion, invoice voiding, payment posting, payment reversal, reminders, connected-account updates, subscription changes, and webhook processing.
 
+Phase 3 automated coverage now proves estimate calculator order/rounding, invalid financial
+inputs, atomic numbering rollback, immutable issue snapshots, issued-edit rejection,
+tenant denial, derived expiration, purpose/expiry/revocation of public links, repeated-view
+behavior, online/manual acceptance evidence, PDF checksum/reuse, email outbox completion,
+digest-only token persistence, and owner/public web workflows. Concurrency load testing,
+real provider failure modes, accessibility, and production-like browser/email delivery
+remain launch gates.
+
 ### Selector and Query Tests
 
 Prove correct tenant filtering, derived statuses, timezone boundaries, aggregate totals, pagination, ordering, filter/search results, prefetch/select behavior, and bounded query counts.

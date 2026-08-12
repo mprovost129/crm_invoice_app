@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     "crm",
     "catalog",
     "activity",
+    "estimates",
+    "communications",
     "core",
 ]
 
@@ -184,3 +186,5 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 SERVER_EMAIL = os.environ.get("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", 10))
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", 24 * 60 * 60))
+PUBLIC_DOCUMENT_LINK_TTL_DAYS = int(os.environ.get("PUBLIC_DOCUMENT_LINK_TTL_DAYS", 90))
+PUBLIC_DOCUMENT_VIEW_LIMIT = int(os.environ.get("PUBLIC_DOCUMENT_VIEW_LIMIT", 120))

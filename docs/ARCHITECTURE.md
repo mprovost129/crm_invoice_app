@@ -4,9 +4,10 @@ Last reviewed: 2026-08-12
 
 ## Status and Architecture Direction
 
-The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 through 2
-implement the shared foundation, identity, workspace, business onboarding, trusted
-tenant boundary, CRM, catalog, and append-only activity history. Financial components remain target architecture. See
+The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 through 3
+implement the shared foundation, identity, workspace, trusted tenant boundary, CRM,
+catalog, estimate aggregate/calculator, immutable documents, public links, and delivery
+outbox. Invoice/payment components remain target architecture. See
 [FEATURES.md](FEATURES.md) for status.
 
 The supported baseline is Python 3.13 and Django 5.2 LTS, currently pinned to Django 5.2.16. The LTS choice is recorded in [DECISIONS.md](DECISIONS.md).
@@ -52,6 +53,8 @@ workspaces/             Workspace, membership, business, settings, tenant contex
 crm/                    Contacts, notes, lifecycle services, selectors, screens
 catalog/                Reusable products/services, lifecycle services, screens
 activity/               Append-only tenant activity events
+estimates/              Estimate aggregate, calculator, services, public workflow
+communications/         Snapshots, public links, PDFs, email delivery, durable outbox
 templates/              Base, auth, onboarding, app, error, admin, shared templates
 static/                 Shared CSS, JavaScript, images, and admin styling
 docs/                   Product and engineering documentation
@@ -62,9 +65,8 @@ Procfile                Web and release/migration commands
 README.md               Canonical Docker setup and verification workflow
 ```
 
-The Phase 1 and 2 `users`, `workspaces`, `core`, `crm`, `catalog`, and `activity`
-migrations are generated and apply cleanly. The next domain boundary is the estimate
-aggregate.
+Migrations through Phase 3 are generated and apply cleanly. The next domain boundary is
+accepted-estimate conversion into the invoice/payment aggregates.
 
 ## Target Domain Applications
 
@@ -178,8 +180,9 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for operational procedures.
 
 ## Current Architecture Gaps
 
-The Phase 2 Contact and ProductService domains use the trusted Phase 1 business context,
-owner policy, scoped selectors, explicit atomic services, archive lifecycle, and
-cross-tenant tests. Contact notes and activity are append-only through customer-facing
-workflows. Full role policy, document snapshots, outbox/worker infrastructure, object
-storage, financial calculators, and provider adapters remain later roadmap work.
+The Phase 3 estimate domain uses the trusted business context, scoped selectors, explicit
+atomic services, row-locked numbering, a centralized calculator, immutable snapshots and
+acceptance evidence, digest-only public tokens, configurable storage/email adapters, and a
+durable outbox. A dedicated production worker/scheduler, private cloud storage, a
+transactional email provider, invoice/payment aggregates, and full role policy remain
+later deployment or roadmap work.

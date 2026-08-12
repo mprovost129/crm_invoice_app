@@ -18,18 +18,18 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | --- | --- | --- |
 | Django project and environment settings | Implemented | Base/dev/prod settings exist and are environment-driven |
 | PostgreSQL application database | Implemented | Required by settings and local Compose |
-| Redis | Partial | Local service and production cache exist; no worker/outbox use |
+| Redis | Partial | Local service and production cache exist; public-link throttling uses cache; no dedicated job broker |
 | Docker image and local Compose | Implemented | Multi-stage non-root Python 3.13 image; health-checked web/PostgreSQL 16/Redis 7 |
 | Gunicorn production entry | Implemented | Docker command and Procfile web process |
 | Static files | Implemented | WhiteNoise manifest storage in production |
-| Persistent media/object storage | Partial | Backend is configurable; no cloud backend/package selected |
+| Persistent media/object storage | Partial | Django backend is configurable and estimate PDFs use it; no private cloud provider/package selected |
 | Liveness/readiness endpoints | Implemented | Process liveness plus database-backed readiness and compatibility `/health/` route |
 | Request correlation ID | Implemented | Request/response `X-Request-ID` middleware |
 | Logging | Partial | Console/file logging exists; not structured/centralized/redacted |
 | Ruff/pre-commit | Implemented | Configuration exists |
 | CI pipeline | Implemented | GitHub Actions runs Ruff, formatting, migration, PostgreSQL tests, and deploy checks |
 | Application migrations | Implemented | Phase 0/1 User, Workspace, Business, settings, and sequence migrations applied |
-| Background worker/outbox | Not started | Redis alone does not implement asynchronous work |
+| Background worker/outbox | Partial | Durable outbox, after-commit processing, retry command, and delivery state exist; no independently deployed worker/scheduler yet |
 | Error/uptime monitoring | Not started | Provider not selected |
 | Backup/restore automation | Not started | No repository procedure or evidence |
 
@@ -63,8 +63,8 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Tenant-safe client search | Implemented |
 | Product/service catalog | Implemented |
 | Catalog search/filter/archive | Implemented |
-| Catalog-to-line snapshot behavior | Not started |
-| Custom document line items | Not started |
+| Catalog-to-line snapshot behavior | Implemented |
+| Custom document line items | Implemented |
 | CRM/catalog entitlement hooks | Implemented - backend hooks exist; Plan/Subscription rules begin in Phase 6 |
 
 `AccountProfile` represents supplementary application-owner metadata, not a client/contact CRM implementation.
@@ -73,18 +73,18 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 | Feature | Status |
 | --- | --- |
-| Transaction-safe document numbering | Partial | Per-business estimate/invoice sequence rows exist; allocation begins with document aggregates |
-| Estimate and estimate-line models | Not started |
-| Decimal calculation and currency policy | Not started |
-| Draft builder/editing/preview | Not started |
-| Discounts, tax, and deposit requirements | Not started |
-| Issue and immutable snapshot | Not started |
-| PDF/print/email delivery | Not started |
-| Secure public estimate page | Not started |
-| View tracking | Not started |
-| Optional online accept/decline | Not started |
-| Manual acceptance and evidence | Not started |
-| Derived expiration | Not started |
+| Transaction-safe document numbering | Implemented |
+| Estimate and estimate-line models | Implemented |
+| Decimal calculation and currency policy | Implemented |
+| Draft builder/editing/preview | Implemented |
+| Discounts, tax, and deposit requirements | Implemented |
+| Issue and immutable snapshot | Implemented |
+| PDF/print/email delivery | Implemented - production providers remain deployment configuration |
+| Secure public estimate page | Implemented |
+| View tracking | Implemented |
+| Optional online accept/decline | Implemented |
+| Manual acceptance and evidence | Implemented |
+| Derived expiration | Implemented |
 
 ## Invoices and Payments
 
@@ -110,9 +110,9 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Paid/outstanding/overdue/open-estimate cards | Not started |
 | Needs Attention and Recent Activity | Not started |
 | Internal notifications | Not started |
-| Email delivery tracking | Not started |
-| Secure revocable public links | Not started |
-| Private file assets and document snapshots | Not started |
+| Email delivery tracking | Implemented for queued/sent/failed estimate delivery |
+| Secure revocable public links | Implemented for estimate view/respond purposes |
+| Private file assets and document snapshots | Implemented for issued estimates; production storage provider remains open |
 | Minimal reports | Not started |
 | Client/invoice/payment CSV export | Not started |
 | Terms and privacy pages | Not started |
@@ -157,10 +157,10 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-Fifty-two PostgreSQL-backed tests pass. In addition to the Phase 0/1 suite, they cover
-Contact lifecycle constraints, same-record lead promotion, archive/restore, durable notes,
-append-only activity, catalog validation/lifecycle, entitlement hook invocation, owner
-authorization, searches/filters, customer screens, and cross-tenant denial. Issued-document,
-financial, provider, export, and full V1 end-to-end coverage remain future phases.
+Eighty-one PostgreSQL-backed tests pass. In addition to the Phase 0-2 suite, they cover
+deterministic financial calculations, numbering rollback, issued-document immutability,
+acceptance evidence, derived expiration, public-link security/view tracking, PDF rendering,
+email outbox delivery, owner/public screens, and cross-tenant denial. Invoice/payment,
+external production-provider, export, and full V1 end-to-end coverage remain future phases.
 
 See [TEST_PLAN.md](TEST_PLAN.md) for required coverage and [ROADMAP.md](ROADMAP.md) for delivery order.

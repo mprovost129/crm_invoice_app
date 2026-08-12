@@ -13,12 +13,14 @@ class ActivityEventAdmin(admin.ModelAdmin):
         "contact__first_name",
         "contact__last_name",
         "product_service__name",
+        "estimate__number",
     )
     readonly_fields = (
         "business",
         "actor",
         "contact",
         "product_service",
+        "estimate",
         "event_type",
         "summary",
         "metadata",

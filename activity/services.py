@@ -11,6 +11,7 @@ def record_activity(
     summary,
     contact=None,
     product_service=None,
+    estimate=None,
     metadata=None,
 ):
     event = ActivityEvent(
@@ -20,9 +21,10 @@ def record_activity(
         summary=summary,
         contact=contact,
         product_service=product_service,
+        estimate=estimate,
         metadata=metadata or {},
     )
-    if (contact is None) == (product_service is None):
+    if sum(target is not None for target in (contact, product_service, estimate)) != 1:
         raise ValidationError("Activity requires exactly one target.")
     event.full_clean()
     event.save()

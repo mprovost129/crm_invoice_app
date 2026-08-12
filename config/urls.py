@@ -9,6 +9,7 @@ urlpatterns = [
     path("", include("workspaces.urls")),
     path("", include("crm.urls")),
     path("", include("catalog.urls")),
+    path("", include("estimates.urls")),
     path("", include("core.urls")),
 ]
 

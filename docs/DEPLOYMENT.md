@@ -4,7 +4,11 @@ Last reviewed: 2026-08-12
 
 ## Current Deployment State
 
-The repository provides a portable Docker/Gunicorn foundation and a committed GitHub Actions quality gate, but does not identify an active hosting platform or production environment. It has no deployment automation, background worker, cloud object-storage package, monitoring provider, backup automation, or documented successful production deployment.
+The repository provides a portable Docker/Gunicorn foundation, a committed GitHub Actions
+quality gate, configurable email/storage adapters, and a durable estimate-email outbox.
+It does not identify an active hosting platform or production environment and has no
+deployment automation, independently deployed worker/scheduler, cloud object-storage
+package, monitoring provider, backup automation, or documented production deployment.
 
 Treat the procedures below as the required operating model, not evidence that those controls already exist.
 
@@ -82,6 +86,7 @@ Production/security settings:
 - `DJANGO_LOG_LEVEL`
 - `TRUST_X_FORWARDED_PROTO` only behind a correctly configured trusted proxy
 - `MEDIA_STORAGE_BACKEND` plus provider-specific credentials/configuration
+- `PUBLIC_DOCUMENT_LINK_TTL_DAYS`, `PUBLIC_DOCUMENT_VIEW_LIMIT`
 - Upload memory limits when defaults are unsuitable
 
 Email settings:
@@ -136,10 +141,11 @@ Do not run migrations independently from every web replica. The current Procfile
 - Measure migration duration/locking with representative data.
 - Keep web and worker versions compatible during rolling deployment.
 
-The Phase 1 User/tenancy migrations and Phase 2 CRM, catalog, and activity migrations are
-generated and apply cleanly in dependency order. Activity uses a two-step initial migration
-to add explicit Contact/ProductService targets without a circular dependency. Back up
-existing data before applying migrations outside development.
+Migrations through Phase 3 are generated and apply cleanly in dependency order. Phase 3
+adds Estimate/EstimateLineItem/EstimateAcceptance, estimate-targeted activity, and the
+communications snapshot/link/file/delivery/outbox models. Activity and communications use
+split migrations to avoid circular dependencies. Back up existing data before applying
+migrations outside development.
 
 ## Static Files and Media
 
@@ -149,7 +155,13 @@ Local media uses filesystem storage. Production on ephemeral hosts must install/
 
 ## Background Work and Webhooks
 
-When background capabilities are introduced:
+The estimate email path creates a durable outbox row in the domain transaction, invokes
+processing after commit for immediate local behavior, and exposes
+`python manage.py process_outbox --limit N` for pending/failed retries. Production must run
+that command through a supervised worker/scheduler until a dedicated queue consumer is
+introduced.
+
+For background processing:
 
 - Run workers as separate processes using the same release artifact.
 - Create outbox rows in the domain transaction and process after commit.
