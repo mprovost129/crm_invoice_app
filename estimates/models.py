@@ -131,10 +131,8 @@ class Estimate(BusinessOwnedModel):
             ),
             models.CheckConstraint(
                 condition=(
-                    (
-                        Q(status__in=("accepted", "converted"))
-                        & Q(accepted_at__isnull=False)
-                    )
+                    (Q(status="accepted") & Q(accepted_at__isnull=False))
+                    | Q(status="converted")
                     | (
                         ~Q(status__in=("accepted", "converted"))
                         & Q(accepted_at__isnull=True)

@@ -392,6 +392,12 @@ def _throttled_response():
     return _public_headers(HttpResponse("Too many requests.", status=429))
 
 
+def _public_estimate_for_request(*, request, link):
+    if request.user.is_authenticated and request.business == link.business:
+        return link.estimate
+    return record_public_view(link=link)
+
+
 @never_cache
 def public_estimate_view(request, token):
     if _throttle(request):
@@ -400,7 +406,7 @@ def public_estimate_view(request, token):
         raw_token=token,
         allowed_purposes=(PublicDocumentLink.Purpose.VIEW,),
     )
-    estimate = record_public_view(link=link)
+    estimate = _public_estimate_for_request(request=request, link=link)
     response = render(
         request,
         "estimates/public_estimate.html",
@@ -417,7 +423,7 @@ def public_estimate_respond(request, token):
         raw_token=token,
         allowed_purposes=(PublicDocumentLink.Purpose.RESPOND,),
     )
-    estimate = record_public_view(link=link)
+    estimate = _public_estimate_for_request(request=request, link=link)
     context = {
         "snapshot": estimate.document_snapshot.payload,
         "estimate": estimate,
@@ -483,7 +489,7 @@ def public_estimate_pdf(request, token):
         raw_token=token,
         allowed_purposes=PublicDocumentLink.Purpose.values,
     )
-    estimate = record_public_view(link=link)
+    estimate = _public_estimate_for_request(request=request, link=link)
     asset = get_or_create_estimate_pdf(estimate=estimate)
     response = FileResponse(
         default_storage.open(asset.storage_name, "rb"),

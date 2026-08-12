@@ -58,7 +58,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | --- | --- |
 | Lead/client `Contact` model and lifecycle | Implemented |
 | Client list, filters, create/edit/archive | Implemented |
-| Client profile and financial summary | Partial - profile and explicit zero state exist; document/payment totals depend on later domains |
+| Client profile and financial summary | Implemented for estimates, invoices, net payments, outstanding balance, and recent invoices |
 | Notes and automatic activity | Implemented for Contact and catalog lifecycle events |
 | Tenant-safe client search | Implemented |
 | Product/service catalog | Implemented |
@@ -90,18 +90,18 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 | Feature | Status |
 | --- | --- |
-| Atomic idempotent estimate conversion | Not started |
-| Invoice and invoice-line models | Not started |
-| Direct invoice builder | Not started |
-| Invoice snapshots/PDF/public view/email | Not started |
-| Manual payment ledger | Not started |
-| Deposits and partial payments | Not started |
-| Cached paid/balance totals | Not started |
-| Derived Partial/Paid/Overdue states | Not started |
-| Payment reversals | Not started |
-| Void invoice workflow | Not started |
-| Manual reminder and receipt | Not started |
-| Reconciliation command | Not started |
+| Atomic idempotent estimate conversion | Implemented |
+| Invoice and invoice-line models | Implemented |
+| Direct invoice builder | Implemented |
+| Invoice snapshots/PDF/public view/email | Implemented - production providers remain deployment configuration |
+| Manual payment ledger | Implemented |
+| Deposits and partial payments | Implemented |
+| Cached paid/balance totals | Implemented and reconcilable |
+| Derived Partial/Paid/Overdue states | Implemented |
+| Payment reversals | Implemented as additive immutable records |
+| Void invoice workflow | Implemented; payments must first be fully reversed |
+| Manual reminder and receipt | Implemented |
+| Reconciliation command | Implemented |
 
 ## Dashboard, Communications, and Trust
 
@@ -110,9 +110,9 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Paid/outstanding/overdue/open-estimate cards | Not started |
 | Needs Attention and Recent Activity | Not started |
 | Internal notifications | Not started |
-| Email delivery tracking | Implemented for queued/sent/failed estimate delivery |
-| Secure revocable public links | Implemented for estimate view/respond purposes |
-| Private file assets and document snapshots | Implemented for issued estimates; production storage provider remains open |
+| Email delivery tracking | Implemented for estimates, invoices, reminders, and receipts |
+| Secure revocable public links | Implemented for estimate view/respond and invoice view purposes |
+| Private file assets and document snapshots | Implemented for issued estimates/invoices and receipts; production storage provider remains open |
 | Minimal reports | Not started |
 | Client/invoice/payment CSV export | Not started |
 | Terms and privacy pages | Not started |
@@ -157,10 +157,11 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-Eighty-one PostgreSQL-backed tests pass. In addition to the Phase 0-2 suite, they cover
-deterministic financial calculations, numbering rollback, issued-document immutability,
-acceptance evidence, derived expiration, public-link security/view tracking, PDF rendering,
-email outbox delivery, owner/public screens, and cross-tenant denial. Invoice/payment,
-external production-provider, export, and full V1 end-to-end coverage remain future phases.
+One hundred three PostgreSQL-backed tests pass. They cover deterministic financial
+calculations, numbering/conversion/payment concurrency and rollback, immutable documents
+and ledger entries, acceptance evidence, derived states, reconciliation, secure public
+links, PDF/receipt rendering, durable email delivery, owner/public screens, the complete
+manual lead-to-paid workflow, and cross-tenant denial. External production providers,
+exports, accessibility, and production-like browser E2E remain future gates.
 
 See [TEST_PLAN.md](TEST_PLAN.md) for required coverage and [ROADMAP.md](ROADMAP.md) for delivery order.

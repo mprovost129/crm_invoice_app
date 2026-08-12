@@ -4,11 +4,11 @@ Last reviewed: 2026-08-12
 
 ## Status and Architecture Direction
 
-The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 through 3
+The approved target is a modular Django monolith backed by PostgreSQL. Phases 0 through 4
 implement the shared foundation, identity, workspace, trusted tenant boundary, CRM,
-catalog, estimate aggregate/calculator, immutable documents, public links, and delivery
-outbox. Invoice/payment components remain target architecture. See
-[FEATURES.md](FEATURES.md) for status.
+catalog, estimate and invoice aggregates, immutable documents, manual payment/reversal
+ledger, public links, PDFs, receipts, and delivery outbox. See [FEATURES.md](FEATURES.md)
+for status.
 
 The supported baseline is Python 3.13 and Django 5.2 LTS, currently pinned to Django 5.2.16. The LTS choice is recorded in [DECISIONS.md](DECISIONS.md).
 
@@ -54,6 +54,8 @@ crm/                    Contacts, notes, lifecycle services, selectors, screens
 catalog/                Reusable products/services, lifecycle services, screens
 activity/               Append-only tenant activity events
 estimates/              Estimate aggregate, calculator, services, public workflow
+invoices/               Invoice aggregate, conversion, lifecycle, owner/public screens
+payments/               Immutable manual payment/reversal ledger and reconciliation
 communications/         Snapshots, public links, PDFs, email delivery, durable outbox
 templates/              Base, auth, onboarding, app, error, admin, shared templates
 static/                 Shared CSS, JavaScript, images, and admin styling
@@ -65,8 +67,8 @@ Procfile                Web and release/migration commands
 README.md               Canonical Docker setup and verification workflow
 ```
 
-Migrations through Phase 3 are generated and apply cleanly. The next domain boundary is
-accepted-estimate conversion into the invoice/payment aggregates.
+Migrations through Phase 4 are generated and apply cleanly. The next domain boundary is
+cross-domain dashboard, operational communication visibility, reporting, and export.
 
 ## Target Domain Applications
 
@@ -180,9 +182,9 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for operational procedures.
 
 ## Current Architecture Gaps
 
-The Phase 3 estimate domain uses the trusted business context, scoped selectors, explicit
-atomic services, row-locked numbering, a centralized calculator, immutable snapshots and
-acceptance evidence, digest-only public tokens, configurable storage/email adapters, and a
-durable outbox. A dedicated production worker/scheduler, private cloud storage, a
-transactional email provider, invoice/payment aggregates, and full role policy remain
-later deployment or roadmap work.
+The Phase 4 financial path uses trusted business context, scoped selectors, atomic and
+row-locked conversion/payment services, immutable document/payment evidence, digest-only
+public tokens, configurable storage/email adapters, and a durable outbox. A dedicated
+production worker/scheduler, private cloud storage, transactional email provider,
+cross-domain dashboard/export read models, online payment provider, and full role policy
+remain later deployment or roadmap work.

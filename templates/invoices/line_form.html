@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Invoice line | {{ APP_NAME }}{% endblock %}
+{% block content %}<div class="container py-4"><div class="row justify-content-center"><div class="col-lg-8"><h1>{% if line %}Edit{% else %}Add{% endif %} invoice line</h1><p class="text-body-secondary">Invoice {{ invoice.number|default:"draft" }} for {{ invoice.contact.display_name }}</p><form method="post" novalidate>{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Save line</button> <a class="btn btn-outline-secondary" href="{% url 'invoices:detail' invoice.id %}">Cancel</a></form></div></div></div>{% endblock %}

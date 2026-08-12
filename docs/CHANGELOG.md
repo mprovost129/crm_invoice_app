@@ -2,6 +2,44 @@
 
 All meaningful completed changes are recorded here.
 
+## Unreleased - Phase 4 Complete (2026-08-12)
+
+### Added
+
+- Separate tenant-owned Invoice and InvoiceLineItem aggregate with direct draft creation,
+  row-locked numbering, immutable issue snapshots, PDF/email delivery, secure public view,
+  view tracking, derived status, and reasoned void workflow.
+- Atomic idempotent accepted-estimate conversion that prevents concurrent duplicates,
+  copies historical issued values without CRM/catalog re-entry, preserves the source
+  Estimate, revokes response links, and promotes the same Lead record to Client.
+- Immutable Payment and additive PaymentReversal ledger with invoice-total and
+  balance-after evidence, deposits and any number of partial payments, atomic cached
+  paid/balance updates, overpayment/future-date/reversal bounds, and tenant isolation.
+- Manual invoice reminders and payment-receipt PDFs/emails through the durable outbox,
+  plus invoice/payment activity events and invoice-aware client financial summaries.
+- `reconciliation_check` management command comparing invoice caches to net posted ledger
+  values, owner invoice/payment screens, read-only support admin, Phase 4 migrations, and
+  representative invoice/receipt PDF QA tooling.
+
+### Changed
+
+- Communications snapshots, public links, file assets, and email delivery now enforce
+  exactly one type-aligned Estimate, Invoice, or Payment target.
+- Invoice PDF caching now keys on immutable snapshot content plus live paid, balance, and
+  effective-status facts so unchanged requests reuse assets and payment changes generate
+  a new accurate rendering.
+
+### Verification
+
+- One hundred three tests pass against PostgreSQL 16, including the automated manual exit
+  path from Lead through Estimate, Acceptance, Invoice, Deposit, Partial payment, Final
+  payment, and Paid.
+- Ruff lint/format, Django checks, migration drift/application, reconciliation, and
+  production deploy checks pass locally.
+- Representative invoice and receipt PDFs were rendered to PNG with Poppler and visually
+  inspected; tables, totals, notes, hierarchy, and page boundaries have no clipping,
+  overlap, or broken glyphs.
+
 ## Unreleased - Phase 3 Complete (2026-08-12)
 
 ### Added

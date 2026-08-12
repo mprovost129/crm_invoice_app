@@ -5,7 +5,8 @@ Last reviewed: 2026-08-12
 ## Current Deployment State
 
 The repository provides a portable Docker/Gunicorn foundation, a committed GitHub Actions
-quality gate, configurable email/storage adapters, and a durable estimate-email outbox.
+quality gate, configurable email/storage adapters, and a durable estimate/invoice/
+reminder/receipt outbox.
 It does not identify an active hosting platform or production environment and has no
 deployment automation, independently deployed worker/scheduler, cloud object-storage
 package, monitoring provider, backup automation, or documented production deployment.
@@ -141,11 +142,12 @@ Do not run migrations independently from every web replica. The current Procfile
 - Measure migration duration/locking with representative data.
 - Keep web and worker versions compatible during rolling deployment.
 
-Migrations through Phase 3 are generated and apply cleanly in dependency order. Phase 3
-adds Estimate/EstimateLineItem/EstimateAcceptance, estimate-targeted activity, and the
-communications snapshot/link/file/delivery/outbox models. Activity and communications use
-split migrations to avoid circular dependencies. Back up existing data before applying
-migrations outside development.
+Migrations through Phase 4 are generated and apply cleanly in dependency order. Phase 4
+adds Invoice/InvoiceLineItem and Payment/PaymentReversal; extends snapshots, links, files,
+deliveries, and activity with invoice/payment targets; and adjusts converted-estimate
+acceptance constraints. Activity and communications use split migrations to avoid circular
+dependencies. Back up existing data before applying migrations outside development, then
+run `python manage.py reconciliation_check` after the application rollout.
 
 ## Static Files and Media
 
@@ -155,8 +157,9 @@ Local media uses filesystem storage. Production on ephemeral hosts must install/
 
 ## Background Work and Webhooks
 
-The estimate email path creates a durable outbox row in the domain transaction, invokes
-processing after commit for immediate local behavior, and exposes
+Estimate/invoice delivery, manual reminders, and payment receipts create durable outbox
+rows in the domain transaction, invoke processing after commit for immediate local
+behavior, and expose
 `python manage.py process_outbox --limit N` for pending/failed retries. Production must run
 that command through a supervised worker/scheduler until a dedicated queue consumer is
 introduced.

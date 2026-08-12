@@ -8,9 +8,9 @@ Last reviewed: 2026-08-12
 - **Planned:** approved V1 model, not yet implemented.
 - **Post-V1:** extension point intentionally not exposed in V1.
 
-The repository includes migrations through Phase 3 for `users`, `workspaces`, `core`,
-`crm`, `catalog`, `activity`, `estimates`, and `communications` with Django 5.2.16 against
-PostgreSQL 16.
+The repository includes migrations through Phase 4 for `users`, `workspaces`, `core`,
+`crm`, `catalog`, `activity`, `estimates`, `invoices`, `payments`, and `communications`
+with Django 5.2.16 against PostgreSQL 16.
 
 ## Current Implemented Models
 
@@ -56,7 +56,8 @@ Business 1 ----< Invoice ----< InvoiceLineItem
                         +----< Payment ----< PaymentReversal
 
 Estimate/Invoice ----< PublicDocumentLink
-Estimate/Invoice ----< DocumentSnapshot ---- 0..1 FileAsset (PDF)
+Estimate/Invoice ---- 1 DocumentSnapshot
+Estimate/Invoice/Payment ----< FileAsset (PDF/receipt)
 Estimate/Invoice/Payment ----< EmailDelivery
 Business ----< ActivityEvent
 Workspace/User ----< Notification
@@ -140,53 +141,66 @@ Online and manually recorded acceptance use the same business outcome without mi
 
 ## Invoices and Payments
 
-### `Invoice` - Planned
+### `Invoice` - Implemented
 
 Belongs to Business and protected Contact; optionally has a unique one-to-one source Estimate. Stores visible number, workflow state, currency/dates, contact and billing snapshots, line/tax/discount totals, cached amount paid/balance, deposit requirement, notes/terms, delivery/view/void timestamps, reason, and creator.
 
 Editable workflow values are Draft, Sent, Viewed, and Void. Partial, Paid, and Overdue are derived from ledger totals, balance, due date, and business-local date.
 
-Key constraints: `(business, number)` unique; non-null source estimate unique; due date valid; money non-negative; void invoices cannot receive payments.
+Key constraints: `(business, number)` unique; source Estimate one-to-one; due date valid;
+money non-negative and internally balanced; issue and void state/timestamps consistent.
+Payment and void service rules add row locking and ledger-aware validation.
 
-### `InvoiceLineItem` - Planned
+### `InvoiceLineItem` - Implemented
 
 Invoice-specific historical line snapshot with the same financial shape as an estimate line. It never shares persistence with `EstimateLineItem` and does not change when a source catalog/estimate line changes.
 
-### `Payment` - Planned
+### `Payment` - Implemented
 
-Authoritative ledger entry belonging directly to Business and one protected Invoice. Stores manual/online source, pending/posted/failed/reversed status, positive amount, currency, paid date, method/reference/note, provider identifiers, optional actor, and posting/reversal timestamps.
+Authoritative immutable posted ledger entry belonging directly to Business and one
+protected Invoice. Stores manual/online source, positive amount, currency, paid date,
+method/reference/note, optional provider identifier and actor, posting timestamp, and
+immutable invoice-total/balance-after snapshots. Reversed status is derived from additive
+reversal totals.
 
 Posted payments are immutable. Currency must equal invoice currency; provider payment identifiers are unique when present; child and invoice businesses must match.
 
-### `PaymentReversal` - Planned
+### `PaymentReversal` - Implemented
 
-Additive correction record belonging to Business and one protected Payment. Stores positive amount, reason, optional unique provider identifier, timestamp, and actor. Aggregate reversals cannot exceed the unreversed posted amount.
+Additive immutable correction record belonging to Business and one protected Payment.
+Stores positive amount, required reason, timestamp, and actor. The reversal service locks
+the payment and invoice and prevents aggregate reversals exceeding the posted amount.
 
 Payment rows plus reversals are the source of truth. Invoice paid/balance caches exist for read performance and must reconcile to the ledger.
 
 ## Communications and Audit
 
-### `PublicDocumentLink` - Implemented for estimates
+### `PublicDocumentLink` - Implemented for estimates and invoices
 
-Purpose-scoped, revocable access to exactly one Estimate or Invoice. Stores a unique token digest, purpose, optional expiration/revocation, and access data. Viewing, accepting, and paying are separate purposes.
+Purpose-scoped, revocable access to exactly one Estimate or Invoice. Stores only a unique
+token digest plus purpose, expiration/revocation, and access data. Estimate view/respond
+and invoice view links are separate; raw tokens are never persisted.
 
-### `FileAsset` - Implemented for estimate PDFs
+### `FileAsset` - Implemented for document PDFs and payment receipts
 
-Metadata for private object storage: optional Business, asset kind, storage key, content type, size, checksum, creator, and timestamp. Used for logos, PDFs, and exports.
+Tenant-owned metadata for exactly one Estimate, Invoice, or Payment asset: kind, storage
+key, content type, byte size, checksum, and optional matching document snapshot. Invoice
+PDFs are cached by immutable snapshot plus current payment-state render key.
 
-### `DocumentSnapshot` - Implemented for estimates
+### `DocumentSnapshot` - Implemented for estimates and invoices
 
 Immutable versioned rendering payload for one issued estimate or invoice, optionally linked to a generated PDF asset. Legitimate revisions create new versions; historical documents are not silently regenerated from current defaults.
 
-### `EmailDelivery` - Implemented for estimates
+### `EmailDelivery` - Implemented for estimates, invoices, reminders, and receipts
 
-Tracks recipient, template, optional estimate/invoice/payment, queued/sent/delivered/failed state, provider message ID, timestamps, and failure code.
+Tracks exactly one estimate/invoice/payment target, delivery kind, recipient, subject,
+queued/sent/failed state, timestamps, and sanitized failure information.
 
 ### `ActivityEvent` - Implemented foundation
 
-Append-only business history supports explicit Contact, ProductService, and Estimate
-targets, optional actor, constrained event type, summary, minimal metadata, and occurrence
-timestamp. Invoice and Payment targets will be added with their domains.
+Append-only business history supports explicit Contact, ProductService, Estimate,
+Invoice, or Payment targets, optional actor, constrained event type, summary, minimal
+metadata, and occurrence timestamp.
 
 ### `Notification` - Planned
 
@@ -210,9 +224,12 @@ One-to-one payment-provider connection for Business with unique provider account
 
 Durable provider inbox with unique `(provider, provider_event_id)`, type, mode, payload, signature verification, processing status, attempts, error, and timestamps.
 
-### `OutboxEvent` - Planned
+### `OutboxEvent` - Implemented
 
-Durable after-commit work record with topic, aggregate identity, optional Business, validated payload, availability/processing timestamps, attempts, and last error.
+Durable after-commit work record with event type, required Business, unique dedupe key,
+validated payload, availability/processing timestamps, attempts, status, and last error.
+It currently drives estimate/invoice/reminder/receipt email delivery and command-based
+retry.
 
 ## Cross-Model Invariants
 
@@ -222,7 +239,8 @@ Durable after-commit work record with topic, aggregate identity, optional Busine
 - Issued document snapshots and posted ledger entries are immutable.
 - Visible document numbers are unique per Business, not globally.
 - All document/payment currencies agree; no V1 currency conversion.
-- Exactly one target is set on a public document link or document snapshot.
+- Exactly one type-aligned target is set on public links, snapshots, files, deliveries,
+  and activity events.
 - Provider event/payment/account identifiers are unique in their correct scope.
 - Financial parents are protected from deletion; corrections use archive, void, or reversal semantics.
 

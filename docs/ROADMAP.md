@@ -13,13 +13,14 @@ No percentage-complete estimate is used because the repository is not yet deep e
 
 ## Current Position
 
-**Milestone 3 - Estimate workflow is complete.** An owner can build a tenant-safe estimate,
-issue an immutable numbered snapshot, generate or email its PDF, create secure public
-links, track views, and record online or manual acceptance/decline evidence. Eighty-one
+**Milestone 4 - Invoice conversion and manual payments are complete.** An owner can
+convert an accepted estimate without re-entry, create a direct invoice, issue and deliver
+an immutable invoice, record deposits/partial/final payments, reverse corrections, send
+reminders/receipts, and reconcile invoice caches to the ledger. One hundred three
 PostgreSQL-backed tests pass locally.
 
-The recommended next milestone is Phase 4 Invoice Conversion and Manual Payments,
-beginning with the idempotent accepted-estimate conversion boundary and invoice ledger.
+The recommended next milestone is Phase 5 Dashboard, Communications, and Export,
+beginning with reconciled financial cards and Needs Attention read models.
 
 ## Ordered Delivery Plan
 
@@ -29,7 +30,7 @@ beginning with the idempotent accepted-estimate conversion boundary and invoice 
 | 1. Identity, workspace, and onboarding | P0 | Complete | Phase 0 | Verified owner reaches an empty tenant-safe dashboard |
 | 2. CRM and catalog | P0 | Complete | Phase 1 | Business manages tenant-safe leads/clients/notes/services |
 | 3. Estimate workflow | P0 | Complete | Phase 2 | Accurate estimate can be issued, viewed, accepted/declined, and preserved |
-| 4. Invoice conversion and manual payments | P0 | Not started | Phase 3 | Complete manual lead-to-paid workflow passes |
+| 4. Invoice conversion and manual payments | P0 | Complete | Phase 3 | Complete manual lead-to-paid workflow passes |
 | 5. Dashboard, communications, and export | P1 | Not started | Phase 4 | Owner can understand cash/work status; exports reconcile |
 | 6. SaaS billing and online payments | P1 | Not started | Stable manual workflow and Phase 5 operations | Subscription and invoice payments are idempotent and separated |
 | 7. Launch hardening | P0 launch gate | Not started | All enabled V1 phases | Security, restore, migration, accessibility, monitoring, and E2E gates pass |
@@ -96,8 +97,9 @@ and cross-tenant tests. That boundary now supports the completed Phase 2 domains
 - Append-only activity for Contact and ProductService creation, edits, notes, and status changes.
 - PostgreSQL constraints plus service and web cross-tenant denial tests.
 
-The Phase 2 exit gate is satisfied. Phase 3 can depend on Contact and ProductService while
-copying their values into document-line and issued-document snapshots.
+The Phase 2 exit gate is satisfied. Completed Phases 3 and 4 depend on Contact and
+ProductService while copying their values into separate document lines and immutable
+issued-document snapshots.
 
 ## Phase 3 - Estimate Workflow
 
@@ -123,9 +125,19 @@ remain deployment choices required before real customer documents are sent.
 
 ## Phase 4 - Invoice Conversion and Manual Payments
 
-Build atomic idempotent conversion, Invoice/LineItem, invoice issue/snapshot/PDF/public view, manual Payment/Reversal ledger, deposits/partial payments, derived statuses, void, receipt, and manual reminder.
+### Completed scope
 
-The exit gate is the full manual workflow:
+- Atomic, idempotent, concurrent-safe accepted-estimate conversion that reuses the issued
+  historical snapshot and promotes the same lead record to Client.
+- Direct invoice builder, separate Invoice/InvoiceLineItem aggregate, row-locked numbering,
+  immutable issue snapshot, owner lifecycle screens, PDF/email, and secure public view.
+- Immutable manual Payment and additive PaymentReversal ledger with atomic paid/balance
+  caches, deposits, partial/final payments, derived Paid/Partial/Overdue, and safe voiding.
+- Durable invoice/reminder/receipt email delivery, payment receipts, activity history,
+  client financial summary, and a reconciliation management command.
+- PostgreSQL rollback/concurrency/isolation tests plus rendered invoice/receipt visual QA.
+
+The exit gate is proven by an automated full manual workflow:
 
 > Lead -> Estimate -> Acceptance -> Invoice -> Deposit -> Partial payment -> Final payment -> Paid
 

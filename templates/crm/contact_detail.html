@@ -72,7 +72,8 @@
                         <div class="col"><div class="fs-4">{{ financial_summary.invoices }}</div><small>Invoices</small></div>
                         <div class="col"><div class="fs-4">{{ financial_summary.payments }}</div><small>Payments</small></div>
                     </div>
-                    <p class="small text-body-secondary mt-3 mb-0">Estimate and invoice totals will appear when those workflows are enabled.</p>
+                    <hr><dl class="row mb-0"><dt class="col-6">Payments received</dt><dd class="col-6 text-end">{{ ACTIVE_BUSINESS.default_currency }} {{ financial_summary.paid }}</dd><dt class="col-6">Outstanding</dt><dd class="col-6 text-end">{{ ACTIVE_BUSINESS.default_currency }} {{ financial_summary.outstanding }}</dd></dl>
+                    {% if financial_summary.recent_invoices %}<h3 class="h6 mt-4">Recent invoices</h3><ul class="list-unstyled mb-0">{% for invoice in financial_summary.recent_invoices %}<li class="d-flex justify-content-between py-1"><a href="{% url 'invoices:detail' invoice.id %}">{{ invoice.number }}</a><span>{{ invoice.effective_status|title }}</span></li>{% endfor %}</ul>{% endif %}
                 </div>
             </section>
 

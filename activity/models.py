@@ -31,6 +31,17 @@ class ActivityEvent(models.Model):
         ESTIMATE_VIEWED = "estimate.viewed", "Estimate viewed"
         ESTIMATE_ACCEPTED = "estimate.accepted", "Estimate accepted"
         ESTIMATE_DECLINED = "estimate.declined", "Estimate declined"
+        ESTIMATE_CONVERTED = "estimate.converted", "Estimate converted"
+        INVOICE_CREATED = "invoice.created", "Invoice created"
+        INVOICE_LINE_CHANGED = "invoice.line_changed", "Invoice line changed"
+        INVOICE_ISSUED = "invoice.issued", "Invoice issued"
+        INVOICE_EMAIL_QUEUED = "invoice.email_queued", "Invoice email queued"
+        INVOICE_REMINDER_QUEUED = "invoice.reminder_queued", "Reminder queued"
+        INVOICE_VIEWED = "invoice.viewed", "Invoice viewed"
+        INVOICE_VOIDED = "invoice.voided", "Invoice voided"
+        PAYMENT_POSTED = "payment.posted", "Payment posted"
+        PAYMENT_REVERSED = "payment.reversed", "Payment reversed"
+        PAYMENT_RECEIPT_QUEUED = "payment.receipt_queued", "Receipt queued"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     business = models.ForeignKey(
@@ -66,6 +77,20 @@ class ActivityEvent(models.Model):
         blank=True,
         null=True,
     )
+    invoice = models.ForeignKey(
+        "invoices.Invoice",
+        on_delete=models.PROTECT,
+        related_name="activity_events",
+        blank=True,
+        null=True,
+    )
+    payment = models.ForeignKey(
+        "payments.Payment",
+        on_delete=models.PROTECT,
+        related_name="activity_events",
+        blank=True,
+        null=True,
+    )
     event_type = models.CharField(max_length=64, choices=EventType.choices)
     summary = models.CharField(max_length=255)
     metadata = models.JSONField(default=dict, blank=True)
@@ -87,16 +112,36 @@ class ActivityEvent(models.Model):
                         contact__isnull=False,
                         product_service__isnull=True,
                         estimate__isnull=True,
+                        invoice__isnull=True,
+                        payment__isnull=True,
                     )
                     | Q(
                         contact__isnull=True,
                         product_service__isnull=False,
                         estimate__isnull=True,
+                        invoice__isnull=True,
+                        payment__isnull=True,
                     )
                     | Q(
                         contact__isnull=True,
                         product_service__isnull=True,
                         estimate__isnull=False,
+                        invoice__isnull=True,
+                        payment__isnull=True,
+                    )
+                    | Q(
+                        contact__isnull=True,
+                        product_service__isnull=True,
+                        estimate__isnull=True,
+                        invoice__isnull=False,
+                        payment__isnull=True,
+                    )
+                    | Q(
+                        contact__isnull=True,
+                        product_service__isnull=True,
+                        estimate__isnull=True,
+                        invoice__isnull=True,
+                        payment__isnull=False,
                     )
                 ),
                 name="activity_event_exactly_one_target",
@@ -105,7 +150,13 @@ class ActivityEvent(models.Model):
 
     def clean(self):
         super().clean()
-        target = self.contact or self.product_service or self.estimate
+        target = (
+            self.contact
+            or self.product_service
+            or self.estimate
+            or self.invoice
+            or self.payment
+        )
         if target and target.business_id != self.business_id:
             raise ValidationError("Activity target must belong to the same business.")
 

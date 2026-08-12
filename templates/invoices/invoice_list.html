@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Invoices | {{ APP_NAME }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="mb-1">Invoices</h1><p class="text-body-secondary mb-0">Track billing, balances, and payment history.</p></div><a class="btn btn-primary" href="{% url 'invoices:create' %}">New invoice</a></div>
+  <form class="row g-2 mb-4" method="get"><div class="col-md-7"><input class="form-control" type="search" name="q" value="{{ search }}" placeholder="Search number or client"></div><div class="col-md-3"><select class="form-select" name="status"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}"{% if status_filter == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><div class="col-md-2 d-grid"><button class="btn btn-outline-secondary">Filter</button></div></form>
+  <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Invoice</th><th>Client</th><th>Status</th><th>Due</th><th class="text-end">Total</th><th class="text-end">Balance</th></tr></thead><tbody>{% for invoice in invoices %}<tr><td><a href="{% url 'invoices:detail' invoice.id %}">{{ invoice.number|default:"Draft" }}</a></td><td>{{ invoice.contact.display_name }}</td><td><span class="badge text-bg-secondary">{{ invoice.effective_status|title }}</span></td><td>{{ invoice.due_date|date:"M j, Y" }}</td><td class="text-end">{{ invoice.currency }} {{ invoice.total }}</td><td class="text-end">{{ invoice.currency }} {{ invoice.balance_due }}</td></tr>{% empty %}<tr><td colspan="6" class="text-center text-body-secondary py-5">No invoices found.</td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endblock %}

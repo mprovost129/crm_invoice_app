@@ -14,6 +14,7 @@ class ActivityEventAdmin(admin.ModelAdmin):
         "contact__last_name",
         "product_service__name",
         "estimate__number",
+        "invoice__number",
     )
     readonly_fields = (
         "business",
@@ -21,6 +22,8 @@ class ActivityEventAdmin(admin.ModelAdmin):
         "contact",
         "product_service",
         "estimate",
+        "invoice",
+        "payment",
         "event_type",
         "summary",
         "metadata",

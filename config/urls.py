@@ -10,6 +10,7 @@ urlpatterns = [
     path("", include("crm.urls")),
     path("", include("catalog.urls")),
     path("", include("estimates.urls")),
+    path("", include("invoices.urls")),
     path("", include("core.urls")),
 ]
 

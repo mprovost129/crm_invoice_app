@@ -2,7 +2,7 @@
 
 A Django/PostgreSQL application for the service-business workflow from lead through
 estimate, acceptance, invoice, and payment. The repository has completed its identity,
-tenant, CRM, catalog, and estimate workflow; see [Project Overview](docs/PROJECT_OVERVIEW.md),
+tenant, CRM, catalog, estimate, invoice, and manual-payment workflow; see [Project Overview](docs/PROJECT_OVERVIEW.md),
 [Roadmap](docs/ROADMAP.md), and [Features](docs/FEATURES.md).
 
 ## Prerequisites

@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     "activity",
     "estimates",
     "communications",
+    "invoices",
+    "payments",
     "core",
 ]
 

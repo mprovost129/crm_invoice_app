@@ -13,6 +13,15 @@ class DocumentSnapshot(BusinessOwnedModel):
         "estimates.Estimate",
         on_delete=models.PROTECT,
         related_name="document_snapshot",
+        blank=True,
+        null=True,
+    )
+    invoice = models.OneToOneField(
+        "invoices.Invoice",
+        on_delete=models.PROTECT,
+        related_name="document_snapshot",
+        blank=True,
+        null=True,
     )
     version = models.PositiveSmallIntegerField(default=1)
     payload = models.JSONField()
@@ -20,6 +29,15 @@ class DocumentSnapshot(BusinessOwnedModel):
 
     class Meta:
         ordering = ("-created_at",)
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(estimate__isnull=False, invoice__isnull=True)
+                    | Q(estimate__isnull=True, invoice__isnull=False)
+                ),
+                name="communications_snapshot_exactly_one_document",
+            )
+        ]
 
     def save(self, *args, **kwargs):
         if self._state.adding is False:
@@ -30,9 +48,11 @@ class DocumentSnapshot(BusinessOwnedModel):
         super().clean()
         if self.estimate_id and self.business_id != self.estimate.business_id:
             raise ValidationError("Snapshot and estimate must share a business.")
+        if self.invoice_id and self.business_id != self.invoice.business_id:
+            raise ValidationError("Snapshot and invoice must share a business.")
 
     def __str__(self):
-        return f"Snapshot for {self.estimate}"
+        return f"Snapshot for {self.estimate or self.invoice}"
 
 
 class PublicDocumentLink(BusinessOwnedModel):
@@ -44,6 +64,15 @@ class PublicDocumentLink(BusinessOwnedModel):
         "estimates.Estimate",
         on_delete=models.PROTECT,
         related_name="public_links",
+        blank=True,
+        null=True,
+    )
+    invoice = models.ForeignKey(
+        "invoices.Invoice",
+        on_delete=models.PROTECT,
+        related_name="public_links",
+        blank=True,
+        null=True,
     )
     purpose = models.CharField(max_length=20, choices=Purpose.choices)
     token_digest = models.CharField(max_length=64, unique=True)
@@ -55,7 +84,17 @@ class PublicDocumentLink(BusinessOwnedModel):
     class Meta:
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=("business", "estimate", "purpose", "revoked_at"))
+            models.Index(fields=("business", "estimate", "purpose", "revoked_at")),
+            models.Index(fields=("business", "invoice", "purpose", "revoked_at")),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(estimate__isnull=False, invoice__isnull=True)
+                    | Q(estimate__isnull=True, invoice__isnull=False)
+                ),
+                name="communications_link_exactly_one_document",
+            )
         ]
 
     @property
@@ -66,21 +105,45 @@ class PublicDocumentLink(BusinessOwnedModel):
         super().clean()
         if self.estimate_id and self.business_id != self.estimate.business_id:
             raise ValidationError("Public link and estimate must share a business.")
+        if self.invoice_id and self.business_id != self.invoice.business_id:
+            raise ValidationError("Public link and invoice must share a business.")
+        if self.invoice_id and self.purpose != self.Purpose.VIEW:
+            raise ValidationError("Invoice links support view access only.")
 
 
 class FileAsset(BusinessOwnedModel):
     class Kind(models.TextChoices):
         ESTIMATE_PDF = "estimate_pdf", "Estimate PDF"
+        INVOICE_PDF = "invoice_pdf", "Invoice PDF"
+        PAYMENT_RECEIPT = "payment_receipt", "Payment receipt"
 
     estimate = models.ForeignKey(
         "estimates.Estimate",
         on_delete=models.PROTECT,
         related_name="file_assets",
+        blank=True,
+        null=True,
+    )
+    invoice = models.ForeignKey(
+        "invoices.Invoice",
+        on_delete=models.PROTECT,
+        related_name="file_assets",
+        blank=True,
+        null=True,
+    )
+    payment = models.ForeignKey(
+        "payments.Payment",
+        on_delete=models.PROTECT,
+        related_name="file_assets",
+        blank=True,
+        null=True,
     )
     snapshot = models.ForeignKey(
         DocumentSnapshot,
         on_delete=models.PROTECT,
         related_name="file_assets",
+        blank=True,
+        null=True,
     )
     kind = models.CharField(max_length=30, choices=Kind.choices)
     storage_name = models.CharField(max_length=500, unique=True)
@@ -90,16 +153,64 @@ class FileAsset(BusinessOwnedModel):
 
     class Meta:
         ordering = ("-created_at",)
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        estimate__isnull=False,
+                        invoice__isnull=True,
+                        payment__isnull=True,
+                    )
+                    | Q(
+                        estimate__isnull=True,
+                        invoice__isnull=False,
+                        payment__isnull=True,
+                    )
+                    | Q(
+                        estimate__isnull=True,
+                        invoice__isnull=True,
+                        payment__isnull=False,
+                    )
+                ),
+                name="communications_file_exactly_one_target",
+            )
+        ]
 
     def clean(self):
         super().clean()
         if self.estimate_id and self.business_id != self.estimate.business_id:
             raise ValidationError("File and estimate must share a business.")
+        if self.invoice_id and self.business_id != self.invoice.business_id:
+            raise ValidationError("File and invoice must share a business.")
+        if self.payment_id and self.business_id != self.payment.business_id:
+            raise ValidationError("File and payment must share a business.")
         if self.snapshot_id and self.business_id != self.snapshot.business_id:
             raise ValidationError("File and snapshot must share a business.")
+        if self.snapshot_id:
+            if self.estimate_id and self.estimate_id != self.snapshot.estimate_id:
+                raise ValidationError("File and snapshot targets must match.")
+            if self.invoice_id and self.invoice_id != self.snapshot.invoice_id:
+                raise ValidationError("File and snapshot targets must match.")
+            if self.payment_id:
+                raise ValidationError("Payment receipts do not use document snapshots.")
+        expected_target = {
+            self.Kind.ESTIMATE_PDF: "estimate",
+            self.Kind.INVOICE_PDF: "invoice",
+            self.Kind.PAYMENT_RECEIPT: "payment",
+        }[self.kind]
+        if not getattr(self, f"{expected_target}_id"):
+            raise ValidationError(
+                f"{self.get_kind_display()} files require a matching {expected_target}."
+            )
 
 
 class EmailDelivery(BusinessOwnedModel):
+    class Kind(models.TextChoices):
+        ESTIMATE = "estimate", "Estimate"
+        INVOICE = "invoice", "Invoice"
+        REMINDER = "reminder", "Invoice reminder"
+        RECEIPT = "receipt", "Payment receipt"
+
     class Status(models.TextChoices):
         QUEUED = "queued", "Queued"
         SENT = "sent", "Sent"
@@ -109,7 +220,24 @@ class EmailDelivery(BusinessOwnedModel):
         "estimates.Estimate",
         on_delete=models.PROTECT,
         related_name="email_deliveries",
+        blank=True,
+        null=True,
     )
+    invoice = models.ForeignKey(
+        "invoices.Invoice",
+        on_delete=models.PROTECT,
+        related_name="email_deliveries",
+        blank=True,
+        null=True,
+    )
+    payment = models.ForeignKey(
+        "payments.Payment",
+        on_delete=models.PROTECT,
+        related_name="email_deliveries",
+        blank=True,
+        null=True,
+    )
+    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.ESTIMATE)
     recipient = models.EmailField()
     subject = models.CharField(max_length=255)
     status = models.CharField(
@@ -123,11 +251,48 @@ class EmailDelivery(BusinessOwnedModel):
 
     class Meta:
         ordering = ("-created_at",)
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        estimate__isnull=False,
+                        invoice__isnull=True,
+                        payment__isnull=True,
+                    )
+                    | Q(
+                        estimate__isnull=True,
+                        invoice__isnull=False,
+                        payment__isnull=True,
+                    )
+                    | Q(
+                        estimate__isnull=True,
+                        invoice__isnull=True,
+                        payment__isnull=False,
+                    )
+                ),
+                name="communications_delivery_exactly_one_target",
+            )
+        ]
 
     def clean(self):
         super().clean()
         if self.estimate_id and self.business_id != self.estimate.business_id:
             raise ValidationError("Delivery and estimate must share a business.")
+        if self.invoice_id and self.business_id != self.invoice.business_id:
+            raise ValidationError("Delivery and invoice must share a business.")
+        if self.payment_id and self.business_id != self.payment.business_id:
+            raise ValidationError("Delivery and payment must share a business.")
+        expected_target = {
+            self.Kind.ESTIMATE: "estimate",
+            self.Kind.INVOICE: "invoice",
+            self.Kind.REMINDER: "invoice",
+            self.Kind.RECEIPT: "payment",
+        }[self.kind]
+        if not getattr(self, f"{expected_target}_id"):
+            raise ValidationError(
+                f"{self.get_kind_display()} delivery requires a matching "
+                f"{expected_target}."
+            )
 
 
 class OutboxEvent(models.Model):

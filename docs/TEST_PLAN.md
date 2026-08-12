@@ -8,7 +8,7 @@ Testing must prove the product is financially correct, tenant-isolated, retry-sa
 
 ## Current Test Baseline
 
-Fifty-two PostgreSQL-backed pytest tests pass through Phase 2:
+One hundred three PostgreSQL-backed pytest tests pass through Phase 4. The suite includes:
 
 - Custom email user is configured and has no username field.
 - User creation normalizes email and hashes the password.
@@ -31,9 +31,17 @@ Fifty-two PostgreSQL-backed pytest tests pass through Phase 2:
 - Product/service rates, units, and archive state are validated in services and PostgreSQL constraints.
 - Contact notes and CRM/catalog activity are tenant-aligned; activity events reject updates.
 - Future entitlement enforcement hooks are invoked by Contact and catalog creation services.
+- Estimate calculations, transactional numbering, immutable snapshots, public viewing,
+  acceptance evidence, PDF generation, email outbox behavior, and owner/customer routes.
+- Atomic idempotent estimate conversion, concurrent conversion, rollback, immutable
+  historical source copying, direct invoices, and tenant denial.
+- Deposit/partial/final payments, concurrent posting, immutable reversals, void rules,
+  derived Paid/Partial/Overdue state, reconciliation, receipt PDF/email, and invoice links.
+- An automated full manual Lead -> Estimate -> Acceptance -> Invoice -> Deposit -> Partial
+  payment -> Final payment -> Paid exit workflow.
 
-Issued-document, financial, public-link, provider, export, and full V1 end-to-end tests do
-not exist yet; those follow the roadmap dependencies.
+Real production-provider failure modes, export/reporting, accessibility, backup restore,
+and production-like browser E2E remain roadmap/launch gates.
 
 ## Test Environments and Tooling
 
@@ -77,13 +85,13 @@ For every important service, test authorized success, unauthorized actor, cross-
 
 High-risk services include registration/tenant creation, document number allocation, issuing, acceptance, estimate conversion, invoice voiding, payment posting, payment reversal, reminders, connected-account updates, subscription changes, and webhook processing.
 
-Phase 3 automated coverage now proves estimate calculator order/rounding, invalid financial
-inputs, atomic numbering rollback, immutable issue snapshots, issued-edit rejection,
-tenant denial, derived expiration, purpose/expiry/revocation of public links, repeated-view
-behavior, online/manual acceptance evidence, PDF checksum/reuse, email outbox completion,
-digest-only token persistence, and owner/public web workflows. Concurrency load testing,
-real provider failure modes, accessibility, and production-like browser/email delivery
-remain launch gates.
+Phase 4 automated coverage additionally proves conversion/payment row-lock behavior,
+conversion rollback and idempotency, immutable issued-source copying, payment/reversal
+bounds and immutability, invoice cache reconciliation, void safeguards, live-balance PDF
+caching, receipt evidence, invoice/reminder/receipt outbox completion, digest-only invoice
+links, owner/public routes, and cross-tenant denial. Extended load testing, real provider
+failure modes, accessibility, and production-like browser/email delivery remain launch
+gates.
 
 ### Selector and Query Tests
 

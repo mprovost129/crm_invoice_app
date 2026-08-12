@@ -63,8 +63,10 @@ These flows must not share financial records or business logic.
 
 ## Current Repository State
 
-The repository has completed the identity, tenant, CRM, and catalog foundation, but is
-not yet a working invoicing V1.
+The repository has completed the identity, tenant, CRM, catalog, estimate, invoice, and
+manual-payment workflow. It now proves the core manual lead-to-paid product path, but is
+not yet a production-ready commercial V1 because dashboard/export, provider, operational,
+accessibility, backup/restore, and launch-hardening gates remain.
 
 Implemented today:
 
@@ -82,6 +84,14 @@ Implemented today:
 - Tenant-safe Contact records with Lead, Client, and Archived lifecycle states.
 - Contact search, filtering, profile, durable notes, and append-only activity history.
 - Reusable products/services with units, rates, tax defaults, search, filters, and archive/restore behavior.
+- Estimate builder, deterministic financial calculator, immutable issue/acceptance
+  evidence, professional PDF/email, and secure customer view/respond links.
+- Atomic idempotent estimate-to-invoice conversion without customer or line-item re-entry.
+- Direct and converted invoices with immutable snapshots, professional PDF/email, secure
+  customer view, manual reminder, view tracking, derived status, and safe void workflow.
+- Immutable manual payment and additive reversal ledger supporting deposits, partial/final
+  payments, receipts, cached balance updates, and reconciliation.
+- Client financial summaries and append-only invoice/payment activity history.
 - Customer-centric staff admin.
 - Shared timestamp base model.
 - Separate liveness/readiness endpoints and request correlation IDs.
@@ -89,14 +99,17 @@ Implemented today:
 - Baseline production security, static-file, cache, logging, and email configuration.
 - Non-root multi-stage production container and health-checked Compose services.
 - GitHub Actions quality gate and reproducible Docker setup instructions.
-- Fifty-two passing PostgreSQL-backed tests through Phase 2.
+- One hundred three passing PostgreSQL-backed tests through Phase 4.
 
 Not yet implemented:
 
-- Estimates, invoices, calculations, document snapshots, and PDFs.
-- Payments, reminders, notifications, exports, and reporting.
-- Subscription billing, Stripe Connect, webhooks, background work, and reconciliation.
-- The V1 end-to-end workflow.
+- Cross-domain dashboard cards, Needs Attention, internal notifications, CSV exports, and
+  minimal reporting.
+- Production transactional email/private object storage, independently deployed outbox
+  processing, monitoring, automated backups, and demonstrated restore.
+- Subscription billing, Stripe Connect, online payments, and webhook infrastructure.
+- Production-like browser E2E, responsive/accessibility review, terms/privacy, and the
+  remaining launch-hardening boundary.
 
 See [FEATURES.md](FEATURES.md) and [ROADMAP.md](ROADMAP.md) for status and sequencing.
 

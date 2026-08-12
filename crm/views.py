@@ -12,6 +12,7 @@ from .forms import ContactCreateForm, ContactForm, ContactNoteForm
 from .models import Contact
 from .selectors import (
     contact_activity,
+    contact_financial_summary,
     contact_for_business,
     contact_notes,
     contacts_for_business,
@@ -98,12 +99,10 @@ class ContactDetailView(
                     contact=self.contact,
                 )[:50],
                 "note_form": ContactNoteForm(),
-                "financial_summary": {
-                    "estimates": 0,
-                    "invoices": 0,
-                    "payments": 0,
-                    "outstanding": None,
-                },
+                "financial_summary": contact_financial_summary(
+                    business=self.request.business,
+                    contact=self.contact,
+                ),
             }
         )
         return context

@@ -111,6 +111,11 @@ allocation, tax after discount, and explicit minor-unit conversion.
 
 **Rationale:** Editing or deleting posted financial records destroys auditability. Ledger-based balances naturally support deposits and multiple partial payments.
 
+**Implemented (2026-08-12):** Posted Payment rows capture immutable invoice-total and
+balance-after evidence. Corrections are additive full/partial PaymentReversal rows;
+services lock the affected invoice/payment, enforce non-overpayment and reversal bounds,
+update cached invoice totals atomically, and expose a ledger reconciliation command.
+
 ## D-012 - Financial and Date States Are Derived
 
 **Status:** Accepted
@@ -118,6 +123,10 @@ allocation, tax after discount, and explicit minor-unit conversion.
 **Decision:** Derive Estimate Expired and Invoice Partial/Paid/Overdue from workflow state, business-local dates, and ledger balances. Do not make them independently editable workflow values.
 
 **Rationale:** These are facts. Stored editable copies drift and require unnecessary scheduled status mutation.
+
+**Implemented (2026-08-12):** Invoice Paid, Partial, and Overdue are computed from void
+state, current balance, amount paid, due date, and the Business timezone. Overdue takes
+precedence over Partial once a positive balance passes its due date.
 
 ## D-013 - Allocate Document Numbers Transactionally
 
@@ -130,6 +139,9 @@ allocation, tax after discount, and explicit minor-unit conversion.
 **Implemented (2026-08-12):** Estimate issue locks the tenant's sequence row, allocates the
 number, persists the issue state, and creates the snapshot in one transaction; failures
 roll back both the state and sequence increment.
+
+Invoice issue and accepted-estimate conversion now use the same transaction-locked
+sequence policy and rollback behavior.
 
 ## D-014 - Important Workflows Use Explicit Services
 
@@ -152,6 +164,9 @@ outbox rows atomically, processes after commit, records attempt/failure/completi
 and supports command-driven retry. A dedicated production worker and retry scheduler are
 still required before launch.
 
+Invoice delivery, manual reminders, and payment receipts now use the same durable delivery
+and outbox boundary with document-appropriate PDF attachments and digest-only links.
+
 ## D-016 - Separate Subscription Billing from Invoice Payments
 
 **Status:** Accepted
@@ -173,18 +188,28 @@ only SHA-256 digests are stored. View and respond purposes are distinct, links e
 can be revoked, response links are revoked after a terminal response, and public routes
 use throttling plus non-enumerating errors and privacy headers.
 
+Invoice view links use the same security boundary and cannot be created with estimate-only
+response permission.
+
 ## D-026 - ReportLab and Framework Provider Adapters for Phase 3
 
 **Status:** Accepted 2026-08-12
 
-**Decision:** Pin ReportLab 5.0.0 for server-side estimate PDFs. Use Django's email and
+**Decision:** Pin ReportLab 5.0.0 for server-side estimate, invoice, and receipt PDFs. Use Django's email and
 default-storage interfaces as the Phase 3 provider boundaries rather than coupling domain
 services to a specific transactional-email or object-storage vendor.
 
-**Rationale:** ReportLab produces deterministic PDFs directly from immutable snapshots.
+**Rationale:** ReportLab produces consistent PDFs directly from immutable snapshots and
+payment evidence.
 Django's adapters keep local testing reliable and let deployment select private storage
-and transactional email without rewriting estimate workflows. Provider selection and
+and transactional email without rewriting document workflows. Provider selection and
 credentials remain launch operations decisions, not domain-model concerns.
+
+**Implemented for Phase 4 (2026-08-12):** Invoice PDFs use the immutable issued snapshot
+for document identity and line/totals history while adding current paid/balance/status
+facts. Their cache key combines the snapshot digest with that live payment state. Payment
+receipt PDFs render from immutable payment snapshots. Representative invoice and receipt
+pages were rendered through Poppler and visually verified.
 
 ## D-018 - V1 Is Not Accounting or ERP Software
 
