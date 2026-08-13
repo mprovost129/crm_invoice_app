@@ -54,6 +54,8 @@ docker compose run --rm web ruff check .
 docker compose run --rm web ruff format --check .
 docker compose run --rm web python manage.py makemigrations --check --dry-run
 docker compose run --rm web pytest
+docker compose run --rm web python manage.py launch_gate --json
+docker compose run --rm web python manage.py provider_health_check --json
 ```
 
 To validate the production settings locally, provide non-placeholder production values:

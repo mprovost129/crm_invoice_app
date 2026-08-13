@@ -54,6 +54,7 @@ AUTHENTICATION_BACKENDS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "core.middleware.SecurityHeadersMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "core.middleware.RequestIDMiddleware",
@@ -150,10 +151,14 @@ LOGGING = {
             "style": "{",
         },
     },
+    "filters": {
+        "sensitive_data": {"()": "core.logging.SensitiveDataFilter"},
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
+            "filters": ["sensitive_data"],
         },
     },
     "loggers": {
@@ -192,16 +197,30 @@ EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", 10))
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", 24 * 60 * 60))
 PUBLIC_DOCUMENT_LINK_TTL_DAYS = int(os.environ.get("PUBLIC_DOCUMENT_LINK_TTL_DAYS", 90))
 PUBLIC_DOCUMENT_VIEW_LIMIT = int(os.environ.get("PUBLIC_DOCUMENT_VIEW_LIMIT", 120))
-PUBLIC_PAYMENT_ATTEMPT_LIMIT = int(
-    os.environ.get("PUBLIC_PAYMENT_ATTEMPT_LIMIT", 20)
+PUBLIC_PAYMENT_ATTEMPT_LIMIT = int(os.environ.get("PUBLIC_PAYMENT_ATTEMPT_LIMIT", 20))
+PUBLIC_ACCOUNT_CREATE_LIMIT = int(os.environ.get("PUBLIC_ACCOUNT_CREATE_LIMIT", 10))
+PUBLIC_EMAIL_SEND_LIMIT = int(os.environ.get("PUBLIC_EMAIL_SEND_LIMIT", 5))
+
+CONTENT_SECURITY_POLICY = "; ".join(
+    (
+        "default-src 'self'",
+        "base-uri 'self'",
+        "object-src 'none'",
+        "frame-ancestors 'none'",
+        "form-action 'self'",
+        "img-src 'self' data:",
+        "font-src 'self'",
+        "style-src-elem 'self' https://cdn.jsdelivr.net",
+        "style-src-attr 'unsafe-inline'",
+        "script-src 'self' https://cdn.jsdelivr.net",
+        "connect-src 'self'",
+    )
 )
 
 # Stripe Billing and Stripe Connect use the same platform secret key but deliberately
 # separate webhook endpoints and signing secrets.
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
-STRIPE_PLATFORM_WEBHOOK_SECRET = os.environ.get(
-    "STRIPE_PLATFORM_WEBHOOK_SECRET", ""
-)
+STRIPE_PLATFORM_WEBHOOK_SECRET = os.environ.get("STRIPE_PLATFORM_WEBHOOK_SECRET", "")
 STRIPE_CONNECT_WEBHOOK_SECRET = os.environ.get("STRIPE_CONNECT_WEBHOOK_SECRET", "")
 STRIPE_LIVE_MODE = bool_env("STRIPE_LIVE_MODE", default=False)

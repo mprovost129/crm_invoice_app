@@ -31,4 +31,3 @@ class Command(BaseCommand):
         self.stdout.write(f"Processed {len(event_ids)} billing webhook event(s).")
         if failures:
             raise CommandError(f"{failures} billing webhook event(s) failed.")
-

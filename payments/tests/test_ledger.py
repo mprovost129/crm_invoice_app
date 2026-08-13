@@ -6,7 +6,6 @@ import pytest
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.management import call_command
 from django.db import close_old_connections
-from django.utils import timezone
 
 from estimates.models import Estimate
 from invoices.models import Invoice
@@ -14,7 +13,11 @@ from invoices.services import void_invoice
 from invoices.tests.helpers import create_converted_invoice
 from payments.models import Payment
 from payments.services import post_manual_payment, reverse_payment
-from workspaces.tests.helpers import create_business, create_owner_tenancy
+from workspaces.tests.helpers import (
+    business_today,
+    create_business,
+    create_owner_tenancy,
+)
 
 
 def post(*, user, business, invoice, amount, send_receipt=False):
@@ -23,7 +26,7 @@ def post(*, user, business, invoice, amount, send_receipt=False):
         business_id=business.pk,
         invoice_id=invoice.pk,
         amount=Decimal(amount),
-        paid_on=timezone.localdate(),
+        paid_on=business_today(business),
         method=Payment.Method.CHECK,
         reference="CHK-1042",
         note="Received at the office.",
@@ -120,7 +123,7 @@ def test_overpayment_future_date_and_excess_reversal_are_rejected():
             business_id=business.pk,
             invoice_id=invoice.pk,
             amount=Decimal("10"),
-            paid_on=timezone.localdate() + timedelta(days=1),
+            paid_on=business_today(business) + timedelta(days=1),
             method=Payment.Method.CASH,
         )
     payment = post(user=user, business=business, invoice=invoice, amount="20")
@@ -197,7 +200,7 @@ def test_concurrent_payments_lock_balance_and_do_not_overpay():
                 business_id=business.pk,
                 invoice_id=invoice.pk,
                 amount=Decimal(amount),
-                paid_on=timezone.localdate(),
+                paid_on=business_today(business),
                 method=Payment.Method.ACH,
             ).amount
         finally:

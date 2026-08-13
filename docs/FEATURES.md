@@ -24,14 +24,14 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Static files | Implemented | WhiteNoise manifest storage in production |
 | Persistent media/object storage | Partial | Django backend is configurable and estimate PDFs use it; no private cloud provider/package selected |
 | Liveness/readiness endpoints | Implemented | Process liveness plus database-backed readiness and compatibility `/health/` route |
-| Request correlation ID | Implemented | Request/response `X-Request-ID` middleware |
-| Logging | Partial | Console/file logging exists; not structured/centralized/redacted |
+| Request correlation ID | Implemented | Request/response `X-Request-ID` middleware validates and bounds untrusted IDs |
+| Logging | Partial | Console/file logging and central sensitive-data redaction exist; structured centralized collection remains provider work |
 | Ruff/pre-commit | Implemented | Configuration exists |
-| CI pipeline | Implemented | GitHub Actions runs Ruff, formatting, migration, PostgreSQL tests, and deploy checks |
+| CI pipeline | Implemented | GitHub Actions runs Ruff, formatting, migrations, PostgreSQL tests, launch/provider/reconciliation checks, and deploy checks |
 | Application migrations | Implemented | Phase 0/1 User, Workspace, Business, settings, and sequence migrations applied |
 | Background worker/outbox | Partial | Durable outbox, after-commit processing, retry command, and delivery state exist; no independently deployed worker/scheduler yet |
-| Error/uptime monitoring | Not started | Provider not selected |
-| Backup/restore automation | Not started | No repository procedure or evidence |
+| Error/uptime monitoring | Partial | Application/provider health commands exist; external alerting provider and uptime checks are not selected |
+| Backup/restore automation | Partial | Provider-independent restore runbook exists; automation and demonstrated restore evidence remain launch work |
 
 ## Identity, Account, and Tenancy
 
@@ -43,6 +43,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Password reset | Implemented | Namespaced routes/templates and expiring, password-invalidated tokens; delivery depends on email config |
 | Registration | Implemented | Validated public form and atomic User/Workspace/owner Membership service |
 | Email verification | Implemented | One-time token, resend path, verified timestamp, and onboarding gate |
+| Public auth rate limiting | Implemented | Cache-backed hourly limits protect registration, verification resend, and password-reset email submission |
 | Google login | Deferred | Recommended after basic auth, not required for core V1 |
 | Workspace and membership | Implemented | UUID models, active membership selectors, uniqueness constraints, staff admin |
 | Business and business settings | Implemented | UUID models, profile/default settings, validation, protected relationships |
@@ -115,8 +116,8 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Private file assets and document snapshots | Implemented for issued estimates/invoices and receipts; production storage provider remains open |
 | Minimal reports | Implemented for collections, invoiced totals, receivables aging, and estimate performance |
 | Client/contact/invoice/payment CSV export | Implemented with tenant isolation and spreadsheet injection protection |
-| Terms and privacy pages | Not started |
-| Data export/account closure procedure | Not started |
+| Terms and privacy pages | Partial | Privacy/retention decision register exists; approved public legal notices are still required |
+| Data export/account closure procedure | Partial | Tenant-safe core exports exist; account closure and retention policy still require approval and implementation |
 
 ## Commercial Integrations
 
@@ -136,7 +137,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Responsive base templates | Partial | Bootstrap shell exists; product screens do not |
+| Responsive base templates | Partial | Bootstrap product screens exist; formal phone/tablet/desktop review remains pending |
 | Accessible messages/error pages | Partial | Shared templates exist; full accessibility pass pending |
 | HTMX foundation | Implemented | Self-hosted verified HTMX 2.0.10 with Django CSRF header integration |
 | Product branding/design system | Decision needed | Current UI is generic starter styling |
@@ -157,13 +158,14 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-One hundred thirteen PostgreSQL-backed tests pass. They cover deterministic financial
+One hundred thirty-one PostgreSQL-backed tests pass. They cover deterministic financial
 calculations, numbering/conversion/payment concurrency and rollback, immutable documents
 and ledger entries, acceptance evidence, derived states, reconciliation, secure public
 links, PDF/receipt rendering, durable email delivery, owner/public screens, the complete
 manual lead-to-paid workflow, dashboard/report/CSV reconciliation, notifications,
-delivery-health alerts, spreadsheet injection defense, and cross-tenant denial. External
-production providers, full accessibility, and production-like browser E2E remain future
-gates.
+delivery-health alerts, spreadsheet injection defense, cross-tenant denial, security
+headers, sensitive-log filtering, auth rate limits, launch/provider checks, and
+business-timezone boundaries. External production providers, demonstrated restore, full
+accessibility, and production-like browser E2E remain launch gates.
 
 See [TEST_PLAN.md](TEST_PLAN.md) for required coverage and [ROADMAP.md](ROADMAP.md) for delivery order.

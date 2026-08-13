@@ -20,7 +20,11 @@ from estimates.services import (
     record_manual_acceptance,
     update_estimate,
 )
-from workspaces.tests.helpers import create_business, create_owner_tenancy
+from workspaces.tests.helpers import (
+    business_today,
+    create_business,
+    create_owner_tenancy,
+)
 
 from .helpers import (
     ESTIMATE_DATA,
@@ -205,8 +209,8 @@ def test_effective_status_expires_in_business_calendar():
     user, workspace, _ = create_owner_tenancy()
     business = create_business(workspace)
     estimate, _, _ = create_issued_estimate(user=user, business=business)
-    estimate.issue_date = timezone.localdate() - timedelta(days=2)
-    estimate.expiration_date = timezone.localdate() - timedelta(days=1)
+    estimate.issue_date = business_today(business) - timedelta(days=2)
+    estimate.expiration_date = business_today(business) - timedelta(days=1)
     estimate.save(update_fields=("issue_date", "expiration_date", "updated_at"))
 
     assert estimate.effective_status == "expired"
@@ -225,7 +229,7 @@ def test_database_rejects_duplicate_business_estimate_number():
             number=first.number,
             status=Estimate.Status.SENT,
             currency="USD",
-            issue_date=timezone.localdate(),
+            issue_date=business_today(business),
             issued_at=timezone.now(),
         )
 
@@ -239,7 +243,9 @@ def test_draft_rejects_expiration_before_issue_date():
         create_estimate_fixture(
             user=user,
             business=business,
-            estimate_data={"expiration_date": timezone.localdate() - timedelta(days=1)},
+            estimate_data={
+                "expiration_date": business_today(business) - timedelta(days=1)
+            },
         )
 
     assert Estimate.objects.count() == 0

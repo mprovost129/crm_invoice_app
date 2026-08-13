@@ -4,15 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('communications', '0006_emaildelivery_communicati_busines_83fdc6_idx_and_more'),
+        (
+            "communications",
+            "0006_emaildelivery_communicati_busines_83fdc6_idx_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='publicdocumentlink',
-            name='purpose',
-            field=models.CharField(choices=[('view', 'View'), ('respond', 'View and respond'), ('pay', 'Pay')], max_length=20),
+            model_name="publicdocumentlink",
+            name="purpose",
+            field=models.CharField(
+                choices=[
+                    ("view", "View"),
+                    ("respond", "View and respond"),
+                    ("pay", "Pay"),
+                ],
+                max_length=20,
+            ),
         ),
     ]

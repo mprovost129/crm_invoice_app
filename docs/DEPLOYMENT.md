@@ -15,6 +15,10 @@ package, monitoring provider, backup automation, or documented production deploy
 
 Treat the procedures below as the required operating model, not evidence that those controls already exist.
 
+See [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md),
+[BACKUP_RESTORE_RUNBOOK.md](BACKUP_RESTORE_RUNBOOK.md), and
+[INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md) for release evidence and recovery operations.
+
 ## Environments
 
 ### Local Development

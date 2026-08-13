@@ -7,7 +7,6 @@ from django.core import mail
 from django.core.files.storage import default_storage
 from django.test import override_settings
 from django.urls import reverse
-from django.utils import timezone
 
 from communications.emailing import (
     process_outbox_event,
@@ -28,7 +27,11 @@ from communications.pdf import (
 from invoices.models import Invoice
 from payments.models import Payment
 from payments.services import post_manual_payment
-from workspaces.tests.helpers import create_business, create_owner_tenancy
+from workspaces.tests.helpers import (
+    business_today,
+    create_business,
+    create_owner_tenancy,
+)
 
 from .helpers import create_converted_invoice
 
@@ -58,7 +61,7 @@ def test_invoice_pdf_is_reused_until_live_balance_changes(tmp_path, settings):
         business_id=business.pk,
         invoice_id=invoice.pk,
         amount=Decimal("25"),
-        paid_on=timezone.localdate(),
+        paid_on=business_today(business),
         method=Payment.Method.CASH,
     )
     invoice.refresh_from_db()
@@ -82,7 +85,7 @@ def test_receipt_pdf_is_immutable_and_reused(tmp_path, settings):
         business_id=business.pk,
         invoice_id=invoice.pk,
         amount=Decimal("50"),
-        paid_on=timezone.localdate(),
+        paid_on=business_today(business),
         method=Payment.Method.CHECK,
         reference="CHK-1042",
     )
@@ -120,7 +123,7 @@ def test_invoice_reminder_and_receipt_emails_are_durable_and_private(
         business_id=business.pk,
         invoice_id=invoice.pk,
         amount=Decimal("50"),
-        paid_on=timezone.localdate(),
+        paid_on=business_today(business),
         method=Payment.Method.ACH,
     )
     receipt_delivery = queue_payment_receipt(

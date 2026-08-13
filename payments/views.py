@@ -46,9 +46,7 @@ class PaymentSettingsView(OwnerTenantRequiredMixin, TemplateView):
 class ConnectOnboardingView(OwnerTenantRequiredMixin, View):
     def post(self, request):
         try:
-            require_feature(
-                business=request.business, feature=Feature.ONLINE_PAYMENTS
-            )
+            require_feature(business=request.business, feature=Feature.ONLINE_PAYMENTS)
             url = onboarding_url(
                 actor=request.user,
                 business_id=request.business.pk,
@@ -89,9 +87,9 @@ class ConnectReturnView(OwnerTenantRequiredMixin, View):
 
 class CreateInvoicePaymentLinkView(OwnerTenantRequiredMixin, View):
     def post(self, request, invoice_id):
-        invoice = Invoice.objects.for_business(request.business).filter(
-            pk=invoice_id
-        ).first()
+        invoice = (
+            Invoice.objects.for_business(request.business).filter(pk=invoice_id).first()
+        )
         if invoice is None:
             raise Http404("Invoice not found.")
         try:

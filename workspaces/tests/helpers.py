@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+
 from django.utils import timezone
 
 from billing.models import Plan, Subscription
@@ -111,3 +113,7 @@ def create_business(workspace, **overrides):
         prefix="INV-",
     )
     return business
+
+
+def business_today(business):
+    return timezone.localdate(timezone=ZoneInfo(business.timezone))

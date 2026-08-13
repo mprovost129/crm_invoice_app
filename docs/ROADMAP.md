@@ -13,16 +13,15 @@ No percentage-complete estimate is used because the repository is not yet deep e
 
 ## Current Position
 
-**Milestone 6 - SaaS billing and online payments is complete at the application layer.**
-Configurable Free/Starter plans drive backend entitlements and limits. Stripe Billing
-subscription state and Stripe Connect invoice receipts use separate models, endpoints,
-identifiers, webhook inboxes, retry commands, and reconciliation checks. Express-account
-onboarding, purpose-scoped payment links, hosted direct-charge Checkout, idempotent ledger
-posting, automatic receipts, and manual/online race protection are implemented.
+**Milestone 7 - Launch hardening is in progress.** The first provider-independent slice
+adds browser security policy, log redaction, bounded public-auth rate limits, operational
+launch/provider checks, CI enforcement, and backup/restore and incident-response runbooks.
+The complete PostgreSQL regression suite currently passes at 131 tests.
 
-The recommended next milestone is Phase 7 Launch Hardening. Exact paid pricing, Stripe
-product/price IDs, live credentials, and provider activation remain explicit deployment
-decisions and are not fabricated in seed data.
+Exact paid pricing, Stripe product/price IDs, credentials, and provider activation remain
+explicit deployment decisions and are not fabricated in seed data. Sandbox activation is
+the next Stripe step; live credentials belong only in the selected hosting platform's
+secret manager.
 
 ## Ordered Delivery Plan
 
@@ -35,7 +34,7 @@ decisions and are not fabricated in seed data.
 | 4. Invoice conversion and manual payments | P0 | Complete | Phase 3 | Complete manual lead-to-paid workflow passes |
 | 5. Dashboard, communications, and export | P1 | Complete | Phase 4 | Owner can understand cash/work status; exports reconcile |
 | 6. SaaS billing and online payments | P1 | Complete | Stable manual workflow and Phase 5 operations | Subscription and invoice payments are idempotent and separated |
-| 7. Launch hardening | P0 launch gate | Not started | All enabled V1 phases | Security, restore, migration, accessibility, monitoring, and E2E gates pass |
+| 7. Launch hardening | P0 launch gate | In progress | All enabled V1 phases | Security, restore, migration, accessibility, monitoring, and E2E gates pass |
 | Post-V1 extensions | P2 | Deferred | Validated V1 and customer demand | Automation, recurrence, teams, multiple businesses, API/mobile |
 
 P0 means required for a safe core release; P1 may be sequenced after the manual workflow but is within intended commercial V1; P2 is post-V1.
@@ -188,16 +187,31 @@ Manual payments remain independent and available.
 
 ## Phase 7 - Launch Hardening
 
-- Full tenant-isolation regression matrix.
-- Numbering, conversion, payment, and webhook concurrency/retry tests.
-- Security/privacy review, rate limits, CSP, upload/storage validation, and log redaction.
-- Production migration rehearsal against representative data.
-- Automated backup plus demonstrated restore.
-- Accessibility and responsive passes.
-- Professional email/PDF/customer-link review.
-- Monitoring for app, worker, database, email, outbox, and webhooks.
-- Terms, privacy, export, closure, support, and incident procedures.
-- Production-like end-to-end launch smoke test.
+### Completed launch-hardening slice
+
+- CSP and browser security headers, pinned third-party asset integrity, and HTMX script/eval
+  restrictions.
+- Central log filtering for credentials, webhook signatures, passwords, and public tokens;
+  untrusted request IDs are bounded and validated.
+- Cache-backed registration, verification-resend, and password-reset request limits.
+- `launch_gate` and `provider_health_check` commands covering dependencies, migrations,
+  plans, subscriptions, reconciliation, delivery/webhook state, and environment readiness.
+- CI execution of launch, provider-health, and financial-reconciliation checks.
+- Provider-independent launch checklist, incident response, backup/restore rehearsal, and
+  privacy/retention decision runbooks.
+- Regression tests made deterministic at the business timezone boundary.
+
+### Remaining exit work
+
+- Complete the full tenant-isolation matrix and production-like browser E2E pass.
+- Activate and exercise Stripe test mode, including onboarding, Checkout, webhooks,
+  replay/order behavior, reconciliation, and outage drills.
+- Rehearse production migrations against representative data.
+- Configure automated backups and demonstrate an isolated restore using the runbook.
+- Complete accessibility, responsive, customer email/PDF/link, and support-flow reviews.
+- Select and configure production email, private storage, background processing,
+  centralized monitoring, and hosting services.
+- Approve and publish legal notices, retention/closure policy, and customer support terms.
 
 ## Post-V1 Roadmap
 

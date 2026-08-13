@@ -71,8 +71,8 @@ Procfile                Web and release/migration commands
 README.md               Canonical Docker setup and verification workflow
 ```
 
-Migrations through Phase 6 are generated and apply cleanly. Launch hardening is the next
-boundary.
+Migrations through Phase 6 are generated and apply cleanly. Phase 7 launch hardening is in
+progress and does not currently require schema changes.
 
 ## Target Domain Applications
 
@@ -171,10 +171,28 @@ Network calls must not occur inside database transactions. Email, PDFs, exports,
 ## Web and API Conventions
 
 - Django sessions and CSRF protection secure the server-rendered application.
-- Bootstrap is currently loaded from a pinned CDN URL. HTMX 2.0.10 is checksum-verified, vendored, and self-hosted; shared JavaScript adds Django CSRF headers to HTMX requests.
+- Bootstrap is loaded from a pinned CDN URL with Subresource Integrity. HTMX 2.0.10 is
+  checksum-verified, vendored, and self-hosted; shared JavaScript adds Django CSRF headers
+  to HTMX requests and HTMX script/eval behavior is disabled.
 - JavaScript enhances usability but does not own business rules.
 - Growing lists are paginated and use deliberate `select_related`, `prefetch_related`, projections, aggregates, and measured indexes.
 - A future API is versioned before external/mobile clients depend on it and applies the same tenant/policy/service rules as web views.
+
+## Security and Operational Controls
+
+- Middleware applies CSP, Permissions Policy, cross-origin isolation/resource policy, and
+  legacy cross-domain policy headers. Production adds HTTPS upgrade behavior.
+- Caller-supplied request correlation IDs must match a small safe character set and length;
+  invalid values are replaced with generated IDs.
+- A logging filter removes provider credentials, webhook signatures, passwords, secrets,
+  and public document tokens before configured handlers emit records.
+- Public account creation and email-triggering auth endpoints use cache-backed bounded
+  request limits. Financial public links retain their separate purpose-aware throttles.
+- `launch_gate` validates application dependencies, schema/plan/subscription state,
+  financial and communication integrity, and deployment configuration.
+- `provider_health_check` identifies failed or stale Billing/Connect webhook work and
+  expired active payment attempts. External scheduling, metrics collection, and alert
+  delivery remain deployment responsibilities.
 
 ## Configuration and Environments
 
@@ -182,7 +200,9 @@ Network calls must not occur inside database transactions. Email, PDFs, exports,
 - `config.settings.dev` enables debug behavior and the debug toolbar.
 - `config.settings.prod` enables HTTPS enforcement, secure cookies, HSTS, WhiteNoise static assets, Redis caching, proxy-aware HTTPS configuration, and production host/origin parsing.
 - ASGI, WSGI, the Docker image, and the Procfile default to production settings; `manage.py` and Compose local web use development settings.
-- Logs currently go to console and `logs/django.log`; production should prefer centralized structured logging and must redact tokens, personal data, and payment payloads.
+- Logs currently go to console and `logs/django.log` through central sensitive-data
+  redaction. Production should add centralized structured collection and minimize personal
+  data and provider payloads at the call site.
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for operational procedures.
 
@@ -197,9 +217,11 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for operational procedures.
 
 ## Current Architecture Gaps
 
-The Phase 6 financial path uses trusted business context, scoped selectors, atomic and
-row-locked conversion/payment services, immutable document/payment evidence, digest-only
-public tokens, configurable storage/email/Stripe adapters, durable outbox and webhook
-inboxes, and local/provider reconciliation commands. A dedicated production
-worker/scheduler, private cloud storage, transactional email provider, live Stripe
-configuration, monitoring, and full role policy remain launch work.
+The financial path uses trusted business context, scoped selectors, atomic and row-locked
+conversion/payment services, immutable document/payment evidence, digest-only public
+tokens, configurable storage/email/Stripe adapters, durable outbox and webhook inboxes,
+and local/provider reconciliation commands. Phase 7 adds local operational gates and
+security controls, but a dedicated production worker/scheduler, private cloud storage,
+transactional email provider, Stripe sandbox/live activation, centralized monitoring,
+demonstrated restore, legal approval, browser E2E/accessibility evidence, and full role
+policy remain launch work.

@@ -38,8 +38,7 @@ class Plan(TimeStampedModel):
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    Q(active_contact_limit__isnull=True)
-                    | Q(active_contact_limit__gt=0)
+                    Q(active_contact_limit__isnull=True) | Q(active_contact_limit__gt=0)
                 ),
                 name="billing_plan_contact_limit_positive",
             ),
@@ -95,7 +94,9 @@ class Subscription(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="subscription",
     )
-    plan = models.ForeignKey(Plan, on_delete=models.PROTECT, related_name="subscriptions")
+    plan = models.ForeignKey(
+        Plan, on_delete=models.PROTECT, related_name="subscriptions"
+    )
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.ACTIVE
     )

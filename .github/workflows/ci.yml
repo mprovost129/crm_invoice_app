@@ -67,5 +67,11 @@ jobs:
       - name: Run tests
         run: pytest
 
+      - name: Run operational launch checks
+        run: |
+          python manage.py launch_gate --json
+          python manage.py provider_health_check --json
+          python manage.py reconciliation_check
+
       - name: Check production configuration
         run: python manage.py check --deploy --settings=config.settings.prod

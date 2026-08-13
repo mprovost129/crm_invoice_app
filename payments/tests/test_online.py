@@ -21,7 +21,11 @@ from payments.online_services import (
 )
 from payments.services import post_manual_payment
 from payments.stripe_gateway import InvoiceCheckoutResult, to_minor_units
-from workspaces.tests.helpers import create_business, create_owner_tenancy
+from workspaces.tests.helpers import (
+    business_today,
+    create_business,
+    create_owner_tenancy,
+)
 
 
 def ready_account(business, provider_id="acct_business_1"):
@@ -133,7 +137,7 @@ def test_active_online_checkout_blocks_manual_payment(monkeypatch):
             business_id=business.pk,
             invoice_id=invoice.pk,
             amount=Decimal("10.00"),
-            paid_on=timezone.localdate(),
+            paid_on=business_today(business),
             method=Payment.Method.CASH,
         )
 

@@ -336,9 +336,11 @@ def process_connect_webhook(*, event_id):
                     raise ValidationError(
                         "Connect webhook account does not match its account payload."
                     )
-                account = ConnectedAccount.objects.select_for_update().filter(
-                    provider_account_id=data.get("id")
-                ).first()
+                account = (
+                    ConnectedAccount.objects.select_for_update()
+                    .filter(provider_account_id=data.get("id"))
+                    .first()
+                )
                 if account:
                     _sync_account(connected_account=account, data=data)
                     handled = True
@@ -355,9 +357,10 @@ def process_connect_webhook(*, event_id):
                         if data.get("object") == "checkout.session"
                         else data.get("id")
                     )
-                    is_paid = data.get("object") != "checkout.session" or data.get(
-                        "payment_status"
-                    ) == "paid"
+                    is_paid = (
+                        data.get("object") != "checkout.session"
+                        or data.get("payment_status") == "paid"
+                    )
                     if payment_intent_id and is_paid:
                         post_online_payment(
                             attempt_id=attempt.pk,
@@ -378,7 +381,9 @@ def process_connect_webhook(*, event_id):
                         else InvoicePaymentAttempt.Status.FAILED
                     )
                     attempt.failure_code = event.event_type
-                    attempt.failure_message = "Stripe reported that payment did not complete."
+                    attempt.failure_message = (
+                        "Stripe reported that payment did not complete."
+                    )
                     attempt.save()
                     handled = True
             event.status = (

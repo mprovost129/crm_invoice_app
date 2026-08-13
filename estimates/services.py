@@ -129,9 +129,12 @@ def create_estimate(*, actor, business_id, data):
         )
         month_start = datetime.combine(local_month_start, time.min, business_zone)
         month_end = datetime.combine(next_month, time.min, business_zone)
-        if Estimate.objects.for_business(business).filter(
-            created_at__gte=month_start, created_at__lt=month_end
-        ).count() >= monthly_limit:
+        if (
+            Estimate.objects.for_business(business)
+            .filter(created_at__gte=month_start, created_at__lt=month_end)
+            .count()
+            >= monthly_limit
+        ):
             raise ValidationError(
                 f"The {entitlements.plan.name} plan allows {monthly_limit} estimates per month."
             )

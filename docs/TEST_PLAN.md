@@ -8,7 +8,8 @@ Testing must prove the product is financially correct, tenant-isolated, retry-sa
 
 ## Current Test Baseline
 
-More than 120 PostgreSQL-backed pytest tests pass through Phase 6. The suite includes:
+One hundred thirty-one PostgreSQL-backed pytest tests pass through the first Phase 7
+hardening slice. The suite includes:
 
 - Custom email user is configured and has no username field.
 - User creation normalizes email and hashes the password.
@@ -45,8 +46,12 @@ More than 120 PostgreSQL-backed pytest tests pass through Phase 6. The suite inc
 - Separate Billing/Connect webhook inboxes, subscription synchronization, exact provider
   minor units, connected-account matching, duplicate-safe online posting, payment-link
   purpose/revocation, and active-checkout/manual-payment exclusion.
+- CSP and related browser security headers, pinned CDN asset integrity, disabled HTMX
+  script/eval behavior, validated request IDs, and sensitive log redaction.
+- Cache-backed public-auth rate limits and operational launch/provider-health commands.
+- Business-local date assertions that remain deterministic across host UTC midnight.
 
-Real production-provider failure modes, accessibility, backup restore, and
+Real provider failure modes, accessibility, demonstrated backup restore, and
 production-like browser E2E remain roadmap/launch gates.
 
 ## Test Environments and Tooling

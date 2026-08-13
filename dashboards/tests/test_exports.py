@@ -4,14 +4,17 @@ from io import StringIO
 
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 
 from crm.services import create_contact
 from crm.tests.helpers import CONTACT_DATA
 from invoices.tests.helpers import create_converted_invoice
 from payments.models import Payment
 from payments.services import post_manual_payment, reverse_payment
-from workspaces.tests.helpers import create_business, create_owner_tenancy
+from workspaces.tests.helpers import (
+    business_today,
+    create_business,
+    create_owner_tenancy,
+)
 
 
 def rows(response):
@@ -28,7 +31,7 @@ def test_exports_are_tenant_safe_and_reconcile_to_invoice_and_ledger(client):
         business_id=business.pk,
         invoice_id=invoice.pk,
         amount=Decimal("100"),
-        paid_on=timezone.localdate(),
+        paid_on=business_today(business),
         method=Payment.Method.ACH,
         reference="BANK-100",
     )

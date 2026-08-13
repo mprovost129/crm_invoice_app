@@ -38,7 +38,10 @@ class Command(BaseCommand):
                 )
                 if not account_id:
                     issues.append(
-                        {"attempt_id": str(attempt.pk), "code": "missing_connected_account"}
+                        {
+                            "attempt_id": str(attempt.pk),
+                            "code": "missing_connected_account",
+                        }
                     )
                     continue
                 try:

@@ -2,6 +2,37 @@
 
 All meaningful completed changes are recorded here.
 
+## Unreleased - Phase 7 In Progress (2026-08-12)
+
+### Added
+
+- Content Security Policy and related browser security headers, Subresource Integrity for
+  the pinned Bootstrap assets, and HTMX configuration that disables script tags and eval.
+- Central logging filter that redacts Stripe credentials, webhook signatures, passwords,
+  secrets, and high-entropy public-link tokens.
+- Cache-backed hourly limits for registration, verification resend, and password-reset
+  email requests, plus validation and size bounds for caller-supplied request IDs.
+- `launch_gate` and `provider_health_check` management commands for database, migration,
+  cache, plan/subscription, ledger, communication, webhook, payment-attempt, provider, and
+  deployment-configuration readiness.
+- Launch checklist, incident-response guide, backup/restore rehearsal, and privacy and
+  retention decision register.
+- CI execution of launch, provider-health, and payment-reconciliation checks.
+
+### Changed
+
+- Print actions now use shared JavaScript rather than inline event handlers.
+- Date-sensitive tests use each Business timezone explicitly, removing a host-midnight
+  flake in overdue, expiry, and future-payment scenarios.
+
+### Verification
+
+- 131 PostgreSQL-backed tests pass.
+- Ruff lint and format, Django system checks, migration drift, production deployment
+  checks, launch/provider health, and financial reconciliation pass.
+- The local launch gate reports seven passes and four expected configuration warnings:
+  local HTTP, console email, filesystem media, and Stripe sandbox values not yet supplied.
+
 ## Unreleased - Phase 6 Complete (2026-08-12)
 
 ### Added

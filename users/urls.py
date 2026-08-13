@@ -1,10 +1,10 @@
-from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 
 from .views import (
     AccountRedirectView,
     LoginView,
+    PasswordResetView,
     RegistrationView,
     ResendVerificationView,
     VerificationSentView,
@@ -35,13 +35,7 @@ urlpatterns = [
     ),
     path(
         "password-reset/",
-        auth_views.PasswordResetView.as_view(
-            template_name="registration/password_reset.html",
-            email_template_name="registration/password_reset_email.html",
-            subject_template_name="registration/password_reset_subject.txt",
-            extra_email_context={"app_name": settings.APP_NAME},
-            success_url=reverse_lazy("users:password_reset_done"),
-        ),
+        PasswordResetView.as_view(),
         name="password_reset",
     ),
     path(

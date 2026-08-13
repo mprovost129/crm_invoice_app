@@ -64,10 +64,10 @@ These flows must not share financial records or business logic.
 ## Current Repository State
 
 The repository has completed the identity, tenant, CRM, catalog, estimate, invoice,
-manual-payment, dashboard, communication visibility, reporting, and export workflow. It
-proves the core manual lead-to-paid path and reconciled owner visibility, but is not yet a
-production-ready commercial V1 because provider, billing, accessibility, backup/restore,
-and launch-hardening gates remain.
+manual-payment, dashboard, communication visibility, reporting, export, SaaS billing,
+and online-payment application workflows. Phase 7 launch hardening is in progress. The
+product is not yet a production-ready commercial V1 because provider activation,
+accessibility, demonstrated backup/restore, legal, and production-like launch gates remain.
 
 Implemented today:
 
@@ -101,14 +101,18 @@ Implemented today:
 - Separate liveness/readiness endpoints and request correlation IDs.
 - Self-hosted, checksum-verified HTMX 2.0.10 foundation.
 - Baseline production security, static-file, cache, logging, and email configuration.
+- CSP/browser security headers, central sensitive-log redaction, bounded public-auth rate
+  limits, and validated request correlation IDs.
+- Operational launch/provider health commands and provider-independent incident,
+  backup/restore, privacy/retention, and launch-checklist runbooks.
 - Non-root multi-stage production container and health-checked Compose services.
 - GitHub Actions quality gate and reproducible Docker setup instructions.
-- More than 120 passing PostgreSQL-backed tests through Phase 6.
+- 131 passing PostgreSQL-backed tests through the first Phase 7 hardening slice.
 
 Not yet implemented:
 
 - Production transactional email/private object storage, independently deployed outbox
-  processing, monitoring, automated backups, and demonstrated restore.
+  processing, centralized monitoring, automated backups, and demonstrated restore.
 - Launch activation of the implemented Stripe Billing/Connect paths: final pricing and
   price IDs, test/live credentials, webhook registration, and production reconciliation.
 - Production-like browser E2E, responsive/accessibility review, terms/privacy, and the

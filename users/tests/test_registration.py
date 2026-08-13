@@ -2,6 +2,7 @@ import pytest
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.cache import cache
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -125,3 +126,23 @@ def test_password_change_invalidates_existing_reset_token():
     user.save(update_fields=("password",))
 
     assert not default_token_generator.check_token(user, token)
+
+
+@pytest.mark.django_db
+def test_registration_posts_are_rate_limited(client, settings):
+    settings.PUBLIC_ACCOUNT_CREATE_LIMIT = 1
+    cache.clear()
+    payload = {
+        "first_name": "Ada",
+        "last_name": "Lovelace",
+        "email": "ada@example.com",
+        "password1": PASSWORD,
+        "password2": PASSWORD,
+    }
+    first = client.post(reverse("users:register"), payload)
+    payload["email"] = "other@example.com"
+    second = client.post(reverse("users:register"), payload)
+
+    assert first.status_code == 302
+    assert second.status_code == 429
+    assert second["Retry-After"] == "3600"

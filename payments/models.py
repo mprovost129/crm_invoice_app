@@ -263,7 +263,9 @@ class InvoicePaymentAttempt(BusinessOwnedModel):
         if self.invoice_id and self.business_id != self.invoice.business_id:
             raise ValidationError("Payment attempt and invoice must share a business.")
         if self.public_link_id and self.business_id != self.public_link.business_id:
-            raise ValidationError("Payment attempt and public link must share a business.")
+            raise ValidationError(
+                "Payment attempt and public link must share a business."
+            )
         if self.invoice_id and self.currency != self.invoice.currency:
             raise ValidationError("Payment attempt and invoice currencies must match.")
 

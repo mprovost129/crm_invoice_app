@@ -314,6 +314,26 @@ connection before ledger mutation. The browser redirect never confirms payment; 
 verified provider event can create an Online Payment. Final Connect liability settings,
 countries, payment methods, platform terms, and live activation require launch review.
 
+## D-029 - Keep Launch Controls Provider-Independent
+
+**Status:** Accepted 2026-08-12
+
+**Decision:** Implement security headers, sensitive-data log filtering, bounded public-auth
+rate limits, application/provider health commands, and operational runbooks without tying
+them to a specific hosting, monitoring, email, storage, or backup vendor. Keep Stripe test
+and live credentials strictly environment-managed and separate; sandbox configuration may
+be used locally, while live values are installed only in the chosen production platform's
+secret manager.
+
+**Rationale:** Provider selection should not delay controls that can be proven inside the
+application. A stable command/runbook contract also reduces migration cost if vendors
+change and gives any future platform explicit health, alert, backup, and rollback hooks.
+
+**Consequences:** Deployment is not complete merely because the repository commands pass.
+The selected platform must schedule and alert on them, provide tested database/media
+backups, centralize redacted logs, and supply production services. Stripe sandbox and live
+webhooks, keys, prices, and evidence must never be mixed.
+
 ## Deferred Provider and Product Decisions
 
 The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, error-monitoring provider, final component/design system, exact paid pricing/discounts and launch timing, Stripe product/price IDs and live-account configuration, Premium differentiation/timing, mobile technology, automatic reminder rules, recurring invoice rules, and privacy/retention policy.

@@ -7,84 +7,223 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('workspaces', '0001_initial'),
+        ("workspaces", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Plan',
+            name="Plan",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('code', models.SlugField(max_length=40, unique=True)),
-                ('name', models.CharField(max_length=80)),
-                ('description', models.CharField(blank=True, max_length=255)),
-                ('is_active', models.BooleanField(default=True)),
-                ('display_order', models.PositiveSmallIntegerField(default=0)),
-                ('currency', models.CharField(default='USD', max_length=3)),
-                ('monthly_price_cents', models.PositiveIntegerField(default=0)),
-                ('annual_price_cents', models.PositiveIntegerField(default=0)),
-                ('provider_monthly_price_id', models.CharField(blank=True, max_length=255, null=True, unique=True)),
-                ('provider_annual_price_id', models.CharField(blank=True, max_length=255, null=True, unique=True)),
-                ('active_contact_limit', models.PositiveIntegerField(blank=True, null=True)),
-                ('monthly_estimate_limit', models.PositiveIntegerField(blank=True, null=True)),
-                ('monthly_invoice_limit', models.PositiveIntegerField(blank=True, null=True)),
-                ('allow_online_payments', models.BooleanField(default=False)),
-                ('allow_custom_branding', models.BooleanField(default=False)),
-                ('allow_reminders', models.BooleanField(default=False)),
-                ('allow_reporting', models.BooleanField(default=False)),
-                ('allow_exports', models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("code", models.SlugField(max_length=40, unique=True)),
+                ("name", models.CharField(max_length=80)),
+                ("description", models.CharField(blank=True, max_length=255)),
+                ("is_active", models.BooleanField(default=True)),
+                ("display_order", models.PositiveSmallIntegerField(default=0)),
+                ("currency", models.CharField(default="USD", max_length=3)),
+                ("monthly_price_cents", models.PositiveIntegerField(default=0)),
+                ("annual_price_cents", models.PositiveIntegerField(default=0)),
+                (
+                    "provider_monthly_price_id",
+                    models.CharField(
+                        blank=True, max_length=255, null=True, unique=True
+                    ),
+                ),
+                (
+                    "provider_annual_price_id",
+                    models.CharField(
+                        blank=True, max_length=255, null=True, unique=True
+                    ),
+                ),
+                (
+                    "active_contact_limit",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
+                (
+                    "monthly_estimate_limit",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
+                (
+                    "monthly_invoice_limit",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
+                ("allow_online_payments", models.BooleanField(default=False)),
+                ("allow_custom_branding", models.BooleanField(default=False)),
+                ("allow_reminders", models.BooleanField(default=False)),
+                ("allow_reporting", models.BooleanField(default=False)),
+                ("allow_exports", models.BooleanField(default=False)),
             ],
             options={
-                'ordering': ('display_order', 'name'),
-                'constraints': [models.CheckConstraint(condition=models.Q(('active_contact_limit__isnull', True), ('active_contact_limit__gt', 0), _connector='OR'), name='billing_plan_contact_limit_positive'), models.CheckConstraint(condition=models.Q(('monthly_estimate_limit__isnull', True), ('monthly_estimate_limit__gt', 0), _connector='OR'), name='billing_plan_estimate_limit_positive'), models.CheckConstraint(condition=models.Q(('monthly_invoice_limit__isnull', True), ('monthly_invoice_limit__gt', 0), _connector='OR'), name='billing_plan_invoice_limit_positive')],
+                "ordering": ("display_order", "name"),
+                "constraints": [
+                    models.CheckConstraint(
+                        condition=models.Q(
+                            ("active_contact_limit__isnull", True),
+                            ("active_contact_limit__gt", 0),
+                            _connector="OR",
+                        ),
+                        name="billing_plan_contact_limit_positive",
+                    ),
+                    models.CheckConstraint(
+                        condition=models.Q(
+                            ("monthly_estimate_limit__isnull", True),
+                            ("monthly_estimate_limit__gt", 0),
+                            _connector="OR",
+                        ),
+                        name="billing_plan_estimate_limit_positive",
+                    ),
+                    models.CheckConstraint(
+                        condition=models.Q(
+                            ("monthly_invoice_limit__isnull", True),
+                            ("monthly_invoice_limit__gt", 0),
+                            _connector="OR",
+                        ),
+                        name="billing_plan_invoice_limit_positive",
+                    ),
+                ],
             },
         ),
         migrations.CreateModel(
-            name='PlatformWebhookEvent',
+            name="PlatformWebhookEvent",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('provider_event_id', models.CharField(max_length=255, unique=True)),
-                ('event_type', models.CharField(max_length=120)),
-                ('livemode', models.BooleanField(default=False)),
-                ('payload', models.JSONField()),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('processing', 'Processing'), ('completed', 'Completed'), ('failed', 'Failed'), ('ignored', 'Ignored')], default='pending', max_length=20)),
-                ('attempts', models.PositiveIntegerField(default=0)),
-                ('signature_verified_at', models.DateTimeField()),
-                ('processed_at', models.DateTimeField(blank=True, null=True)),
-                ('last_error', models.CharField(blank=True, max_length=500)),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("provider_event_id", models.CharField(max_length=255, unique=True)),
+                ("event_type", models.CharField(max_length=120)),
+                ("livemode", models.BooleanField(default=False)),
+                ("payload", models.JSONField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("processing", "Processing"),
+                            ("completed", "Completed"),
+                            ("failed", "Failed"),
+                            ("ignored", "Ignored"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("attempts", models.PositiveIntegerField(default=0)),
+                ("signature_verified_at", models.DateTimeField()),
+                ("processed_at", models.DateTimeField(blank=True, null=True)),
+                ("last_error", models.CharField(blank=True, max_length=500)),
             ],
             options={
-                'ordering': ('created_at',),
-                'indexes': [models.Index(fields=['status', 'created_at'], name='billing_pla_status_e208b7_idx')],
+                "ordering": ("created_at",),
+                "indexes": [
+                    models.Index(
+                        fields=["status", "created_at"],
+                        name="billing_pla_status_e208b7_idx",
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='Subscription',
+            name="Subscription",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('status', models.CharField(choices=[('active', 'Active'), ('trialing', 'Trialing'), ('past_due', 'Past due'), ('incomplete', 'Incomplete'), ('unpaid', 'Unpaid'), ('canceled', 'Canceled')], default='active', max_length=20)),
-                ('billing_interval', models.CharField(choices=[('none', 'No billing interval'), ('month', 'Monthly'), ('year', 'Annual')], default='none', max_length=10)),
-                ('provider_customer_id', models.CharField(blank=True, max_length=255, null=True, unique=True)),
-                ('provider_subscription_id', models.CharField(blank=True, max_length=255, null=True, unique=True)),
-                ('current_period_end', models.DateTimeField(blank=True, null=True)),
-                ('cancel_at_period_end', models.BooleanField(default=False)),
-                ('provider_synced_at', models.DateTimeField(blank=True, null=True)),
-                ('plan', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='subscriptions', to='billing.plan')),
-                ('workspace', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name='subscription', to='workspaces.workspace')),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("active", "Active"),
+                            ("trialing", "Trialing"),
+                            ("past_due", "Past due"),
+                            ("incomplete", "Incomplete"),
+                            ("unpaid", "Unpaid"),
+                            ("canceled", "Canceled"),
+                        ],
+                        default="active",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "billing_interval",
+                    models.CharField(
+                        choices=[
+                            ("none", "No billing interval"),
+                            ("month", "Monthly"),
+                            ("year", "Annual"),
+                        ],
+                        default="none",
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "provider_customer_id",
+                    models.CharField(
+                        blank=True, max_length=255, null=True, unique=True
+                    ),
+                ),
+                (
+                    "provider_subscription_id",
+                    models.CharField(
+                        blank=True, max_length=255, null=True, unique=True
+                    ),
+                ),
+                ("current_period_end", models.DateTimeField(blank=True, null=True)),
+                ("cancel_at_period_end", models.BooleanField(default=False)),
+                ("provider_synced_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "plan",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="subscriptions",
+                        to="billing.plan",
+                    ),
+                ),
+                (
+                    "workspace",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="subscription",
+                        to="workspaces.workspace",
+                    ),
+                ),
             ],
             options={
-                'ordering': ('workspace_id',),
-                'indexes': [models.Index(fields=['status', 'current_period_end'], name='billing_sub_status_684a21_idx')],
+                "ordering": ("workspace_id",),
+                "indexes": [
+                    models.Index(
+                        fields=["status", "current_period_end"],
+                        name="billing_sub_status_684a21_idx",
+                    )
+                ],
             },
         ),
     ]

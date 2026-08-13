@@ -2,11 +2,14 @@ from decimal import Decimal
 
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 
 from invoices.models import Invoice
 from payments.models import Payment
-from workspaces.tests.helpers import create_business, create_owner_tenancy
+from workspaces.tests.helpers import (
+    business_today,
+    create_business,
+    create_owner_tenancy,
+)
 
 from .helpers import create_converted_invoice, create_direct_invoice
 
@@ -29,7 +32,7 @@ def test_owner_can_open_invoice_download_pdf_record_payment_and_receipt(
         reverse("invoices:payment-create", args=(invoice.pk,)),
         {
             "amount": "50.00",
-            "paid_on": timezone.localdate().isoformat(),
+            "paid_on": business_today(business).isoformat(),
             "method": Payment.Method.CHECK,
             "reference": "CHK-1042",
             "note": "Received",

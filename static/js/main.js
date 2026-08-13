@@ -15,3 +15,7 @@ document.body.addEventListener("htmx:configRequest", (event) => {
         event.detail.headers["X-CSRFToken"] = csrfToken;
     }
 });
+
+document.querySelectorAll("[data-print-page]").forEach((button) => {
+    button.addEventListener("click", () => window.print());
+});

@@ -43,9 +43,7 @@ def _owner_workspace(*, actor):
     return workspace
 
 
-def start_subscription_checkout(
-    *, actor, plan_code, interval, success_url, cancel_url
-):
+def start_subscription_checkout(*, actor, plan_code, interval, success_url, cancel_url):
     workspace = _owner_workspace(actor=actor)
     plan = Plan.objects.filter(code=plan_code, is_active=True).first()
     if plan is None or plan.is_free:
@@ -89,7 +87,7 @@ def _plan_for_subscription_object(data):
         plan = Plan.objects.filter(code=metadata["plan_code"]).first()
         if plan:
             return plan
-    items = ((data.get("items") or {}).get("data") or [])
+    items = (data.get("items") or {}).get("data") or []
     price_id = ((items[0].get("price") or {}).get("id")) if items else None
     return Plan.objects.filter(
         models.Q(provider_monthly_price_id=price_id)
@@ -117,7 +115,7 @@ def _sync_subscription(data, *, deleted=False):
     plan = _plan_for_subscription_object(data)
     if plan is None:
         raise ValidationError("Subscription webhook references an unknown plan.")
-    items = ((data.get("items") or {}).get("data") or [])
+    items = (data.get("items") or {}).get("data") or []
     interval = (
         (((items[0].get("price") or {}).get("recurring") or {}).get("interval"))
         if items
@@ -129,7 +127,9 @@ def _sync_subscription(data, *, deleted=False):
     subscription.plan = plan
     subscription.status = status
     subscription.billing_interval = (
-        interval if interval in Subscription.Interval.values else Subscription.Interval.NONE
+        interval
+        if interval in Subscription.Interval.values
+        else Subscription.Interval.NONE
     )
     subscription.provider_customer_id = data.get("customer") or None
     subscription.provider_subscription_id = provider_id
@@ -145,9 +145,11 @@ def _sync_checkout(data):
     workspace_id = data.get("client_reference_id") or (data.get("metadata") or {}).get(
         "workspace_id"
     )
-    subscription = Subscription.objects.select_for_update().filter(
-        workspace_id=workspace_id
-    ).first()
+    subscription = (
+        Subscription.objects.select_for_update()
+        .filter(workspace_id=workspace_id)
+        .first()
+    )
     if subscription is None:
         raise ValidationError("Checkout webhook cannot be matched to a workspace.")
     subscription.provider_customer_id = data.get("customer") or None
@@ -176,9 +178,7 @@ def process_platform_webhook(*, event_id):
             event.status = PlatformWebhookEvent.Status.PROCESSING
             event.attempts += 1
             event.last_error = ""
-            event.save(
-                update_fields=("status", "attempts", "last_error", "updated_at")
-            )
+            event.save(update_fields=("status", "attempts", "last_error", "updated_at"))
             data = event.payload["data"]["object"]
             if event.event_type in {
                 "customer.subscription.created",
@@ -189,9 +189,8 @@ def process_platform_webhook(*, event_id):
             elif event.event_type == "customer.subscription.deleted":
                 _sync_subscription(data, deleted=True)
                 status = PlatformWebhookEvent.Status.COMPLETED
-            elif (
-                event.event_type == "checkout.session.completed"
-                and _sync_checkout(data)
+            elif event.event_type == "checkout.session.completed" and _sync_checkout(
+                data
             ):
                 status = PlatformWebhookEvent.Status.COMPLETED
             else:

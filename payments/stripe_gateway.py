@@ -89,7 +89,9 @@ def to_minor_units(*, amount, currency):
     decimal_amount = Decimal(amount)
     minor = decimal_amount * 100
     if minor != minor.to_integral_value():
-        raise ValueError("Payment amount has more precision than the currency supports.")
+        raise ValueError(
+            "Payment amount has more precision than the currency supports."
+        )
     return int(minor)
 
 

@@ -3,11 +3,14 @@ from decimal import Decimal
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 from invoices.models import Invoice
 from invoices.services import issue_invoice, update_invoice
-from workspaces.tests.helpers import create_business, create_owner_tenancy
+from workspaces.tests.helpers import (
+    business_today,
+    create_business,
+    create_owner_tenancy,
+)
 
 from .helpers import INVOICE_DATA, create_direct_invoice
 
@@ -42,8 +45,8 @@ def test_overdue_takes_precedence_over_partial_status():
     user, workspace, _ = create_owner_tenancy()
     business = create_business(workspace)
     invoice, _, _ = create_direct_invoice(user=user, business=business)
-    invoice.issue_date = timezone.localdate() - timedelta(days=5)
-    invoice.due_date = timezone.localdate() - timedelta(days=1)
+    invoice.issue_date = business_today(business) - timedelta(days=5)
+    invoice.due_date = business_today(business) - timedelta(days=1)
     invoice.amount_paid = Decimal("10")
     invoice.balance_due = invoice.total - invoice.amount_paid
     invoice.save(update_fields=("issue_date", "due_date", "amount_paid", "balance_due"))

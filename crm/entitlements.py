@@ -5,7 +5,10 @@ def enforce_contact_creation_allowed(*, business):
 
     entitlements = entitlements_for_business(business=business)
     limit = entitlements.plan.active_contact_limit
-    if limit is not None and Contact.objects.for_business(business).active().count() >= limit:
+    if (
+        limit is not None
+        and Contact.objects.for_business(business).active().count() >= limit
+    ):
         from django.core.exceptions import ValidationError
 
         raise ValidationError(

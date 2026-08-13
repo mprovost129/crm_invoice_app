@@ -13,4 +13,3 @@ urlpatterns = [
     ),
     path("webhooks/stripe/platform/", platform_webhook, name="platform-webhook"),
 ]
-

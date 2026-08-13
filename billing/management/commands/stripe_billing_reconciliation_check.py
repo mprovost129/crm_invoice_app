@@ -21,7 +21,10 @@ class Command(BaseCommand):
             if subscription.plan.is_free:
                 continue
             checked += 1
-            if not subscription.provider_customer_id or not subscription.provider_subscription_id:
+            if (
+                not subscription.provider_customer_id
+                or not subscription.provider_subscription_id
+            ):
                 issues.append(
                     {
                         "subscription_id": str(subscription.pk),

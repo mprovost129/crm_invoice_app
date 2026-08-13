@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
@@ -15,6 +16,7 @@ from workspaces.models import Business
 
 from .forms import RegistrationForm, ResendVerificationForm
 from .models import User
+from .rate_limits import RateLimitedPostMixin
 from .services import register_user, send_verification_email
 from .tokens import email_verification_token
 
@@ -37,10 +39,11 @@ class LoginView(auth_views.LoginView):
         return super().get_success_url()
 
 
-class RegistrationView(FormView):
+class RegistrationView(RateLimitedPostMixin, FormView):
     template_name = "registration/register.html"
     form_class = RegistrationForm
     success_url = reverse_lazy("users:verification-sent")
+    rate_limit_setting = "PUBLIC_ACCOUNT_CREATE_LIMIT"
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -89,10 +92,11 @@ class VerifyEmailView(View):
         return redirect(post_login_destination(user))
 
 
-class ResendVerificationView(FormView):
+class ResendVerificationView(RateLimitedPostMixin, FormView):
     template_name = "registration/resend_verification.html"
     form_class = ResendVerificationForm
     success_url = reverse_lazy("users:verification-sent")
+    rate_limit_setting = "PUBLIC_EMAIL_SEND_LIMIT"
 
     def form_valid(self, form):
         user = User.objects.filter(email__iexact=form.cleaned_data["email"]).first()
@@ -108,3 +112,12 @@ class ResendVerificationView(FormView):
 class AccountRedirectView(LoginRequiredMixin, View):
     def get(self, request):
         return redirect(post_login_destination(request.user))
+
+
+class PasswordResetView(RateLimitedPostMixin, auth_views.PasswordResetView):
+    template_name = "registration/password_reset.html"
+    email_template_name = "registration/password_reset_email.html"
+    subject_template_name = "registration/password_reset_subject.txt"
+    extra_email_context = {"app_name": settings.APP_NAME}
+    success_url = reverse_lazy("users:password_reset_done")
+    rate_limit_setting = "PUBLIC_EMAIL_SEND_LIMIT"

@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import pytest
 from django.core.management import call_command
-from django.utils import timezone
 
 from communications.models import EmailDelivery, Notification, OutboxEvent
 from dashboards.selectors import dashboard_summary, needs_attention, report_summary
@@ -15,14 +14,18 @@ from invoices.selectors import invoices_for_business
 from invoices.tests.helpers import create_converted_invoice
 from payments.models import Payment
 from payments.services import post_manual_payment, reverse_payment
-from workspaces.tests.helpers import create_business, create_owner_tenancy
+from workspaces.tests.helpers import (
+    business_today,
+    create_business,
+    create_owner_tenancy,
+)
 
 
 @pytest.mark.django_db
 def test_dashboard_and_report_totals_follow_ledger_and_tenant_boundary():
-    today = timezone.localdate()
     user, workspace, _ = create_owner_tenancy()
     business = create_business(workspace)
+    today = business_today(business)
     invoice, _, _ = create_converted_invoice(user=user, business=business)
     invoice.issue_date = today - timedelta(days=10)
     invoice.due_date = today - timedelta(days=5)
@@ -110,9 +113,9 @@ def test_needs_attention_surfaces_conversion_delivery_and_outbox_work():
 
 @pytest.mark.django_db
 def test_notifications_are_idempotent_and_tenant_scoped():
-    today = timezone.localdate()
     user, workspace, _ = create_owner_tenancy()
     business = create_business(workspace)
+    today = business_today(business)
     invoice, _, _ = create_converted_invoice(user=user, business=business)
     invoice.issue_date = today - timedelta(days=2)
     invoice.due_date = today - timedelta(days=1)
@@ -149,9 +152,9 @@ def test_notifications_are_idempotent_and_tenant_scoped():
 
 @pytest.mark.django_db
 def test_document_search_and_derived_filters_remain_database_querysets():
-    today = timezone.localdate()
     user, workspace, _ = create_owner_tenancy()
     business = create_business(workspace)
+    today = business_today(business)
     invoice, estimate, contact = create_converted_invoice(user=user, business=business)
     post_manual_payment(
         actor=user,

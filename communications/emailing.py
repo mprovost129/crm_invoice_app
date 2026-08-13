@@ -214,12 +214,15 @@ def _invoice_message(delivery):
         from billing.entitlements import Feature, entitlements_for_business
         from payments.models import ConnectedAccount
 
-        if entitlements_for_business(business=invoice.business).allows(
-            Feature.ONLINE_PAYMENTS
-        ) and ConnectedAccount.objects.filter(
-            business=invoice.business,
-            status=ConnectedAccount.Status.READY,
-        ).exists():
+        if (
+            entitlements_for_business(business=invoice.business).allows(
+                Feature.ONLINE_PAYMENTS
+            )
+            and ConnectedAccount.objects.filter(
+                business=invoice.business,
+                status=ConnectedAccount.Status.READY,
+            ).exists()
+        ):
             _, pay_token = create_public_link(
                 invoice=invoice, purpose=PublicDocumentLink.Purpose.PAY
             )

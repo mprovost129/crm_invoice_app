@@ -55,6 +55,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
+CONTENT_SECURITY_POLICY += "; upgrade-insecure-requests"
 
 # Render and many other PaaS providers terminate TLS at a trusted reverse proxy.
 # Enable only when your proxy sets X-Forwarded-Proto correctly.
