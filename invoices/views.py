@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
+from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -16,7 +17,7 @@ from django.views.generic import FormView, ListView, TemplateView
 from catalog.models import ProductService
 from communications.emailing import queue_invoice_email
 from communications.links import create_public_link, resolve_public_link
-from communications.models import PublicDocumentLink
+from communications.models import EmailDelivery, PublicDocumentLink
 from communications.pdf import (
     get_or_create_invoice_pdf,
     get_or_create_payment_receipt_pdf,
@@ -109,6 +110,11 @@ class InvoiceDetailView(OwnerTenantRequiredMixin, InvoiceObjectMixin, TemplateVi
         suggested = self.invoice.balance_due
         if self.invoice.amount_paid == 0 and self.invoice.deposit_required > 0:
             suggested = min(self.invoice.deposit_required, self.invoice.balance_due)
+        delivery_queryset = (
+            EmailDelivery.objects.filter(business=self.request.business)
+            .filter(Q(invoice=self.invoice) | Q(payment__invoice=self.invoice))
+            .select_related("payment")
+        )
         return {
             **super().get_context_data(**kwargs),
             **display_context,
@@ -127,6 +133,15 @@ class InvoiceDetailView(OwnerTenantRequiredMixin, InvoiceObjectMixin, TemplateVi
                 }
             ),
             "reversal_form": PaymentReversalForm(),
+            "recent_deliveries": delivery_queryset[:5],
+            "has_failed_delivery": delivery_queryset.filter(
+                status=EmailDelivery.Status.FAILED
+            ).exists(),
+            "days_overdue": (
+                (today - self.invoice.due_date).days
+                if self.invoice.effective_status == "overdue"
+                else 0
+            ),
         }
 
 

@@ -14,7 +14,7 @@ from django.views.generic import FormView, ListView, TemplateView
 from catalog.models import ProductService
 from communications.emailing import queue_estimate_email
 from communications.links import create_public_link, resolve_public_link
-from communications.models import PublicDocumentLink
+from communications.models import EmailDelivery, PublicDocumentLink
 from communications.pdf import get_or_create_estimate_pdf
 from communications.snapshots import document_display_context, snapshot_logo_url
 from workspaces.mixins import OwnerTenantRequiredMixin
@@ -109,6 +109,10 @@ class EstimateDetailView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         display_context = document_display_context(self.estimate)
+        delivery_queryset = EmailDelivery.objects.filter(
+            business=self.request.business,
+            estimate=self.estimate,
+        )
         context.update(
             {
                 **display_context,
@@ -118,6 +122,10 @@ class EstimateDetailView(
                     initial={"recipient": display_context["document_contact"]["email"]}
                 ),
                 "acceptance_form": ManualAcceptanceForm(),
+                "recent_deliveries": delivery_queryset[:5],
+                "has_failed_delivery": delivery_queryset.filter(
+                    status=EmailDelivery.Status.FAILED
+                ).exists(),
             }
         )
         return context

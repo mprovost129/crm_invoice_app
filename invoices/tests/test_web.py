@@ -3,6 +3,7 @@ from decimal import Decimal
 import pytest
 from django.urls import reverse
 
+from communications.models import EmailDelivery
 from invoices.models import Invoice
 from payments.models import Payment
 from workspaces.tests.helpers import (
@@ -41,6 +42,9 @@ def test_owner_can_open_invoice_download_pdf_record_payment_and_receipt(
     )
     assert payment_response.status_code == 302
     payment = Payment.objects.get(invoice=invoice)
+    detail_response = client.get(reverse("invoices:detail", args=(invoice.pk,)))
+    assert b"Reverse payment on" in detail_response.content
+    assert b"The invoice balance will increase" in detail_response.content
     receipt_response = client.get(
         reverse("invoices:payment-receipt", args=(invoice.pk, payment.pk))
     )
@@ -114,3 +118,28 @@ def test_issued_invoice_detail_uses_historical_contact_snapshot(client):
     assert b"Taylor Renovations" in response.content
     assert b"jordan@example.com" in response.content
     assert b"Changed after issue" not in response.content
+
+
+@pytest.mark.django_db
+def test_issued_invoice_detail_surfaces_financial_dialogs_and_delivery_failure(client):
+    user, workspace, _ = create_owner_tenancy()
+    business = create_business(workspace)
+    invoice, _, _ = create_direct_invoice(user=user, business=business)
+    EmailDelivery.objects.create(
+        business=business,
+        invoice=invoice,
+        kind=EmailDelivery.Kind.INVOICE,
+        recipient="customer@example.com",
+        subject="Invoice delivery",
+        status=EmailDelivery.Status.FAILED,
+        failure_message="Provider unavailable",
+    )
+    client.force_login(user)
+
+    response = client.get(reverse("invoices:detail", args=(invoice.pk,)))
+
+    assert response.status_code == 200
+    assert b"Record payment for" in response.content
+    assert b"Send reminder for" in response.content
+    assert b"Void invoice" in response.content
+    assert b"Provider unavailable" in response.content

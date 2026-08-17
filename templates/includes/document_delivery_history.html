@@ -1,0 +1,29 @@
+<section class="document-delivery" aria-labelledby="delivery-history-heading">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <h2 class="h5 mb-1" id="delivery-history-heading">Delivery history</h2>
+      <p class="small text-body-secondary mb-0">Recent customer email activity for this document.</p>
+    </div>
+    <a class="btn btn-sm btn-outline-secondary d-print-none" href="{% url 'dashboards:communications' %}">View all delivery</a>
+  </div>
+  {% if recent_deliveries %}
+    <div class="responsive-data-list">
+      <table class="table align-middle">
+        <thead><tr><th>Created</th><th>Type</th><th>Recipient</th><th>Status</th><th>Result</th></tr></thead>
+        <tbody>
+          {% for delivery in recent_deliveries %}
+            <tr>
+              <td data-label="Created">{{ delivery.created_at|date:"M j, Y g:i A" }}</td>
+              <td data-label="Type">{{ delivery.get_kind_display }}</td>
+              <td data-label="Recipient">{{ delivery.recipient }}</td>
+              <td data-label="Status"><span class="status-badge {% if delivery.status == 'sent' %}status-success{% elif delivery.status == 'failed' %}status-danger{% else %}status-neutral{% endif %}">{% if delivery.status == 'failed' %}<i class="bi bi-exclamation-circle" aria-hidden="true"></i>{% endif %}{{ delivery.get_status_display }}</span></td>
+              <td data-label="Result">{% if delivery.failure_message %}<span class="text-danger">{{ delivery.failure_message }}</span>{% elif delivery.sent_at %}Sent {{ delivery.sent_at|date:"M j, g:i A" }}{% else %}Waiting for processing{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="small text-body-secondary mb-0">No customer emails have been queued for this document.</p>
+  {% endif %}
+</section>

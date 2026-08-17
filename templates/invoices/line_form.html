@@ -1,3 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Invoice line | {{ APP_NAME }}{% endblock %}
-{% block content %}<div class="container py-4"><div class="row justify-content-center"><div class="col-lg-8"><h1>{% if line %}Edit{% else %}Add{% endif %} invoice line</h1><p class="text-body-secondary">Invoice {{ invoice.number|default:"draft" }} for {{ invoice.contact.display_name }}</p><form method="post" novalidate>{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Save line</button> <a class="btn btn-outline-secondary" href="{% url 'invoices:detail' invoice.id %}">Cancel</a></form></div></div></div>{% endblock %}
+{% block title %}{% if line %}Edit Line{% else %}Add Line{% endif %} | {{ APP_NAME }}{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block content %}
+<div class="container py-4 py-lg-5">
+  <div class="document-editor-shell">
+    <a href="{% url 'invoices:detail' invoice.id %}" class="text-decoration-none"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Invoice {{ invoice.number|default:"draft" }}</a>
+    <header class="page-header mt-4"><div><p class="page-eyebrow">Line item editor</p><h1>{% if line %}Edit line item{% else %}Add line item{% endif %}</h1><p class="text-body-secondary mb-0 mt-2">Select a saved product or service, or enter a custom item for {{ invoice.contact.display_name }}.</p></div></header>
+    <form class="card" method="post" novalidate>
+      <div class="card-body p-lg-4">{% csrf_token %}{{ form.as_p }}</div>
+      <div class="card-footer document-action-bar"><a class="btn btn-outline-secondary" href="{% url 'invoices:detail' invoice.id %}">Cancel</a><button class="btn btn-primary" type="submit">{% if line %}Save line item{% else %}Add line item{% endif %}</button></div>
+    </form>
+    <p class="small text-body-secondary mt-3"><i class="bi bi-calculator me-1" aria-hidden="true"></i>Taxes and totals are recalculated by the server after this line is saved.</p>
+  </div>
+</div>
+{% endblock %}

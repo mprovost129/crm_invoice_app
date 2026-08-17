@@ -142,6 +142,10 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Accessible messages/error pages | Partial | Shared templates exist; full accessibility pass pending |
 | HTMX foundation | Implemented | Self-hosted verified HTMX 2.0.10 with Django CSRF header integration |
 | Neutral visual component system | Implemented | Vendored Bootstrap 5.3.8 and Bootstrap Icons 1.13.1, semantic tokens, page headers, controls, status badges, panels, empty states, loading state, and responsive table-to-card lists |
+| Financial document detail system | Implemented | Estimate/invoice detail screens use responsive line-item presentation, sticky desktop totals, state-aware actions, payment history, and explicit audit/correction language |
+| Focused financial dialogs | Implemented | Manual acceptance, record payment, reminder, reversal, and void workflows use accessible Bootstrap modals that identify the record and explain consequences |
+| Document delivery history | Implemented | Recent tenant-scoped estimate, invoice, reminder, and receipt email state appears on financial documents; failures receive persistent attention treatment |
+| Reports and settings presentation | Implemented | Report metrics/aging/exports and business/payment/subscription settings share the neutral component and responsive subnavigation system |
 | Search and pagination conventions | Implemented | Core lists and delivery history use scoped search/filters and pagination |
 | Flutter mobile applications | Deferred | iOS and Android technology is decided; responsive Django/HTMX web and a stable versioned API come first |
 
@@ -159,7 +163,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-One hundred thirty-one PostgreSQL-backed tests pass. They cover deterministic financial
+One hundred thirty-seven PostgreSQL-backed tests pass. They cover deterministic financial
 calculations, numbering/conversion/payment concurrency and rollback, immutable documents
 and ledger entries, acceptance evidence, derived states, reconciliation, secure public
 links, PDF/receipt rendering, durable email delivery, owner/public screens, the complete

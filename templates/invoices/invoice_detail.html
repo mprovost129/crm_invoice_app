@@ -3,16 +3,118 @@
 {% block meta_robots %}noindex,nofollow{% endblock %}
 {% block content %}
 <div class="container py-4">
-  <div class="d-print-none"><a href="{% url 'invoices:list' %}" class="text-decoration-none">&larr; Invoices</a></div>
-  <header class="page-header mt-3"><div><p class="page-eyebrow">{{ document_contact.display_name }}</p><h1>{{ invoice.number|default:"Draft invoice" }}</h1><span class="status-badge mt-2 {% if invoice.effective_status == 'paid' %}status-success{% elif invoice.effective_status == 'overdue' or invoice.effective_status == 'void' %}status-danger{% elif invoice.effective_status == 'partial' %}status-warning{% elif invoice.effective_status == 'sent' or invoice.effective_status == 'viewed' %}status-info{% else %}status-neutral{% endif %}">{{ invoice.effective_status|title }}</span></div><div class="page-header-actions d-print-none">{% if invoice.is_editable %}<a class="btn btn-outline-secondary" href="{% url 'invoices:update' invoice.id %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit details</a><a class="btn btn-outline-secondary" href="{% url 'invoices:line-create' invoice.id %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add line</a><form method="post" action="{% url 'invoices:issue' invoice.id %}">{% csrf_token %}<button class="btn btn-primary"><i class="bi bi-send me-1" aria-hidden="true"></i>Issue invoice</button></form>{% else %}<a class="btn btn-outline-secondary" href="{% url 'invoices:pdf' invoice.id %}"><i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Download PDF</a><button class="btn btn-outline-secondary" type="button" data-print-page><i class="bi bi-printer me-1" aria-hidden="true"></i>Print</button>{% endif %}</div></header>
+  <div class="d-print-none"><a href="{% url 'invoices:list' %}" class="text-decoration-none"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Invoices</a></div>
+  <header class="page-header mt-3">
+    <div>
+      <p class="page-eyebrow">{{ document_contact.display_name }}</p>
+      <h1>{{ invoice.number|default:"Draft invoice" }}</h1>
+      <span class="status-badge mt-2 {% if invoice.effective_status == 'paid' %}status-success{% elif invoice.effective_status == 'overdue' or invoice.effective_status == 'void' %}status-danger{% elif invoice.effective_status == 'partial' %}status-warning{% elif invoice.effective_status == 'sent' or invoice.effective_status == 'viewed' %}status-info{% else %}status-neutral{% endif %}">{{ invoice.effective_status|title }}</span>
+    </div>
+    <div class="page-header-actions d-print-none">
+      {% if invoice.is_editable %}
+        <a class="btn btn-outline-secondary" href="{% url 'invoices:update' invoice.id %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit details</a>
+        <a class="btn btn-outline-secondary" href="{% url 'invoices:line-create' invoice.id %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add line</a>
+        <form method="post" action="{% url 'invoices:issue' invoice.id %}">{% csrf_token %}<button class="btn btn-primary" type="submit"><i class="bi bi-send me-1" aria-hidden="true"></i>Issue invoice</button></form>
+      {% else %}
+        <a class="btn btn-outline-secondary" href="{% url 'invoices:pdf' invoice.id %}"><i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Download PDF</a>
+        <button class="btn btn-outline-secondary" type="button" data-print-page><i class="bi bi-printer me-1" aria-hidden="true"></i>Print</button>
+      {% endif %}
+    </div>
+  </header>
+
   {% if invoice.source_estimate %}<div class="alert alert-info">Created from <a href="{% url 'estimates:detail' invoice.source_estimate.id %}">estimate {{ invoice.source_estimate.number }}</a>.</div>{% endif %}
-  <div class="card mb-4"><div class="card-body"><div class="row"><div class="col-md-6"><h2 class="h5">Bill to</h2><p class="mb-0"><strong>{{ document_contact.display_name }}</strong><br>{{ document_contact.company_name }}<br>{{ document_contact.email }}</p></div><div class="col-md-6 text-md-end"><p class="mb-1"><strong>Issue date:</strong> {{ invoice.issue_date|date:"M j, Y" }}</p><p class="mb-1"><strong>Due date:</strong> {{ invoice.due_date|date:"M j, Y" }}</p><p class="mb-0"><strong>Currency:</strong> {{ invoice.currency }}</p></div></div></div></div>
-  <div class="table-responsive responsive-data-list mb-4"><table class="table align-middle"><thead><tr><th>Description</th><th class="text-end">Qty</th><th>Unit</th><th class="text-end">Rate</th><th class="text-end">Tax</th><th class="text-end">Amount</th>{% if invoice.is_editable %}<th></th>{% endif %}</tr></thead><tbody>{% for line in lines %}<tr><td data-label="Description"><strong>{{ line.name }}</strong>{% if line.description %}<div class="small text-body-secondary">{{ line.description }}</div>{% endif %}</td><td data-label="Quantity" class="text-end">{{ line.quantity }}</td><td data-label="Unit">{{ line.unit }}</td><td data-label="Rate" class="text-end">{{ invoice.currency }} {{ line.unit_rate }}</td><td data-label="Tax" class="text-end">{% if line.is_taxable %}{{ line.tax_rate }}%{% else %}No{% endif %}</td><td data-label="Amount" class="text-end">{{ invoice.currency }} {{ line.line_total }}</td>{% if invoice.is_editable %}<td data-label="Actions" class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'invoices:line-update' invoice.id line.id %}">Edit</a> <form class="d-inline" method="post" action="{% url 'invoices:line-delete' invoice.id line.id %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Remove</button></form></td>{% endif %}</tr>{% empty %}<tr><td colspan="7" class="text-center text-body-secondary py-4">No line items yet.</td></tr>{% endfor %}</tbody></table></div>
-  <div class="row justify-content-end"><div class="col-md-5"><table class="table"><tr><th>Subtotal</th><td class="text-end">{{ invoice.currency }} {{ invoice.subtotal }}</td></tr><tr><th>Discount</th><td class="text-end">- {{ invoice.currency }} {{ invoice.discount_amount }}</td></tr><tr><th>Tax</th><td class="text-end">{{ invoice.currency }} {{ invoice.tax_amount }}</td></tr><tr><th>Total</th><td class="text-end">{{ invoice.currency }} {{ invoice.total }}</td></tr><tr><th>Paid</th><td class="text-end">- {{ invoice.currency }} {{ invoice.amount_paid }}</td></tr><tr class="fs-5"><th>Balance due</th><td class="text-end"><strong>{{ invoice.currency }} {{ invoice.balance_due }}</strong></td></tr></table></div></div>
-  {% if invoice.notes %}<h2 class="h5">Notes</h2><p>{{ invoice.notes|linebreaksbr }}</p>{% endif %}{% if invoice.terms %}<h2 class="h5">Terms</h2><p>{{ invoice.terms|linebreaksbr }}</p>{% endif %}
-  {% if not invoice.is_editable %}<div class="row g-4 mt-2 d-print-none"><div class="col-lg-6"><div class="card h-100"><div class="card-body"><h2 class="h5">Send invoice</h2><form method="post" action="{% url 'invoices:email' invoice.id %}">{% csrf_token %}{{ email_form.as_p }}<button class="btn btn-primary" name="action" value="send">Send invoice</button>{% if invoice.balance_due > 0 %}<button class="btn btn-outline-secondary" name="action" value="reminder">Send reminder</button>{% endif %}</form><hr><div class="d-flex gap-2"><form method="post" action="{% url 'invoices:public-link' invoice.id %}">{% csrf_token %}<button class="btn btn-outline-secondary">Open customer view</button></form>{% if invoice.status != 'void' and invoice.balance_due > 0 %}<form method="post" action="{% url 'payments:invoice-payment-link' invoice.id %}">{% csrf_token %}<button class="btn btn-outline-primary">Open payment link</button></form>{% endif %}</div></div></div></div>{% if invoice.status != 'void' and invoice.balance_due > 0 %}<div class="col-lg-6"><div class="card h-100"><div class="card-body"><h2 class="h5">Record payment</h2><form method="post" action="{% url 'invoices:payment-create' invoice.id %}">{% csrf_token %}{{ payment_form.as_p }}<button class="btn btn-success">Record payment</button></form></div></div></div>{% endif %}</div>{% endif %}
-  {% if payments %}<section class="mt-5"><h2 class="h4">Payment history</h2><div class="table-responsive"><table class="table"><thead><tr><th>Date</th><th>Method</th><th>Reference</th><th>Status</th><th class="text-end">Amount</th><th></th></tr></thead><tbody>{% for payment in payments %}<tr><td>{{ payment.paid_on|date:"M j, Y" }}</td><td>{{ payment.get_method_display }}</td><td>{{ payment.reference|default:"-" }}</td><td>{{ payment.effective_status|title }}</td><td class="text-end">{{ payment.currency }} {{ payment.net_amount }}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'invoices:payment-receipt' invoice.id payment.id %}">Receipt</a>{% if payment.net_amount > 0 and invoice.status != 'void' %}<details class="d-inline-block text-start ms-2"><summary class="btn btn-sm btn-outline-danger">Reverse</summary><form class="card card-body mt-2" method="post" action="{% url 'invoices:payment-reverse' invoice.id payment.id %}">{% csrf_token %}{{ reversal_form.as_p }}<button class="btn btn-danger btn-sm">Record reversal</button></form></details>{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>{% endif %}
-  {% if not invoice.is_editable and invoice.status != 'void' and invoice.amount_paid == 0 %}<section class="card border-danger mt-5 d-print-none"><div class="card-body"><h2 class="h5">Void invoice</h2><form method="post" action="{% url 'invoices:void' invoice.id %}">{% csrf_token %}{{ void_form.as_p }}<button class="btn btn-outline-danger">Void invoice</button></form></div></section>{% endif %}
-  {% if invoice.status == 'void' %}<div class="alert alert-danger mt-4">Voided {{ invoice.voided_at|date:"M j, Y g:i A" }}: {{ invoice.void_reason }}</div>{% endif %}
+  {% if invoice.effective_status == 'overdue' %}<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i><strong>Payment is {{ days_overdue }} day{{ days_overdue|pluralize }} overdue.</strong> The balance due is {{ invoice.currency }} {{ invoice.balance_due }}.</div>{% endif %}
+  {% if has_failed_delivery %}<div class="alert alert-danger"><i class="bi bi-envelope-exclamation me-1" aria-hidden="true"></i><strong>An email failed to send.</strong> Review delivery history below before assuming the customer received this invoice.</div>{% endif %}
+  {% if invoice.status == 'void' %}<div class="alert alert-danger">Voided {{ invoice.voided_at|date:"M j, Y g:i A" }}: {{ invoice.void_reason }}</div>{% endif %}
+
+  <div class="document-detail-grid">
+    <div class="document-detail-main">
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6"><h2 class="h5">Bill to</h2><p class="mb-0"><strong>{{ document_contact.display_name }}</strong><br>{{ document_contact.company_name }}<br>{{ document_contact.email }}</p></div>
+            <div class="col-md-6 text-md-end"><p class="mb-1"><strong>Issue date:</strong> {{ invoice.issue_date|date:"M j, Y" }}</p><p class="mb-1"><strong>Due date:</strong> {{ invoice.due_date|date:"M j, Y" }}</p><p class="mb-0"><strong>Currency:</strong> {{ invoice.currency }}</p></div>
+          </div>
+        </div>
+      </div>
+
+      <section aria-labelledby="invoice-line-items-heading">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+          <h2 class="h5 mb-0" id="invoice-line-items-heading">Line items</h2>
+          {% if invoice.is_editable %}<a class="btn btn-sm btn-outline-secondary d-print-none" href="{% url 'invoices:line-create' invoice.id %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add line item</a>{% endif %}
+        </div>
+        <div class="table-responsive responsive-data-list mb-4">
+          <table class="table align-middle">
+            <thead><tr><th>Description</th><th class="text-end">Qty</th><th>Unit</th><th class="text-end">Rate</th><th class="text-end">Tax</th><th class="text-end">Amount</th>{% if invoice.is_editable %}<th>Actions</th>{% endif %}</tr></thead>
+            <tbody>
+              {% for line in lines %}
+                <tr><td data-label="Description"><strong>{{ line.name }}</strong>{% if line.description %}<div class="small text-body-secondary">{{ line.description }}</div>{% endif %}</td><td data-label="Quantity" class="text-end">{{ line.quantity }}</td><td data-label="Unit">{{ line.unit }}</td><td data-label="Rate" class="text-end">{{ invoice.currency }} {{ line.unit_rate }}</td><td data-label="Tax" class="text-end">{% if line.is_taxable %}{{ line.tax_rate }}%{% else %}No{% endif %}</td><td data-label="Amount" class="text-end">{{ invoice.currency }} {{ line.line_total }}</td>{% if invoice.is_editable %}<td data-label="Actions" class="text-end"><div class="d-flex justify-content-end gap-2"><a class="btn btn-sm btn-outline-secondary" href="{% url 'invoices:line-update' invoice.id line.id %}">Edit</a><form method="post" action="{% url 'invoices:line-delete' invoice.id line.id %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Remove</button></form></div></td>{% endif %}</tr>
+              {% empty %}
+                <tr><td colspan="7" class="text-center text-body-secondary py-4">No line items yet. Add the first service or custom item to calculate this invoice.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {% if invoice.notes %}<section class="mb-4"><h2 class="h5">Notes</h2><p>{{ invoice.notes|linebreaksbr }}</p></section>{% endif %}
+      {% if invoice.terms %}<section class="mb-4"><h2 class="h5">Terms</h2><p>{{ invoice.terms|linebreaksbr }}</p></section>{% endif %}
+    </div>
+
+    <aside class="document-summary-column" aria-label="Invoice summary">
+      <div class="money-summary">
+        <div class="money-summary-header"><h2 class="h5 mb-0">Invoice summary</h2></div>
+        <dl class="money-summary-list">
+          <div><dt>Subtotal</dt><dd>{{ invoice.currency }} {{ invoice.subtotal }}</dd></div>
+          <div><dt>Discount</dt><dd>- {{ invoice.currency }} {{ invoice.discount_amount }}</dd></div>
+          <div><dt>Tax</dt><dd>{{ invoice.currency }} {{ invoice.tax_amount }}</dd></div>
+          <div><dt>Total</dt><dd>{{ invoice.currency }} {{ invoice.total }}</dd></div>
+          <div><dt>Amount paid</dt><dd>- {{ invoice.currency }} {{ invoice.amount_paid }}</dd></div>
+          <div class="money-summary-total"><dt>Balance due</dt><dd>{{ invoice.currency }} {{ invoice.balance_due }}</dd></div>
+        </dl>
+        {% if not invoice.is_editable and invoice.status != 'void' and invoice.balance_due > 0 %}
+          <div class="document-summary-actions d-print-none"><button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#recordPaymentModal"><i class="bi bi-credit-card me-1" aria-hidden="true"></i>Record payment</button><button class="btn btn-outline-secondary w-100" type="button" data-bs-toggle="modal" data-bs-target="#sendReminderModal"><i class="bi bi-envelope me-1" aria-hidden="true"></i>Send reminder</button></div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+
+  {% if not invoice.is_editable %}
+    <section class="card mt-4 d-print-none" aria-labelledby="send-invoice-heading">
+      <div class="card-body">
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-7"><h2 class="h5" id="send-invoice-heading">Send invoice</h2><p class="small text-body-secondary">Email the issued PDF and record its delivery state.</p><form method="post" action="{% url 'invoices:email' invoice.id %}">{% csrf_token %}{{ email_form.as_p }}<button class="btn btn-primary" name="action" value="send"><i class="bi bi-envelope me-1" aria-hidden="true"></i>Send invoice</button></form></div>
+          <div class="col-lg-5"><h3 class="h6">Customer access</h3><p class="small text-body-secondary">Open a secure customer view or hosted payment flow.</p><div class="d-flex flex-wrap gap-2"><form method="post" action="{% url 'invoices:public-link' invoice.id %}">{% csrf_token %}<button class="btn btn-outline-secondary">Open customer view</button></form>{% if invoice.status != 'void' and invoice.balance_due > 0 %}<form method="post" action="{% url 'payments:invoice-payment-link' invoice.id %}">{% csrf_token %}<button class="btn btn-outline-primary">Open payment link</button></form>{% endif %}</div></div>
+        </div>
+      </div>
+    </section>
+    <div class="card mt-4"><div class="card-body">{% include "includes/document_delivery_history.html" %}</div></div>
+  {% endif %}
+
+  {% if payments %}
+    <section class="mt-5" aria-labelledby="payment-history-heading">
+      <h2 class="h4" id="payment-history-heading">Payment history</h2>
+      <p class="text-body-secondary">Posted payments and reversals remain in the audit trail.</p>
+      <div class="responsive-data-list"><table class="table align-middle"><thead><tr><th>Date</th><th>Method</th><th>Reference</th><th>Status</th><th class="text-end">Net amount</th><th>Actions</th></tr></thead><tbody>{% for payment in payments %}<tr><td data-label="Date">{{ payment.paid_on|date:"M j, Y" }}</td><td data-label="Method">{{ payment.get_method_display }}</td><td data-label="Reference">{{ payment.reference|default:"-" }}</td><td data-label="Status"><span class="status-badge {% if payment.effective_status == 'posted' %}status-success{% elif payment.effective_status == 'partially_reversed' %}status-warning{% else %}status-danger{% endif %}">{{ payment.effective_status|title }}</span></td><td data-label="Net amount" class="text-end">{{ payment.currency }} {{ payment.net_amount }}</td><td data-label="Actions" class="text-end"><div class="d-flex justify-content-end gap-2"><a class="btn btn-sm btn-outline-secondary" href="{% url 'invoices:payment-receipt' invoice.id payment.id %}">Receipt</a>{% if payment.net_amount > 0 and invoice.status != 'void' %}<button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#reversePaymentModal{{ forloop.counter }}">Reverse</button>{% endif %}</div></td></tr>{% endfor %}</tbody></table></div>
+    </section>
+  {% endif %}
+
+  {% if not invoice.is_editable and invoice.status != 'void' and invoice.amount_paid == 0 %}
+    <section class="correction-panel mt-5 d-print-none" aria-labelledby="invoice-corrections-heading"><div><h2 class="h5 mb-1" id="invoice-corrections-heading">Invoice corrections</h2><p class="small text-body-secondary mb-0">Issued invoices cannot be deleted. Void this invoice only when it should no longer be collectible.</p></div><button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#voidInvoiceModal">Void invoice</button></section>
+  {% endif %}
 </div>
+
+{% if not invoice.is_editable and invoice.status != 'void' and invoice.balance_due > 0 %}
+<div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-labelledby="recordPaymentTitle" aria-describedby="recordPaymentDescription" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="post" action="{% url 'invoices:payment-create' invoice.id %}" novalidate>{% csrf_token %}<div class="modal-header"><h2 class="modal-title fs-5" id="recordPaymentTitle">Record payment for {{ invoice.number }}</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><div class="financial-action-summary" id="recordPaymentDescription"><span>Current balance due</span><strong>{{ invoice.currency }} {{ invoice.balance_due }}</strong></div>{{ payment_form.as_p }}<p class="small text-body-secondary mb-0">Recording a payment posts an immutable ledger entry and updates the invoice balance.</p></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" type="submit">Record payment</button></div></form></div></div></div>
+
+<div class="modal fade" id="sendReminderModal" tabindex="-1" aria-labelledby="sendReminderTitle" aria-describedby="sendReminderDescription" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="post" action="{% url 'invoices:email' invoice.id %}">{% csrf_token %}<div class="modal-header"><h2 class="modal-title fs-5" id="sendReminderTitle">Send reminder for {{ invoice.number }}</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p class="text-body-secondary" id="sendReminderDescription">Send a manual reminder for the {{ invoice.currency }} {{ invoice.balance_due }} balance. Delivery will be recorded in this invoice's history.</p><p><label for="reminder-recipient">Recipient</label><input id="reminder-recipient" type="email" name="recipient" value="{{ document_contact.email }}" required></p></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" name="action" value="reminder">Send reminder</button></div></form></div></div></div>
+{% endif %}
+
+{% if not invoice.is_editable and invoice.status != 'void' and invoice.amount_paid == 0 %}
+<div class="modal fade" id="voidInvoiceModal" tabindex="-1" aria-labelledby="voidInvoiceTitle" aria-describedby="voidInvoiceDescription" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="post" action="{% url 'invoices:void' invoice.id %}" novalidate>{% csrf_token %}<div class="modal-header"><h2 class="modal-title fs-5" id="voidInvoiceTitle">Void invoice {{ invoice.number }}</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><div class="alert alert-danger" id="voidInvoiceDescription">This invoice will become read-only and cannot accept new payments. Its financial history will remain available.</div>{{ void_form.as_p }}</div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-danger" type="submit">Void invoice</button></div></form></div></div></div>
+{% endif %}
+
+{% for payment in payments %}{% if payment.net_amount > 0 and invoice.status != 'void' %}
+<div class="modal fade" id="reversePaymentModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="reversePaymentTitle{{ forloop.counter }}" aria-describedby="reversePaymentDescription{{ forloop.counter }}" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="post" action="{% url 'invoices:payment-reverse' invoice.id payment.id %}" novalidate>{% csrf_token %}<div class="modal-header"><h2 class="modal-title fs-5" id="reversePaymentTitle{{ forloop.counter }}">Reverse payment on {{ invoice.number }}</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><div class="alert alert-danger" id="reversePaymentDescription{{ forloop.counter }}">Reverse up to {{ payment.currency }} {{ payment.net_amount }} from the {{ payment.paid_on|date:"M j, Y" }} {{ payment.get_method_display|lower }} payment. The invoice balance will increase, and the original payment will remain in history.</div><p><label for="reversal-amount-{{ forloop.counter }}">Reversal amount</label><input id="reversal-amount-{{ forloop.counter }}" name="amount" type="number" min="0.01" max="{{ payment.net_amount }}" step="0.01" value="{{ payment.net_amount }}" required></p><p><label for="reversal-reason-{{ forloop.counter }}">Reason</label><textarea id="reversal-reason-{{ forloop.counter }}" name="reason" rows="3" required></textarea></p></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-danger" type="submit">Reverse payment</button></div></form></div></div></div>
+{% endif %}{% endfor %}
 {% endblock %}

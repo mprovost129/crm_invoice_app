@@ -1,22 +1,17 @@
 {% extends "base.html" %}
-
-{% block title %}Business Settings{% endblock %}
+{% block title %}Business Settings | {{ APP_NAME }}{% endblock %}
 {% block meta_robots %}noindex,nofollow{% endblock %}
-
 {% block content %}
 <div class="container py-4 py-lg-5">
-    <div class="row justify-content-center">
-        <div class="col-xl-9">
-            <header class="page-header"><div><p class="page-eyebrow">Settings</p><h1>Business settings</h1><p class="text-body-secondary mb-0 mt-2">Manage your business identity and document defaults.</p></div><div class="page-header-actions"><a class="btn btn-outline-secondary" href="{% url 'billing:subscription' %}"><i class="bi bi-credit-card me-1" aria-hidden="true"></i>Subscription</a><a class="btn btn-outline-secondary" href="{% url 'payments:settings' %}">Online payments</a></div></header>
-            <form class="card" method="post" enctype="multipart/form-data" novalidate><div class="card-body p-lg-4">
-                {% csrf_token %}
-                <h2 class="h4 mt-4">Business profile</h2>
-                {{ profile_form.as_p }}
-                <h2 class="h4 mt-5">Document defaults</h2>
-                {{ defaults_form.as_p }}
-                <button class="btn btn-primary" type="submit">Save settings</button>
-            </div></form>
-        </div>
-    </div>
+  <header class="page-header"><div><p class="page-eyebrow">Settings</p><h1>Business and document defaults</h1><p class="text-body-secondary mb-0 mt-2">Manage business identity and the defaults applied to new drafts.</p></div></header>
+  {% include "includes/settings_navigation.html" %}
+  <div class="settings-content">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <section class="card mb-4" aria-labelledby="business-profile-heading"><div class="card-body p-lg-4"><h2 class="h4" id="business-profile-heading">Business profile</h2><p class="text-body-secondary">Contact details shown in the application and on newly issued documents.</p>{{ profile_form.as_p }}</div></section>
+      <section class="card mb-4" aria-labelledby="document-defaults-heading"><div class="card-body p-lg-4"><h2 class="h4" id="document-defaults-heading">Document defaults</h2><p class="text-body-secondary">Currency, tax, terms, numbering, notes, and branding defaults for future drafts.</p>{{ defaults_form.as_p }}</div></section>
+      <div class="document-action-bar settings-save-bar"><span class="small text-body-secondary">Issued document snapshots will not change.</span><button class="btn btn-primary" type="submit">Save settings</button></div>
+    </form>
+  </div>
 </div>
 {% endblock %}

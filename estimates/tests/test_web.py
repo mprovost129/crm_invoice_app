@@ -1,6 +1,7 @@
 import pytest
 from django.urls import reverse
 
+from communications.models import EmailDelivery
 from crm.services import create_contact
 from crm.tests.helpers import CONTACT_DATA
 from estimates.models import Estimate
@@ -108,3 +109,27 @@ def test_issued_estimate_detail_uses_historical_contact_snapshot(client):
     assert b"Taylor Renovations" in response.content
     assert b"jordan@example.com" in response.content
     assert b"Changed after issue" not in response.content
+
+
+@pytest.mark.django_db
+def test_issued_estimate_detail_surfaces_acceptance_dialog_and_delivery_failure(client):
+    user, workspace, _ = create_owner_tenancy()
+    business = create_business(workspace)
+    estimate, _, _ = create_issued_estimate(user=user, business=business)
+    EmailDelivery.objects.create(
+        business=business,
+        estimate=estimate,
+        kind=EmailDelivery.Kind.ESTIMATE,
+        recipient="customer@example.com",
+        subject="Estimate delivery",
+        status=EmailDelivery.Status.FAILED,
+        failure_message="Mailbox unavailable",
+    )
+    client.force_login(user)
+
+    response = client.get(reverse("estimates:detail", args=(estimate.pk,)))
+
+    assert response.status_code == 200
+    assert b"Mark estimate" in response.content
+    assert b"immutable evidence" in response.content
+    assert b"Mailbox unavailable" in response.content

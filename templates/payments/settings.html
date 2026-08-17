@@ -1,10 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Online payments | {{ APP_NAME }}{% endblock %}
+{% block title %}Online Payments | {{ APP_NAME }}{% endblock %}
 {% block meta_robots %}noindex,nofollow{% endblock %}
 {% block content %}
-<div class="container py-4"><a href="{% url 'workspaces:settings' %}" class="text-decoration-none">&larr; Settings</a><h1 class="mt-3">Online payments</h1>
-  {% if not online_payments_allowed %}<div class="alert alert-info">Online payments are not included in your current plan. <a href="{% url 'billing:subscription' %}">Review plans</a>.</div>
-  {% elif connected_account %}<div class="card"><div class="card-body"><h2 class="h5">Stripe account</h2><p>Status: <strong>{{ connected_account.get_status_display }}</strong></p><p class="mb-3">Charges: {{ connected_account.charges_enabled|yesno:"Enabled,Not enabled" }} &middot; Payouts: {{ connected_account.payouts_enabled|yesno:"Enabled,Not enabled" }}</p>{% if connected_account.requirements_due %}<p>Stripe still requires: {{ connected_account.requirements_due|join:", " }}</p>{% endif %}{% if not connected_account.is_ready %}<form method="post" action="{% url 'payments:connect' %}">{% csrf_token %}<button class="btn btn-primary">Continue Stripe onboarding</button></form>{% endif %}</div></div>
-  {% else %}<p>Connect a Stripe Express account to let clients pay issued invoices by card. Client funds go directly to your connected account.</p><form method="post" action="{% url 'payments:connect' %}">{% csrf_token %}<button class="btn btn-primary">Connect with Stripe</button></form>{% endif %}
+<div class="container py-4 py-lg-5">
+  <header class="page-header"><div><p class="page-eyebrow">Settings</p><h1>Online payments</h1><p class="text-body-secondary mb-0 mt-2">Manage the connected account used for hosted invoice payments.</p></div></header>
+  {% include "includes/settings_navigation.html" %}
+  <div class="settings-content">
+    {% if not online_payments_allowed %}
+      <div class="alert alert-info"><strong>Upgrade required.</strong> Online payments are not included in your current plan. <a href="{% url 'billing:subscription' %}">Review plans</a>.</div>
+    {% elif connected_account %}
+      <section class="card" aria-labelledby="stripe-account-heading"><div class="card-body p-lg-4"><div class="d-flex flex-wrap justify-content-between align-items-start gap-3"><div><h2 class="h4 mb-2" id="stripe-account-heading">Stripe account</h2><span class="status-badge {% if connected_account.is_ready %}status-success{% elif connected_account.status == 'disabled' %}status-danger{% else %}status-warning{% endif %}">{{ connected_account.get_status_display }}</span></div>{% if not connected_account.is_ready %}<form method="post" action="{% url 'payments:connect' %}">{% csrf_token %}<button class="btn btn-primary">Continue Stripe onboarding</button></form>{% endif %}</div><dl class="settings-status-list mt-4"><div><dt>Charges</dt><dd>{{ connected_account.charges_enabled|yesno:"Enabled,Not enabled" }}</dd></div><div><dt>Payouts</dt><dd>{{ connected_account.payouts_enabled|yesno:"Enabled,Not enabled" }}</dd></div></dl>{% if connected_account.requirements_due %}<div class="alert alert-warning mt-4 mb-0"><strong>Stripe still requires:</strong> {{ connected_account.requirements_due|join:", " }}</div>{% elif connected_account.is_ready %}<p class="text-body-secondary mt-4 mb-0">Clients can use provider-hosted checkout for eligible issued invoices. Card details never pass through this application.</p>{% endif %}</div></section>
+    {% else %}
+      <section class="card" aria-labelledby="connect-stripe-heading"><div class="card-body p-lg-4"><span class="empty-state-icon"><i class="bi bi-credit-card" aria-hidden="true"></i></span><h2 class="h4" id="connect-stripe-heading">Connect Stripe</h2><p class="text-body-secondary">Connect a Stripe Express account to let clients pay eligible issued invoices by card. Client funds go directly to your connected account.</p><form method="post" action="{% url 'payments:connect' %}">{% csrf_token %}<button class="btn btn-primary">Connect with Stripe</button></form></div></section>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
