@@ -12,9 +12,11 @@ from reportlab.lib.enums import TA_RIGHT
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
+    Image,
     KeepTogether,
     Paragraph,
     SimpleDocTemplate,
@@ -39,6 +41,41 @@ def _money(currency, value):
 def _decimal_label(value, *, places=4):
     label = f"{Decimal(value):.{places}f}".rstrip("0").rstrip(".")
     return label or "0"
+
+
+def _business_header(business, style):
+    """Build a stable document header, including the snapshotted logo when present."""
+    flowables = []
+    storage_name = business.get("logo_storage_name", "")
+    if storage_name:
+        try:
+            with default_storage.open(storage_name, "rb") as source:
+                content = source.read()
+            image_reader = ImageReader(BytesIO(content))
+            width, height = image_reader.getSize()
+            scale = min((1.4 * inch) / width, (0.6 * inch) / height, 1)
+            flowables.extend(
+                [
+                    Image(
+                        BytesIO(content),
+                        width=width * scale,
+                        height=height * scale,
+                    ),
+                    Spacer(1, 0.08 * inch),
+                ]
+            )
+        except (OSError, ValueError):
+            # A historical document remains usable even if external media is missing.
+            pass
+    flowables.append(
+        Paragraph(
+            f"<b>{escape(business['display_name'])}</b><br/>"
+            f"{escape(business['address'])}<br/>"
+            f"{escape(business['email'])}",
+            style,
+        )
+    )
+    return flowables
 
 
 def render_estimate_pdf(snapshot):
@@ -76,12 +113,7 @@ def render_estimate_pdf(snapshot):
         Table(
             [
                 [
-                    Paragraph(
-                        f"<b>{escape(business['display_name'])}</b><br/>"
-                        f"{escape(business['address'])}<br/>"
-                        f"{escape(business['email'])}",
-                        styles["BodyText"],
-                    ),
+                    _business_header(business, styles["BodyText"]),
                     Paragraph(
                         f"<font size='18'><b>ESTIMATE</b></font><br/>"
                         f"<b>{escape(estimate['number'])}</b><br/>"
@@ -284,12 +316,7 @@ def render_invoice_pdf(snapshot, *, amount_paid, balance_due, effective_status):
         Table(
             [
                 [
-                    Paragraph(
-                        f"<b>{escape(business['display_name'])}</b><br/>"
-                        f"{escape(business['address'])}<br/>"
-                        f"{escape(business['email'])}",
-                        styles["BodyText"],
-                    ),
+                    _business_header(business, styles["BodyText"]),
                     Paragraph(
                         f"<font size='18'><b>INVOICE</b></font><br/>"
                         f"<b>{escape(invoice['number'])}</b><br/>"
@@ -492,12 +519,7 @@ def render_payment_receipt_pdf(payment):
     styles["Heading2"].fontName = "AppSans-Bold"
     story = [
         Paragraph("PAYMENT RECEIPT", styles["Heading1"]),
-        Paragraph(
-            f"<b>{escape(business['display_name'])}</b><br/>"
-            f"{escape(business['address'])}<br/>"
-            f"{escape(business['email'])}",
-            styles["BodyText"],
-        ),
+        *_business_header(business, styles["BodyText"]),
         Spacer(1, 0.4 * inch),
         Paragraph(
             f"Received from {escape(contact['display_name'])}", styles["Heading2"]

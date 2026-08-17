@@ -41,6 +41,7 @@ def complete_business_onboarding(*, actor, data):
             "email",
             "phone",
             "website",
+            "logo",
             "address_line_1",
             "address_line_2",
             "city",
@@ -50,6 +51,7 @@ def complete_business_onboarding(*, actor, data):
             "default_currency",
             "timezone",
         )
+        if field in data
     }
     business = Business(workspace=membership.workspace, **business_fields)
     business.full_clean()
@@ -117,6 +119,8 @@ def update_business_configuration(*, actor, business_id, profile_data, defaults_
     )
 
     for field, value in profile_data.items():
+        if field == "logo" and value is False:
+            value = ""
         setattr(business, field, value)
     business.full_clean()
     business.save()

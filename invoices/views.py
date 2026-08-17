@@ -21,6 +21,7 @@ from communications.pdf import (
     get_or_create_invoice_pdf,
     get_or_create_payment_receipt_pdf,
 )
+from communications.snapshots import document_display_context, snapshot_logo_url
 from estimates.selectors import estimate_for_business
 from payments.forms import PaymentForm, PaymentReversalForm
 from payments.models import Payment
@@ -104,23 +105,25 @@ class InvoiceDetailView(OwnerTenantRequiredMixin, InvoiceObjectMixin, TemplateVi
 
     def get_context_data(self, **kwargs):
         today = timezone.localdate(timezone=ZoneInfo(self.request.business.timezone))
+        display_context = document_display_context(self.invoice)
         suggested = self.invoice.balance_due
         if self.invoice.amount_paid == 0 and self.invoice.deposit_required > 0:
             suggested = min(self.invoice.deposit_required, self.invoice.balance_due)
         return {
             **super().get_context_data(**kwargs),
+            **display_context,
             "invoice": self.invoice,
             "lines": self.invoice.line_items.all(),
             "payments": self.invoice.payments.all(),
             "email_form": InvoiceEmailForm(
-                initial={"recipient": self.invoice.contact.email}
+                initial={"recipient": display_context["document_contact"]["email"]}
             ),
             "void_form": VoidInvoiceForm(),
             "payment_form": PaymentForm(
                 initial={
                     "amount": suggested,
                     "paid_on": today,
-                    "receipt_email": self.invoice.contact.email,
+                    "receipt_email": display_context["document_contact"]["email"],
                 }
             ),
             "reversal_form": PaymentReversalForm(),
@@ -454,14 +457,16 @@ def public_invoice_view(request, token):
         target="invoice",
     )
     invoice = _public_invoice_for_request(request=request, link=link)
+    snapshot = invoice.document_snapshot.payload
     return _public_headers(
         render(
             request,
             "invoices/public_invoice.html",
             {
-                "snapshot": invoice.document_snapshot.payload,
+                "snapshot": snapshot,
                 "invoice": invoice,
                 "token": token,
+                "logo_url": snapshot_logo_url(snapshot),
             },
         )
     )

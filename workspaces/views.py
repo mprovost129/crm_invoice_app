@@ -85,6 +85,7 @@ class BusinessSettingsView(OwnerTenantRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         profile_form = BusinessProfileForm(
             request.POST,
+            request.FILES,
             instance=request.business,
             prefix="profile",
         )

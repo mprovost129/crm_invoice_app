@@ -6,7 +6,12 @@ from crm.tests.helpers import CONTACT_DATA
 from estimates.models import Estimate
 from workspaces.tests.helpers import create_business, create_owner_tenancy
 
-from .helpers import ESTIMATE_DATA, LINE_DATA, create_estimate_fixture
+from .helpers import (
+    ESTIMATE_DATA,
+    LINE_DATA,
+    create_estimate_fixture,
+    create_issued_estimate,
+)
 
 
 @pytest.mark.django_db
@@ -85,3 +90,21 @@ def test_owner_estimate_pages_return_404_for_foreign_estimate(client):
         ).status_code
         == 404
     )
+
+
+@pytest.mark.django_db
+def test_issued_estimate_detail_uses_historical_contact_snapshot(client):
+    user, workspace, _ = create_owner_tenancy()
+    business = create_business(workspace)
+    estimate, _, contact = create_issued_estimate(user=user, business=business)
+    contact.company_name = "Changed after issue"
+    contact.email = "changed@example.com"
+    contact.save(update_fields=("company_name", "email", "updated_at"))
+    client.force_login(user)
+
+    response = client.get(reverse("estimates:detail", args=(estimate.pk,)))
+
+    assert response.status_code == 200
+    assert b"Taylor Renovations" in response.content
+    assert b"jordan@example.com" in response.content
+    assert b"Changed after issue" not in response.content

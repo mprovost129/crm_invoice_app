@@ -96,3 +96,21 @@ def test_owner_invoice_routes_do_not_expose_foreign_documents(client):
         ).status_code
         == 404
     )
+
+
+@pytest.mark.django_db
+def test_issued_invoice_detail_uses_historical_contact_snapshot(client):
+    user, workspace, _ = create_owner_tenancy()
+    business = create_business(workspace)
+    invoice, _, contact = create_converted_invoice(user=user, business=business)
+    contact.company_name = "Changed after issue"
+    contact.email = "changed@example.com"
+    contact.save(update_fields=("company_name", "email", "updated_at"))
+    client.force_login(user)
+
+    response = client.get(reverse("invoices:detail", args=(invoice.pk,)))
+
+    assert response.status_code == 200
+    assert b"Taylor Renovations" in response.content
+    assert b"jordan@example.com" in response.content
+    assert b"Changed after issue" not in response.content

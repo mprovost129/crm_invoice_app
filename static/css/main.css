@@ -83,6 +83,13 @@ body {
     background-color: var(--bs-body-bg);
 }
 
+.public-document-logo {
+    display: block;
+    max-height: 4rem;
+    max-width: 14rem;
+    object-fit: contain;
+}
+
 a {
     color: var(--bs-link-color);
 }

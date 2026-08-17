@@ -1,6 +1,6 @@
 # Project Overview
 
-Last reviewed: 2026-08-12
+Last reviewed: 2026-08-16
 
 ## Product
 
@@ -48,7 +48,7 @@ The experience should be understandable without accounting knowledge. Features t
 - **Tenant safety:** every business-owned record is scoped to a verified business context.
 - **Practical flexibility:** online acceptance is optional, and owners may record acceptance or payment received through other channels.
 - **Portability and trust:** exports, audit-conscious lifecycle rules, tested backups, and reconciliation are launch requirements.
-- **Progressive complexity:** responsive web first; automation, broader APIs, multiple users/businesses, and mobile later.
+- **Progressive complexity:** responsive Django/HTMX web first; a versioned API and Flutter iOS/Android clients follow only after the core workflow is stable.
 
 ## Commercial Direction
 
@@ -126,6 +126,8 @@ V1 is commercially usable only when the decisive end-to-end workflow is fast, ac
 
 ## Source Documents
 
+- [Detailed User Flows & Screen Specifications](<CRM + Invoicing SaaS — Detailed User Flows & Screen Specifications.docx>)
+- [Web Visual Design System & Component Specification](<CRM + Invoicing SaaS — Web Visual Design System & Component Specification.docx>)
 - [V1 Product Scope](<CRM + Invoicing SaaS — V1 Product Scope.docx>)
 - [Django Data Model & Architecture](<CRM + Invoicing SaaS — Django Data Model & Architecture.docx>)
 - [MVP Build Plan & Acceptance Criteria](<CRM + Invoicing SaaS — MVP Build Plan & Acceptance Criteria.docx>)

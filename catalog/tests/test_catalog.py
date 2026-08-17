@@ -82,6 +82,21 @@ def test_custom_unit_and_nonnegative_rate_are_enforced():
 
 
 @pytest.mark.django_db
+def test_catalog_rate_preserves_four_decimal_precision():
+    user, workspace, _ = create_owner_tenancy()
+    business = create_business(workspace)
+
+    item = create_catalog_item(
+        actor=user,
+        business_id=business.pk,
+        data={**ITEM_DATA, "default_rate": Decimal("125.1234")},
+    )
+
+    item.refresh_from_db()
+    assert item.default_rate == Decimal("125.1234")
+
+
+@pytest.mark.django_db
 def test_catalog_services_deny_cross_tenant_update():
     first_user, first_workspace, _ = create_owner_tenancy("first@example.com")
     second_user, second_workspace, _ = create_owner_tenancy("second@example.com")

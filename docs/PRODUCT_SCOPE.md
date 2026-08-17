@@ -1,6 +1,6 @@
 # Product Scope
 
-Last reviewed: 2026-08-12
+Last reviewed: 2026-08-16
 
 This document records the complete intended product boundary. It describes approved V1 behavior and deliberate post-V1 extensions; it does not imply that a feature is implemented. Current implementation status is tracked in [FEATURES.md](FEATURES.md).
 
@@ -160,7 +160,7 @@ V1 includes tenant-isolation tests, concurrency tests for numbering/conversion/p
 - Full client portal accounts.
 - Multiple active businesses, multiple users, and role management.
 - Multiple contacts/emails/phones per customer.
-- Native mobile application.
+- Flutter applications for iOS and Android.
 - Project management and manual task systems.
 - Public API access, advanced automation/integrations, generic custom fields, and complex reporting.
 - Enterprise-grade audit logging.
@@ -171,7 +171,7 @@ V1 includes tenant-isolation tests, concurrency tests for numbering/conversion/p
 2. Recurring invoices with duplicate-prevention and scheduling controls.
 3. Additional users, roles, and active businesses.
 4. Stable versioned API for first-party/external clients.
-5. Native mobile client using the authoritative backend API.
+5. Flutter iOS and Android clients using the authoritative Django backend API.
 6. Advanced reporting, integrations, customization, and automation based on validated demand.
 
 ## V1 Acceptance Boundary

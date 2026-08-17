@@ -16,6 +16,7 @@ from communications.emailing import queue_estimate_email
 from communications.links import create_public_link, resolve_public_link
 from communications.models import PublicDocumentLink
 from communications.pdf import get_or_create_estimate_pdf
+from communications.snapshots import document_display_context, snapshot_logo_url
 from workspaces.mixins import OwnerTenantRequiredMixin
 
 from .forms import (
@@ -107,12 +108,14 @@ class EstimateDetailView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        display_context = document_display_context(self.estimate)
         context.update(
             {
+                **display_context,
                 "estimate": self.estimate,
                 "lines": self.estimate.line_items.all(),
                 "email_form": EstimateEmailForm(
-                    initial={"recipient": self.estimate.contact.email}
+                    initial={"recipient": display_context["document_contact"]["email"]}
                 ),
                 "acceptance_form": ManualAcceptanceForm(),
             }
@@ -407,10 +410,15 @@ def public_estimate_view(request, token):
         allowed_purposes=(PublicDocumentLink.Purpose.VIEW,),
     )
     estimate = _public_estimate_for_request(request=request, link=link)
+    snapshot = estimate.document_snapshot.payload
     response = render(
         request,
         "estimates/public_estimate.html",
-        {"snapshot": estimate.document_snapshot.payload, "estimate": estimate},
+        {
+            "snapshot": snapshot,
+            "estimate": estimate,
+            "logo_url": snapshot_logo_url(snapshot),
+        },
     )
     return _public_headers(response)
 
@@ -424,9 +432,11 @@ def public_estimate_respond(request, token):
         allowed_purposes=(PublicDocumentLink.Purpose.RESPOND,),
     )
     estimate = _public_estimate_for_request(request=request, link=link)
+    snapshot = estimate.document_snapshot.payload
     context = {
-        "snapshot": estimate.document_snapshot.payload,
+        "snapshot": snapshot,
         "estimate": estimate,
+        "logo_url": snapshot_logo_url(snapshot),
         "accept_form": PublicAcceptanceForm(),
         "decline_form": PublicDeclineForm(),
         "response_enabled": estimate.status

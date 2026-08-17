@@ -43,7 +43,7 @@ class ProductService(BusinessOwnedModel):
         default=Unit.SERVICE,
     )
     custom_unit = models.CharField(max_length=40, blank=True)
-    default_rate = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    default_rate = models.DecimalField(max_digits=14, decimal_places=4, default=0)
     is_taxable = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     archived_at = models.DateTimeField(blank=True, null=True)

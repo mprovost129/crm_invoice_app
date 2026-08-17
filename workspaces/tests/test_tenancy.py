@@ -1,5 +1,6 @@
 import pytest
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.urls import reverse
 
@@ -41,6 +42,20 @@ def test_onboarding_rejects_unverified_user():
         complete_business_onboarding(actor=user, data=BUSINESS_DATA)
 
     assert Business.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_business_logo_requires_a_safe_image_extension():
+    _, workspace, _ = create_owner_tenancy()
+    business = create_business(workspace)
+    business.logo = SimpleUploadedFile(
+        "brand.svg",
+        b"\x89PNG\r\n\x1a\nnot-an-svg",
+        content_type="image/png",
+    )
+
+    with pytest.raises(ValidationError):
+        business.full_clean()
 
 
 @pytest.mark.django_db
@@ -199,7 +214,10 @@ def test_tenant_middleware_keeps_membership_and_business_in_same_workspace(clien
 
 
 @pytest.mark.django_db
-def test_business_settings_update_profile_defaults_and_sequences(client):
+def test_business_settings_update_profile_defaults_sequences_and_logo(
+    client, tmp_path, settings
+):
+    settings.MEDIA_ROOT = tmp_path
     user, workspace, _ = create_owner_tenancy()
     business = create_business(workspace)
     client.force_login(user)
@@ -245,6 +263,15 @@ def test_business_settings_update_profile_defaults_and_sequences(client):
         },
     }
     post_data["profile-display_name"] = "Updated Design Co"
+    post_data["profile-logo"] = SimpleUploadedFile(
+        "brand.png",
+        (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+            b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00"
+            b"\x1f\x15\xc4\x89\x00\x00\x00\rIDAT\x08\xd7c\xf8\xcf\xc0\xf0\x1f\x00\x05\x00\x01\xff\x89\x99\r\x1d\x00\x00\x00\x00IEND\xaeB`\x82"
+        ),
+        content_type="image/png",
+    )
     post_data["defaults-estimate_prefix"] = "QUOTE-"
     post_data["defaults-invoice_starting_number"] = 9001
 
@@ -254,6 +281,8 @@ def test_business_settings_update_profile_defaults_and_sequences(client):
     business.refresh_from_db()
     business.settings.refresh_from_db()
     assert business.display_name == "Updated Design Co"
+    assert business.logo.name.startswith(f"business-logos/{business.pk}/")
+    assert business.logo.storage.exists(business.logo.name)
     assert business.settings.estimate_prefix == "QUOTE-"
     invoice_sequence = DocumentSequence.objects.get(
         business=business,

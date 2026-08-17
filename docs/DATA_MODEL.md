@@ -1,6 +1,6 @@
 # Data Model
 
-Last reviewed: 2026-08-12
+Last reviewed: 2026-08-16
 
 ## Status Legend
 
@@ -88,7 +88,7 @@ Every business-owned entity below carries a direct business foreign key even whe
 
 One-to-one with Business. Stores validated estimate/invoice prefixes and defaults for
 terms, expiration, tax, and notes. Number allocation itself belongs in
-`DocumentSequence`; branding assets remain planned.
+`DocumentSequence`. The business logo is stored on `Business`, not in settings.
 
 ## CRM and Catalog
 
@@ -156,7 +156,11 @@ Online and manually recorded acceptance use the same business outcome without mi
 
 ### `Invoice` - Implemented
 
-Belongs to Business and protected Contact; optionally has a unique one-to-one source Estimate. Stores visible number, workflow state, currency/dates, contact and billing snapshots, line/tax/discount totals, cached amount paid/balance, deposit requirement, notes/terms, delivery/view/void timestamps, reason, and creator.
+Belongs to Business and protected Contact; optionally has a unique one-to-one source
+Estimate. Stores visible number, workflow state, currency/dates, line/tax/discount totals,
+cached amount paid/balance, deposit requirement, notes/terms, delivery/view/void timestamps,
+reason, and creator. Issued business/contact identity is preserved in its one-to-one
+`DocumentSnapshot`, not duplicated as mutable invoice columns.
 
 Editable workflow values are Draft, Sent, Viewed, and Void. Partial, Paid, and Overdue are derived from ledger totals, balance, due date, and business-local date.
 
@@ -225,7 +229,10 @@ PDFs are cached by immutable snapshot plus current payment-state render key.
 
 ### `DocumentSnapshot` - Implemented for estimates and invoices
 
-Immutable versioned rendering payload for one issued estimate or invoice, optionally linked to a generated PDF asset. Legitimate revisions create new versions; historical documents are not silently regenerated from current defaults.
+Immutable rendering payload with a one-to-one link to one issued estimate or invoice,
+optionally linked to generated PDF assets. V1 does not revise an issued document in place;
+a legitimate correction requires a new document rather than silently regenerating history
+from current contact, business, catalog, or settings data.
 
 ### `EmailDelivery` - Implemented for estimates, invoices, reminders, and receipts
 
@@ -246,23 +253,11 @@ kinds cover estimate acceptance/decline, recorded payment, overdue invoice, and 
 failure. Event services create immediate notifications; an idempotent command synchronizes
 date-derived overdue notifications.
 
-## Commercial and Integration Models
-
-### `Plan` and `Subscription` - Planned
-
-Plan is configurable data for code, name, active state, prices, currency, limits, and features. Subscription is one-to-one with Workspace and records plan, status, interval, provider identifiers, period end, and cancellation intent.
+## Remaining Optional Model
 
 ### `UsageCounter` - Planned, optional
 
 Use only when an authoritative V1 query is too expensive for enforcement. Counters require reconciliation.
-
-### `ConnectedAccount` - Planned
-
-One-to-one payment-provider connection for Business with unique provider account ID, onboarding state, capability flags, and last synchronization time.
-
-### `WebhookEvent` - Planned
-
-Durable provider inbox with unique `(provider, provider_event_id)`, type, mode, payload, signature verification, processing status, attempts, error, and timestamps.
 
 ### `OutboxEvent` - Implemented
 

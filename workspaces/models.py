@@ -1,9 +1,15 @@
 import uuid
+from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import (
+    FileExtensionValidator,
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator,
+)
 from django.db import models
 from django.db.models import Q
 
@@ -13,6 +19,26 @@ document_prefix_validator = RegexValidator(
     regex=r"^[A-Z0-9-]{1,12}$",
     message="Use 1-12 uppercase letters, numbers, or hyphens.",
 )
+
+MAX_BUSINESS_LOGO_BYTES = 2 * 1024 * 1024
+
+
+def business_logo_upload_to(instance, filename):
+    suffix = Path(filename).suffix.lower()
+    return f"business-logos/{instance.pk}/{uuid.uuid4().hex}{suffix}"
+
+
+def validate_business_logo(upload):
+    if upload.size > MAX_BUSINESS_LOGO_BYTES:
+        raise ValidationError("Business logos must be 2 MB or smaller.")
+
+    position = upload.tell()
+    header = upload.read(12)
+    upload.seek(position)
+    is_png = header.startswith(b"\x89PNG\r\n\x1a\n")
+    is_jpeg = header.startswith(b"\xff\xd8\xff")
+    if not (is_png or is_jpeg):
+        raise ValidationError("Upload a PNG or JPEG business logo.")
 
 
 def validate_timezone(value):
@@ -161,6 +187,15 @@ class Business(TimeStampedModel):
     email = models.EmailField()
     phone = models.CharField(max_length=40, blank=True)
     website = models.URLField(blank=True)
+    logo = models.FileField(
+        upload_to=business_logo_upload_to,
+        validators=[
+            FileExtensionValidator(allowed_extensions=("png", "jpg", "jpeg")),
+            validate_business_logo,
+        ],
+        max_length=500,
+        blank=True,
+    )
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=120)

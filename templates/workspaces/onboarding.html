@@ -9,7 +9,7 @@
         <div class="col-xl-9">
             <h1>Set up your business</h1>
             <p class="text-body-secondary">These values become the defaults for future estimates and invoices and remain editable.</p>
-            <form method="post" novalidate>
+            <form method="post" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button class="btn btn-primary" type="submit">Complete setup</button>

@@ -1,6 +1,6 @@
 # Feature Inventory
 
-Last reviewed: 2026-08-12
+Last reviewed: 2026-08-16
 
 ## Status Legend
 
@@ -47,6 +47,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Google login | Deferred | Recommended after basic auth, not required for core V1 |
 | Workspace and membership | Implemented | UUID models, active membership selectors, uniqueness constraints, staff admin |
 | Business and business settings | Implemented | UUID models, profile/default settings, validation, protected relationships |
+| Business logo | Implemented | Validated PNG/JPEG upload, issued-document snapshot reference, public document and PDF rendering |
 | One-owner/one-business V1 policy | Implemented | Partial database uniqueness plus owner-only onboarding/settings services |
 | Tenant request context and scoping | Implemented | Membership-derived middleware context, scoped querysets/selectors, isolation tests |
 | Business onboarding | Implemented | Verified-owner flow atomically creates Business, settings, and two sequences |
@@ -140,9 +141,9 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Responsive base templates | Partial | Bootstrap product screens exist; formal phone/tablet/desktop review remains pending |
 | Accessible messages/error pages | Partial | Shared templates exist; full accessibility pass pending |
 | HTMX foundation | Implemented | Self-hosted verified HTMX 2.0.10 with Django CSRF header integration |
-| Product branding/design system | Decision needed | Current UI is generic starter styling |
+| Product branding/design system | Partial | Web visual specification is approved; current Bootstrap starter screens still need the implementation pass |
 | Search and pagination conventions | Implemented | Core lists and delivery history use scoped search/filters and pagination |
-| Mobile application | Deferred | Responsive web and stable backend first |
+| Flutter mobile applications | Deferred | iOS and Android technology is decided; responsive Django/HTMX web and a stable versioned API come first |
 
 ## Explicitly Deferred Product Features
 
@@ -152,7 +153,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 - Multiple contacts per customer.
 - Full client portal accounts.
 - Project management/task systems.
-- Public API access, native mobile app, and advanced integrations.
+- Public API access, Flutter iOS/Android apps, and advanced integrations.
 - General accounting, expenses, bank feeds, tax filing, payroll, inventory, and purchasing.
 - Advanced automation, custom fields, and complex reports.
 

@@ -1,6 +1,6 @@
 # Roadmap
 
-Last reviewed: 2026-08-12
+Last reviewed: 2026-08-16
 
 ## Status Legend
 
@@ -35,7 +35,7 @@ secret manager.
 | 5. Dashboard, communications, and export | P1 | Complete | Phase 4 | Owner can understand cash/work status; exports reconcile |
 | 6. SaaS billing and online payments | P1 | Complete | Stable manual workflow and Phase 5 operations | Subscription and invoice payments are idempotent and separated |
 | 7. Launch hardening | P0 launch gate | In progress | All enabled V1 phases | Security, restore, migration, accessibility, monitoring, and E2E gates pass |
-| Post-V1 extensions | P2 | Deferred | Validated V1 and customer demand | Automation, recurrence, teams, multiple businesses, API/mobile |
+| Post-V1 extensions | P2 | Deferred | Validated V1 and customer demand | Automation, recurrence, teams, multiple businesses, versioned API, Flutter mobile |
 
 P0 means required for a safe core release; P1 may be sequenced after the manual workflow but is within intended commercial V1; P2 is post-V1.
 
@@ -220,7 +220,7 @@ Manual payments remain independent and available.
 3. Additional users and tested roles.
 4. Multiple active businesses.
 5. Stronger/versioned API and public API policy.
-6. Native mobile app.
+6. Flutter applications for iOS and Android, backed by the versioned Django API.
 7. Advanced reports, integrations, customization, and automations driven by evidence.
 
 ## Dependency Decisions

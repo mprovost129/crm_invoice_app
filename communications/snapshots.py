@@ -1,11 +1,75 @@
 import hashlib
 import json
 
+from django.core.files.storage import default_storage
+
 from .models import DocumentSnapshot
 
 
 def _address(*parts):
     return ", ".join(str(part).strip() for part in parts if str(part).strip())
+
+
+def _business_payload(business):
+    return {
+        "id": str(business.pk),
+        "legal_name": business.legal_name,
+        "display_name": business.display_name,
+        "owner_name": business.owner_name,
+        "email": business.email,
+        "phone": business.phone,
+        "website": business.website,
+        "logo_storage_name": business.logo.name if business.logo else "",
+        "address": _address(
+            business.address_line_1,
+            business.address_line_2,
+            business.city,
+            business.region,
+            business.postal_code,
+            business.country_code,
+        ),
+    }
+
+
+def _contact_payload(contact):
+    return {
+        "id": str(contact.pk),
+        "display_name": contact.display_name,
+        "first_name": contact.first_name,
+        "last_name": contact.last_name,
+        "company_name": contact.company_name,
+        "email": contact.email,
+        "phone": contact.phone,
+        "address": _address(
+            contact.address_line_1,
+            contact.address_line_2,
+            contact.city,
+            contact.region,
+            contact.postal_code,
+            contact.country_code,
+        ),
+    }
+
+
+def document_display_context(document):
+    """Return historical parties for issued documents and live parties for drafts."""
+    if not document.is_editable:
+        snapshot = getattr(document, "document_snapshot", None)
+        if snapshot is not None:
+            return {
+                "document_business": snapshot.payload["business"],
+                "document_contact": snapshot.payload["contact"],
+            }
+    return {
+        "document_business": _business_payload(document.business),
+        "document_contact": _contact_payload(document.contact),
+    }
+
+
+def snapshot_logo_url(payload):
+    """Resolve the snapshotted logo without coupling templates to storage."""
+    storage_name = payload.get("business", {}).get("logo_storage_name", "")
+    return default_storage.url(storage_name) if storage_name else ""
 
 
 def build_estimate_snapshot_payload(*, estimate, lines):
@@ -36,40 +100,8 @@ def build_estimate_snapshot_payload(*, estimate, lines):
             "deposit_required": str(estimate.deposit_required),
             "issued_at": estimate.issued_at.isoformat(),
         },
-        "business": {
-            "id": str(business.pk),
-            "legal_name": business.legal_name,
-            "display_name": business.display_name,
-            "owner_name": business.owner_name,
-            "email": business.email,
-            "phone": business.phone,
-            "website": business.website,
-            "address": _address(
-                business.address_line_1,
-                business.address_line_2,
-                business.city,
-                business.region,
-                business.postal_code,
-                business.country_code,
-            ),
-        },
-        "contact": {
-            "id": str(contact.pk),
-            "display_name": contact.display_name,
-            "first_name": contact.first_name,
-            "last_name": contact.last_name,
-            "company_name": contact.company_name,
-            "email": contact.email,
-            "phone": contact.phone,
-            "address": _address(
-                contact.address_line_1,
-                contact.address_line_2,
-                contact.city,
-                contact.region,
-                contact.postal_code,
-                contact.country_code,
-            ),
-        },
+        "business": _business_payload(business),
+        "contact": _contact_payload(contact),
         "lines": [
             {
                 "id": str(line.pk),
@@ -144,42 +176,8 @@ def build_invoice_snapshot_payload(
             "total": str(invoice.total),
             "issued_at": invoice.issued_at.isoformat(),
         },
-        "business": business_payload
-        or {
-            "id": str(business.pk),
-            "legal_name": business.legal_name,
-            "display_name": business.display_name,
-            "owner_name": business.owner_name,
-            "email": business.email,
-            "phone": business.phone,
-            "website": business.website,
-            "address": _address(
-                business.address_line_1,
-                business.address_line_2,
-                business.city,
-                business.region,
-                business.postal_code,
-                business.country_code,
-            ),
-        },
-        "contact": contact_payload
-        or {
-            "id": str(contact.pk),
-            "display_name": contact.display_name,
-            "first_name": contact.first_name,
-            "last_name": contact.last_name,
-            "company_name": contact.company_name,
-            "email": contact.email,
-            "phone": contact.phone,
-            "address": _address(
-                contact.address_line_1,
-                contact.address_line_2,
-                contact.city,
-                contact.region,
-                contact.postal_code,
-                contact.country_code,
-            ),
-        },
+        "business": business_payload or _business_payload(business),
+        "contact": contact_payload or _contact_payload(contact),
         "lines": [
             {
                 "id": str(line.pk),

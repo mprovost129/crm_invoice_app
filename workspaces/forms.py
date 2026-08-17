@@ -28,6 +28,7 @@ class BusinessProfileForm(forms.ModelForm):
             "email",
             "phone",
             "website",
+            "logo",
             "address_line_1",
             "address_line_2",
             "city",

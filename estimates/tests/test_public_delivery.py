@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 from django.core import mail
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import Http404
 from django.test import override_settings
@@ -117,12 +118,21 @@ def test_pdf_generation_is_content_addressed_and_reused(tmp_path, settings):
     settings.MEDIA_ROOT = tmp_path
     user, workspace, _ = create_owner_tenancy()
     business = create_business(workspace)
+    business.logo.save(
+        "brand.png",
+        ContentFile(
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+            b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00"
+            b"\x1f\x15\xc4\x89\x00\x00\x00\rIDAT\x08\xd7c\xf8\xcf\xc0\xf0\x1f\x00\x05\x00\x01\xff\x89\x99\r\x1d\x00\x00\x00\x00IEND\xaeB`\x82"
+        ),
+    )
     estimate, _, _ = create_issued_estimate(user=user, business=business)
 
     first = get_or_create_estimate_pdf(estimate=estimate)
     second = get_or_create_estimate_pdf(estimate=estimate)
 
     assert first.pk == second.pk
+    assert estimate.document_snapshot.payload["business"]["logo_storage_name"]
     assert FileAsset.objects.count() == 1
     with default_storage.open(first.storage_name, "rb") as generated:
         content = generated.read()

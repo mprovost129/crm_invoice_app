@@ -1,6 +1,6 @@
 # Decisions
 
-Last reviewed: 2026-08-12
+Last reviewed: 2026-08-16
 
 This is the architectural and product decision record. **Accepted** decisions govern V1 unless superseded by a later dated entry. **Deferred** decisions must be made before their dependency point. **Open** decisions require resolution before the stated work begins.
 
@@ -24,7 +24,7 @@ This is the architectural and product decision record. **Accepted** decisions go
 
 **Status:** Accepted
 
-**Decision:** Build V1 with Django templates, progressive enhancement, HTMX where useful, and minimal focused JavaScript. Add a versioned REST API when a real client requires it; build mobile after backend behavior stabilizes.
+**Decision:** Build V1 with Django templates, progressive enhancement, HTMX where useful, and minimal focused JavaScript. After the web workflow and backend behavior stabilize, expose the same application services through a versioned REST API and build the first-party mobile clients with Flutter for iOS and Android.
 
 **Rationale:** This is the fastest route to a reliable, understandable product without
 duplicating logic. The repository uses Bootstrap and self-hosted HTMX as its current web
@@ -334,8 +334,26 @@ The selected platform must schedule and alert on them, provide tested database/m
 backups, centralize redacted logs, and supply production services. Stripe sandbox and live
 webhooks, keys, prices, and evidence must never be mixed.
 
+## D-030 - Flutter Is the First-Party Mobile Client
+
+**Status:** Accepted 2026-08-16
+
+**Decision:** Retain Django templates and HTMX for the responsive web application. Build
+the later iOS and Android applications from one Flutter/Dart codebase against a versioned
+Django REST API. Django remains authoritative for tenancy, entitlements, calculations,
+number allocation, document lifecycle, payments, and audit-sensitive state changes.
+
+**Rationale:** Web-first delivery validates the workflow quickly, while Flutter provides
+one maintainable mobile client without duplicating financial rules. A client-driven API
+phase keeps the contract focused on proven use cases instead of speculative endpoints.
+
+**Consequences:** Do not replace the working server-rendered web application with Flutter
+Web. Before mobile mutation endpoints ship, define authentication/token revocation,
+versioning, idempotency keys, optimistic concurrency, pagination, error envelopes, and
+offline/retry behavior, and prove them with contract and tenant-isolation tests.
+
 ## Deferred Provider and Product Decisions
 
-The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, error-monitoring provider, final component/design system, exact paid pricing/discounts and launch timing, Stripe product/price IDs and live-account configuration, Premium differentiation/timing, mobile technology, automatic reminder rules, recurring invoice rules, and privacy/retention policy.
+The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, error-monitoring provider, final visual implementation details within the approved design specification, exact paid pricing/discounts and launch timing, Stripe product/price IDs and live-account configuration, Premium differentiation/timing, automatic reminder rules, recurring invoice rules, and privacy/retention policy.
 
 Record each final choice here with date, alternatives, rationale, and consequences.
