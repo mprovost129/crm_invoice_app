@@ -6,15 +6,17 @@
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <h1>Create your account</h1>
+        <div class="col-md-8 col-lg-6 col-xl-5">
+          <div class="auth-panel">
+            <p class="page-eyebrow">Get started</p><h1 class="h2">Create your account</h1>
             <p class="text-body-secondary">Start with one owner workspace. You will configure your business after email verification.</p>
             <form method="post" novalidate>
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button class="btn btn-primary" type="submit">Create account</button>
+                <button class="btn btn-primary w-100" type="submit">Create account</button>
             </form>
             <p class="mt-3">Already registered? <a href="{% url 'users:login' %}">Log in.</a></p>
+          </div>
         </div>
     </div>
 </div>

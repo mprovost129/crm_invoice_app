@@ -4,16 +4,18 @@
 {% block meta_robots %}noindex,nofollow{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-4 py-lg-5">
     <div class="row justify-content-center">
-        <div class="col-xl-9">
-            <h1>Set up your business</h1>
+        <div class="col-xl-8">
+          <div class="auth-panel">
+            <p class="page-eyebrow">Business setup</p><h1>Set up your business</h1>
             <p class="text-body-secondary">These values become the defaults for future estimates and invoices and remain editable.</p>
             <form method="post" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button class="btn btn-primary" type="submit">Complete setup</button>
+                <button class="btn btn-primary" type="submit">Complete business setup</button>
             </form>
+          </div>
         </div>
     </div>
 </div>

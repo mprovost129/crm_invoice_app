@@ -5,15 +5,16 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <header class="page-header">
         <div>
-            <p class="text-body-secondary mb-1">{{ ACTIVE_BUSINESS.display_name }}</p>
-            <h1 class="mb-0">Contacts</h1>
+            <p class="page-eyebrow">{{ ACTIVE_BUSINESS.display_name }}</p>
+            <h1>Clients</h1>
+            <p class="text-body-secondary mb-0 mt-2">Manage every lead and client from one customer record.</p>
         </div>
-        <a class="btn btn-primary" href="{% url 'crm:contact-create' %}">Add contact</a>
-    </div>
+        <div class="page-header-actions"><a class="btn btn-primary" href="{% url 'crm:contact-create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add client or lead</a></div>
+    </header>
 
-    <form method="get" class="row g-2 mb-4" role="search">
+    <form method="get" class="row g-2 mb-4 list-toolbar" role="search">
         <div class="col-md-7">
             <label class="visually-hidden" for="contact-search">Search contacts</label>
             <input class="form-control" id="contact-search" type="search" name="q" value="{{ search }}" placeholder="Search name, company, email, or phone">
@@ -31,28 +32,29 @@
     </form>
 
     {% if contacts %}
-    <div class="table-responsive">
+    <div class="table-responsive responsive-data-list">
         <table class="table align-middle">
             <thead><tr><th>Contact</th><th>Company</th><th>Status</th><th>Email</th><th>Phone</th><th></th></tr></thead>
             <tbody>
                 {% for contact in contacts %}
                 <tr>
-                    <td><a href="{% url 'crm:contact-detail' contact.id %}">{{ contact.display_name }}</a></td>
-                    <td>{{ contact.company_name|default:"—" }}</td>
-                    <td><span class="badge text-bg-{% if contact.status == 'client' %}success{% elif contact.status == 'lead' %}primary{% else %}secondary{% endif %}">{{ contact.get_status_display }}</span></td>
-                    <td>{% if contact.email %}<a href="mailto:{{ contact.email }}">{{ contact.email }}</a>{% else %}—{% endif %}</td>
-                    <td>{{ contact.phone|default:"—" }}</td>
-                    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'crm:contact-update' contact.id %}">Edit</a></td>
+                    <td data-label="Contact"><a class="record-link" href="{% url 'crm:contact-detail' contact.id %}">{{ contact.display_name }}</a></td>
+                    <td data-label="Company">{{ contact.company_name|default:"—" }}</td>
+                    <td data-label="Status"><span class="status-badge {% if contact.status == 'client' %}status-success{% elif contact.status == 'lead' %}status-info{% else %}status-neutral{% endif %}">{{ contact.get_status_display }}</span></td>
+                    <td data-label="Email">{% if contact.email %}<a href="mailto:{{ contact.email }}">{{ contact.email }}</a>{% else %}—{% endif %}</td>
+                    <td data-label="Phone">{{ contact.phone|default:"—" }}</td>
+                    <td data-label="Actions" class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'crm:contact-update' contact.id %}"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     {% else %}
-    <div class="border rounded p-5 text-center">
+    <div class="empty-state">
+        <span class="empty-state-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
         <h2 class="h4">No contacts found</h2>
         <p class="text-body-secondary">Add your first lead or adjust the current filters.</p>
-        <a class="btn btn-primary" href="{% url 'crm:contact-create' %}">Add contact</a>
+        <a class="btn btn-primary" href="{% url 'crm:contact-create' %}">Add your first client or lead</a>
     </div>
     {% endif %}
 

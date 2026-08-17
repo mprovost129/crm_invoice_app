@@ -4,16 +4,16 @@
 {% block meta_robots %}noindex,nofollow{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-4 py-lg-5">
     <div class="row justify-content-center">
         <div class="col-xl-8">
-            <a href="{% if contact %}{% url 'crm:contact-detail' contact.id %}{% else %}{% url 'crm:contact-list' %}{% endif %}" class="text-decoration-none">&larr; Back</a>
-            <h1 class="mt-3">{% if contact %}Edit contact{% else %}Add contact{% endif %}</h1>
-            <form method="post" novalidate>
+            <a href="{% if contact %}{% url 'crm:contact-detail' contact.id %}{% else %}{% url 'crm:contact-list' %}{% endif %}" class="text-decoration-none"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to clients</a>
+            <header class="my-4"><p class="page-eyebrow">Client record</p><h1>{% if contact %}Edit contact{% else %}Add client or lead{% endif %}</h1><p class="text-body-secondary mb-0">Enter the contact details you’ll reuse on estimates and invoices.</p></header>
+            <form class="card" method="post" novalidate><div class="card-body p-lg-4">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button class="btn btn-primary" type="submit">{% if contact %}Save changes{% else %}Create contact{% endif %}</button>
-            </form>
+            </div></form>
         </div>
     </div>
 </div>

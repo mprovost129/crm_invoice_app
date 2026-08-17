@@ -1,8 +1,8 @@
 {% if messages %}
-<div class="container py-3" aria-live="polite" aria-atomic="true">
+<div class="container app-message-region pt-3" aria-live="polite" aria-atomic="true">
     {% for message in messages %}
-    <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
-        {{ message }}
+    <div class="alert d-flex align-items-start gap-2 {% if message.tags == 'error' %}alert-danger{% elif message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill{% elif message.tags == 'error' %}bi-x-octagon-fill{% else %}bi-info-circle-fill{% endif %}" aria-hidden="true"></i><span>{{ message }}</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}

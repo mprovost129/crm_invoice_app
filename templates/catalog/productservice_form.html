@@ -4,10 +4,10 @@
 {% block meta_robots %}noindex,nofollow{% endblock %}
 
 {% block content %}
-<div class="container py-4"><div class="row justify-content-center"><div class="col-xl-8">
-    <a href="{% url 'catalog:item-list' %}" class="text-decoration-none">&larr; Catalog</a>
-    <h1 class="mt-3">{% if item %}Edit catalog item{% else %}Add product or service{% endif %}</h1>
+<div class="container py-4 py-lg-5"><div class="row justify-content-center"><div class="col-xl-8">
+    <a href="{% url 'catalog:item-list' %}" class="text-decoration-none"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Products &amp; Services</a>
+    <h1 class="mt-4">{% if item %}Edit catalog item{% else %}Add product or service{% endif %}</h1>
     <p class="text-body-secondary">Catalog values become defaults for future document lines. Issued documents will keep their own snapshots.</p>
-    <form method="post" novalidate>{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">{% if item %}Save changes{% else %}Create item{% endif %}</button></form>
+    <form class="card mt-4" method="post" novalidate><div class="card-body p-lg-4">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">{% if item %}Save changes{% else %}Create item{% endif %}</button></div></form>
 </div></div></div>
 {% endblock %}

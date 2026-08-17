@@ -1,34 +1,62 @@
-<nav class="navbar navbar-expand-lg border-bottom">
+{% if ACTIVE_BUSINESS and ACTIVE_MEMBERSHIP.role == "owner" %}
+<aside class="app-sidebar d-none d-lg-flex" aria-label="Application navigation">
+    <div class="app-sidebar-brand">
+        <a href="{% url 'workspaces:dashboard' %}" class="app-brand-link">
+            <span class="app-brand-mark" aria-hidden="true"><i class="bi bi-briefcase-fill"></i></span>
+            <span><span class="app-brand-name">{{ APP_NAME }}</span><span class="app-business-name">{{ ACTIVE_BUSINESS.display_name }}</span></span>
+        </a>
+    </div>
+    {% include "includes/app_navigation_links.html" %}
+    <div class="app-sidebar-footer">
+        <a class="app-account-link" href="{% url 'users:account' %}">
+            <span class="app-account-avatar" aria-hidden="true">{{ user.display_name|first|upper }}</span>
+            <span class="text-truncate"><strong>{{ user.display_name }}</strong><small>{{ user.email }}</small></span>
+            <i class="bi bi-chevron-right ms-auto" aria-hidden="true"></i>
+        </a>
+        <form method="post" action="{% url 'users:logout' %}">
+            {% csrf_token %}
+            <button class="app-logout-button" type="submit"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Log out</span></button>
+        </form>
+    </div>
+</aside>
+
+<nav class="app-mobile-bar d-lg-none" aria-label="Mobile application navigation">
+    <a href="{% url 'workspaces:dashboard' %}" class="app-mobile-identity">
+        <span class="app-brand-mark" aria-hidden="true"><i class="bi bi-briefcase-fill"></i></span>
+        <span class="text-truncate">{{ ACTIVE_BUSINESS.display_name }}</span>
+    </a>
+    <div class="d-flex align-items-center gap-1">
+        <a class="btn btn-icon" href="{% url 'workspaces:dashboard' %}#notifications" aria-label="Notifications"><i class="bi bi-bell" aria-hidden="true"></i></a>
+        <button class="btn btn-icon" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNavigation" aria-controls="mobileNavigation" aria-label="Open navigation"><i class="bi bi-list" aria-hidden="true"></i></button>
+    </div>
+</nav>
+
+<div class="offcanvas offcanvas-end app-mobile-navigation" tabindex="-1" id="mobileNavigation" aria-labelledby="mobileNavigationLabel">
+    <div class="offcanvas-header border-bottom">
+        <div><div class="small text-body-secondary">Workspace</div><h2 class="offcanvas-title h5 mb-0" id="mobileNavigationLabel">{{ ACTIVE_BUSINESS.display_name }}</h2></div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close navigation"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-0">
+        {% include "includes/app_navigation_links.html" %}
+        <div class="app-sidebar-footer mt-auto">
+            <a class="app-account-link" href="{% url 'users:account' %}"><span class="app-account-avatar" aria-hidden="true">{{ user.display_name|first|upper }}</span><span class="text-truncate"><strong>{{ user.display_name }}</strong><small>{{ user.email }}</small></span></a>
+            <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}<button class="app-logout-button" type="submit"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Log out</span></button></form>
+        </div>
+    </div>
+</div>
+{% else %}
+<nav class="navbar public-navbar border-bottom">
     <div class="container">
-        <a class="navbar-brand" href="{% url 'core:home' %}">{{ APP_NAME }}</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation" aria-controls="mainNavigation" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNavigation">
-            <div class="navbar-nav ms-auto">
-                {% block navigation_links %}{% endblock %}
-                {% if user.is_authenticated %}
-                    {% if ACTIVE_BUSINESS %}
-                    <a class="nav-link" href="{% url 'workspaces:dashboard' %}">Dashboard</a>
-                    {% if ACTIVE_MEMBERSHIP.role == "owner" %}
-                    <a class="nav-link" href="{% url 'crm:contact-list' %}">Contacts</a>
-                    <a class="nav-link" href="{% url 'catalog:item-list' %}">Catalog</a>
-                    <a class="nav-link" href="{% url 'estimates:list' %}">Estimates</a>
-                    <a class="nav-link" href="{% url 'invoices:list' %}">Invoices</a>
-                    <a class="nav-link" href="{% url 'dashboards:reports' %}">Reports</a>
-                    <a class="nav-link" href="{% url 'dashboards:communications' %}">Delivery</a>
-                    <a class="nav-link" href="{% url 'workspaces:settings' %}">Settings</a>
-                    {% endif %}
-                    {% endif %}
-                    <form method="post" action="{% url 'users:logout' %}" class="d-flex">
-                        {% csrf_token %}
-                        <button class="nav-link border-0 bg-transparent" type="submit">Logout</button>
-                    </form>
-                {% else %}
-                    <a class="nav-link" href="{% url 'users:login' %}">Login</a>
-                    <a class="nav-link" href="{% url 'users:register' %}">Create account</a>
-                {% endif %}
-            </div>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:home' %}"><span class="app-brand-mark" aria-hidden="true"><i class="bi bi-briefcase-fill"></i></span><span>{{ APP_NAME }}</span></a>
+        <div class="d-flex align-items-center gap-2">
+            {% if user.is_authenticated %}
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'users:account' %}">Account</a>
+            <form method="post" action="{% url 'users:logout' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary" type="submit">Log out</button></form>
+            {% else %}
+            <a class="btn btn-sm btn-link text-decoration-none" href="{% url 'users:login' %}">Log in</a>
+            <a class="btn btn-sm btn-primary" href="{% url 'users:register' %}">Create account</a>
+            {% endif %}
         </div>
     </div>
 </nav>
+{% endif %}

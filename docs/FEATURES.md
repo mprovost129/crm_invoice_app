@@ -1,6 +1,6 @@
 # Feature Inventory
 
-Last reviewed: 2026-08-16
+Last reviewed: 2026-08-17
 
 ## Status Legend
 
@@ -138,10 +138,10 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Responsive base templates | Partial | Bootstrap product screens exist; formal phone/tablet/desktop review remains pending |
+| Responsive base templates | Partial | Neutral desktop sidebar, phone offcanvas shell, responsive lists, forms, and document surfaces are implemented; interactive cross-browser review remains pending |
 | Accessible messages/error pages | Partial | Shared templates exist; full accessibility pass pending |
 | HTMX foundation | Implemented | Self-hosted verified HTMX 2.0.10 with Django CSRF header integration |
-| Product branding/design system | Partial | Web visual specification is approved; current Bootstrap starter screens still need the implementation pass |
+| Neutral visual component system | Implemented | Vendored Bootstrap 5.3.8 and Bootstrap Icons 1.13.1, semantic tokens, page headers, controls, status badges, panels, empty states, loading state, and responsive table-to-card lists |
 | Search and pagination conventions | Implemented | Core lists and delivery history use scoped search/filters and pagination |
 | Flutter mobile applications | Deferred | iOS and Android technology is decided; responsive Django/HTMX web and a stable versioned API come first |
 

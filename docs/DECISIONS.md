@@ -1,6 +1,6 @@
 # Decisions
 
-Last reviewed: 2026-08-16
+Last reviewed: 2026-08-17
 
 This is the architectural and product decision record. **Accepted** decisions govern V1 unless superseded by a later dated entry. **Deferred** decisions must be made before their dependency point. **Open** decisions require resolution before the stated work begins.
 
@@ -352,8 +352,26 @@ Web. Before mobile mutation endpoints ship, define authentication/token revocati
 versioning, idempotency keys, optimistic concurrency, pagination, error envelopes, and
 offline/retry behavior, and prove them with contract and tenant-isolation tests.
 
+## D-031 - Ship the Neutral Visual Baseline Before Final Branding
+
+**Status:** Accepted 2026-08-17
+
+**Decision:** Implement the approved web visual component system now using its neutral
+slate surfaces, restrained primary blue, system typography, desktop sidebar, mobile
+offcanvas navigation, and shared responsive components. Do not delay usable product UI
+for a final logo, product name, or custom brand palette.
+
+**Rationale:** Navigation, hierarchy, accessibility, responsive behavior, and financial
+clarity can be proven independently of final identity work. Semantic tokens make later
+branding changes localized rather than a template rewrite.
+
+**Consequences:** Treat the current identity as provisional. Final branding must replace
+semantic identity tokens and approved assets without changing workflow or component
+structure. The neutral implementation still requires interactive desktop/tablet/phone
+and accessibility review before launch.
+
 ## Deferred Provider and Product Decisions
 
-The following are intentionally deferred until their dependency point: final product name/domain, hosting platform, transactional email provider, object storage provider, error-monitoring provider, final visual implementation details within the approved design specification, exact paid pricing/discounts and launch timing, Stripe product/price IDs and live-account configuration, Premium differentiation/timing, automatic reminder rules, recurring invoice rules, and privacy/retention policy.
+The following are intentionally deferred until their dependency point: final product name/domain and brand assets, hosting platform, transactional email provider, object storage provider, error-monitoring provider, exact paid pricing/discounts and launch timing, Stripe product/price IDs and live-account configuration, Premium differentiation/timing, automatic reminder rules, recurring invoice rules, and privacy/retention policy.
 
 Record each final choice here with date, alternatives, rationale, and consequences.

@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{% block meta_description %}{% endblock %}">
     <meta name="robots" content="{% block meta_robots %}index,follow{% endblock %}">
-    <meta name="theme-color" content="{% block theme_color %}#ffffff{% endblock %}">
+    <meta name="theme-color" content="{% block theme_color %}#f8fafc{% endblock %}">
     <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"allowScriptTags":false}'>
     {% block canonical %}{% endblock %}
     {% block social_meta %}{% endblock %}
@@ -15,23 +15,25 @@
 
     {% block icons %}{% endblock %}
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" integrity="sha384-CK2SzKma4jA5H/MXDUU7i1TqZlCFaD4T01vtyDFvPlD97JQyS+IsSh1nI2EFbpyk" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock %}
     {% block head %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% if ACTIVE_BUSINESS and ACTIVE_MEMBERSHIP.role == 'owner' %}has-app-shell{% else %}public-shell{% endif %} {% block body_class %}{% endblock %}" hx-indicator="#global-request-indicator">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <div id="global-request-indicator" class="app-request-indicator htmx-indicator" role="status" aria-label="Loading"></div>
     <header>{% block header %}{% include "includes/navigation.html" %}{% endblock %}</header>
 
-    {% include "includes/messages.html" %}
-
-    <main id="main-content">
+    <main id="main-content" class="{% if ACTIVE_BUSINESS and ACTIVE_MEMBERSHIP.role == 'owner' %}app-main{% endif %}" tabindex="-1">
+        {% include "includes/messages.html" %}
         {% block content %}{% endblock %}
     </main>
 
-    <footer>{% block footer %}{% include "includes/footer.html" %}{% endblock %}</footer>
+    <footer>{% block footer %}{% if not ACTIVE_BUSINESS %}{% include "includes/footer.html" %}{% endif %}{% endblock %}</footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}

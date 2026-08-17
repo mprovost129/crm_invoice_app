@@ -1,0 +1,18 @@
+{% with namespace=request.resolver_match.namespace url_name=request.resolver_match.url_name %}
+<nav class="app-sidebar-nav" aria-label="Primary">
+    <div class="app-nav-section">
+        <div class="app-nav-label">Work</div>
+        <a class="app-nav-link{% if namespace == 'workspaces' and url_name == 'dashboard' %} active{% endif %}" href="{% url 'workspaces:dashboard' %}"{% if namespace == 'workspaces' and url_name == 'dashboard' %} aria-current="page"{% endif %}><i class="bi bi-grid-1x2" aria-hidden="true"></i><span>Dashboard</span></a>
+        <a class="app-nav-link{% if namespace == 'crm' %} active{% endif %}" href="{% url 'crm:contact-list' %}"{% if namespace == 'crm' %} aria-current="page"{% endif %}><i class="bi bi-people" aria-hidden="true"></i><span>Clients</span></a>
+        <a class="app-nav-link{% if namespace == 'catalog' %} active{% endif %}" href="{% url 'catalog:item-list' %}"{% if namespace == 'catalog' %} aria-current="page"{% endif %}><i class="bi bi-box-seam" aria-hidden="true"></i><span>Products &amp; Services</span></a>
+        <a class="app-nav-link{% if namespace == 'estimates' %} active{% endif %}" href="{% url 'estimates:list' %}"{% if namespace == 'estimates' %} aria-current="page"{% endif %}><i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>Estimates</span></a>
+        <a class="app-nav-link{% if namespace == 'invoices' %} active{% endif %}" href="{% url 'invoices:list' %}"{% if namespace == 'invoices' %} aria-current="page"{% endif %}><i class="bi bi-receipt" aria-hidden="true"></i><span>Invoices</span></a>
+    </div>
+    <div class="app-nav-section">
+        <div class="app-nav-label">Manage</div>
+        <a class="app-nav-link{% if namespace == 'dashboards' and url_name == 'reports' %} active{% endif %}" href="{% url 'dashboards:reports' %}"><i class="bi bi-bar-chart" aria-hidden="true"></i><span>Reports</span></a>
+        <a class="app-nav-link{% if namespace == 'dashboards' and url_name == 'communications' %} active{% endif %}" href="{% url 'dashboards:communications' %}"><i class="bi bi-send" aria-hidden="true"></i><span>Delivery</span></a>
+        <a class="app-nav-link{% if namespace == 'workspaces' and url_name == 'settings' or namespace == 'payments' or namespace == 'billing' %} active{% endif %}" href="{% url 'workspaces:settings' %}"><i class="bi bi-gear" aria-hidden="true"></i><span>Settings</span></a>
+    </div>
+</nav>
+{% endwith %}

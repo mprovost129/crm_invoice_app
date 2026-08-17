@@ -4,19 +4,18 @@
 {% block meta_robots %}noindex,nofollow{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-4 py-lg-5">
     <div class="row justify-content-center">
         <div class="col-xl-9">
-            <h1>Business settings</h1>
-            <div class="d-flex gap-2 mb-4"><a class="btn btn-outline-secondary" href="{% url 'billing:subscription' %}">Subscription</a><a class="btn btn-outline-secondary" href="{% url 'payments:settings' %}">Online payments</a></div>
-            <form method="post" enctype="multipart/form-data" novalidate>
+            <header class="page-header"><div><p class="page-eyebrow">Settings</p><h1>Business settings</h1><p class="text-body-secondary mb-0 mt-2">Manage your business identity and document defaults.</p></div><div class="page-header-actions"><a class="btn btn-outline-secondary" href="{% url 'billing:subscription' %}"><i class="bi bi-credit-card me-1" aria-hidden="true"></i>Subscription</a><a class="btn btn-outline-secondary" href="{% url 'payments:settings' %}">Online payments</a></div></header>
+            <form class="card" method="post" enctype="multipart/form-data" novalidate><div class="card-body p-lg-4">
                 {% csrf_token %}
                 <h2 class="h4 mt-4">Business profile</h2>
                 {{ profile_form.as_p }}
                 <h2 class="h4 mt-5">Document defaults</h2>
                 {{ defaults_form.as_p }}
                 <button class="btn btn-primary" type="submit">Save settings</button>
-            </form>
+            </div></form>
         </div>
     </div>
 </div>
