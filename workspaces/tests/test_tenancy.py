@@ -170,6 +170,19 @@ def test_onboarding_view_reaches_tenant_safe_dashboard(client):
 
 
 @pytest.mark.django_db
+def test_staff_without_customer_tenancy_cannot_enter_onboarding(client):
+    staff = User.objects.create_superuser("staff@example.com", PASSWORD)
+    client.force_login(staff)
+
+    get_response = client.get(reverse("workspaces:onboarding"))
+    post_response = client.post(reverse("workspaces:onboarding"), BUSINESS_DATA)
+
+    assert get_response.status_code == post_response.status_code == 302
+    assert get_response.url == post_response.url == reverse("admin:index")
+    assert Business.objects.count() == 0
+
+
+@pytest.mark.django_db
 def test_dashboard_gates_anonymous_unverified_and_unonboarded_users(client):
     response = client.get(reverse("workspaces:dashboard"))
     assert response.status_code == 302

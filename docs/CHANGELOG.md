@@ -28,10 +28,12 @@ All meaningful completed changes are recorded here.
   now retain bound values and field errors instead of redirecting away from context.
 - Financial dialogs reopen after invalid submissions and focus the first invalid control;
   active application and settings navigation now exposes current-page semantics.
+- Verified staff without an intentional customer-owner tenancy now route to Django Admin
+  instead of entering customer onboarding and failing with a permission error.
 
 ### Verification
 
-- 139 PostgreSQL-backed tests pass.
+- 141 PostgreSQL-backed tests pass.
 - Ruff lint and format, Django system checks, migration drift, production deployment
   checks, launch/provider health, and financial reconciliation pass.
 - The local launch gate reports seven passes and four expected configuration warnings:

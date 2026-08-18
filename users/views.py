@@ -13,6 +13,7 @@ from django.views import View
 from django.views.generic import FormView, TemplateView
 
 from workspaces.models import Business
+from workspaces.selectors import active_owner_membership_for_user
 
 from .forms import RegistrationForm, ResendVerificationForm
 from .models import User
@@ -24,6 +25,8 @@ from .tokens import email_verification_token
 def post_login_destination(user):
     if not user.is_email_verified:
         return reverse("users:verification-sent")
+    if user.is_staff and active_owner_membership_for_user(user) is None:
+        return reverse("admin:index")
     if not Business.objects.for_user(user).active().exists():
         return reverse("workspaces:onboarding")
     return reverse("workspaces:dashboard")

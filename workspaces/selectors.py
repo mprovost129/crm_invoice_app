@@ -14,6 +14,22 @@ def active_membership_for_user(user):
     )
 
 
+def active_owner_membership_for_user(user):
+    if not getattr(user, "is_authenticated", False):
+        return None
+    return (
+        Membership.objects.active()
+        .for_user(user)
+        .filter(
+            role=Membership.Role.OWNER,
+            workspace__status="active",
+        )
+        .select_related("workspace")
+        .order_by("created_at")
+        .first()
+    )
+
+
 def active_business_for_user(user, *, workspace=None):
     if not getattr(user, "is_authenticated", False):
         return None

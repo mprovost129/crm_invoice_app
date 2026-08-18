@@ -39,7 +39,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | --- | --- | --- |
 | Email-first custom user | Implemented | UUID custom model/manager, password hashing, admin forms |
 | Account-owner profile | Implemented | UUID `AccountProfile`, explicitly not a CRM Contact or tenant Business |
-| Login/logout | Implemented | Namespaced auth routes, case-insensitive email login, and routing gates |
+| Login/logout | Implemented | Namespaced auth routes, case-insensitive email login, customer routing gates, and admin routing for staff without a customer tenancy |
 | Password reset | Implemented | Namespaced routes/templates and expiring, password-invalidated tokens; delivery depends on email config |
 | Registration | Implemented | Validated public form and atomic User/Workspace/owner Membership service |
 | Email verification | Implemented | One-time token, resend path, verified timestamp, and onboarding gate |
@@ -163,7 +163,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-One hundred thirty-nine PostgreSQL-backed tests pass. They cover deterministic financial
+One hundred forty-one PostgreSQL-backed tests pass. They cover deterministic financial
 calculations, numbering/conversion/payment concurrency and rollback, immutable documents
 and ledger entries, acceptance evidence, derived states, reconciliation, secure public
 links, PDF/receipt rendering, durable email delivery, owner/public screens, the complete

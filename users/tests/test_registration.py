@@ -99,6 +99,22 @@ def test_login_routes_unverified_user_to_verification(client):
 
 
 @pytest.mark.django_db
+def test_verified_staff_without_customer_tenancy_routes_to_admin(client):
+    staff = User.objects.create_superuser("staff@example.com", PASSWORD)
+    staff.email_verified_at = timezone.now()
+    staff.save(update_fields=("email_verified_at",))
+
+    login_response = client.post(
+        reverse("users:login"),
+        {"username": staff.email, "password": PASSWORD},
+    )
+    account_response = client.get(reverse("users:account"))
+
+    assert login_response.status_code == account_response.status_code == 302
+    assert login_response.url == account_response.url == reverse("admin:index")
+
+
+@pytest.mark.django_db
 def test_password_reset_sends_namespaced_link(client):
     user = User.objects.create_user("owner@example.com", PASSWORD)
     user.email_verified_at = timezone.now()

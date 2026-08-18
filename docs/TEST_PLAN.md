@@ -8,7 +8,7 @@ Testing must prove the product is financially correct, tenant-isolated, retry-sa
 
 ## Current Test Baseline
 
-One hundred thirty-nine PostgreSQL-backed pytest tests pass through the current Phase 7
+One hundred forty-one PostgreSQL-backed pytest tests pass through the current Phase 7
 hardening slice. The suite includes:
 
 - Custom email user is configured and has no username field.
@@ -52,6 +52,8 @@ hardening slice. The suite includes:
 - Business-local date assertions that remain deterministic across host UTC midnight.
 - Invalid manual acceptance, payment, reminder, and reversal actions retain submitted
   values and field errors while reopening the correct focused dialog.
+- Verified staff without a customer-owner tenancy route to Django Admin from login,
+  account, and onboarding requests and cannot create a customer Business.
 
 Real provider failure modes, accessibility, demonstrated backup restore, and
 production-like browser E2E remain roadmap/launch gates.

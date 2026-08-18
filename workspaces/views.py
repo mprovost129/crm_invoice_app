@@ -12,6 +12,7 @@ from dashboards.selectors import (
 
 from .forms import BusinessDefaultsForm, BusinessOnboardingForm, BusinessProfileForm
 from .mixins import OwnerTenantRequiredMixin, VerifiedUserMixin
+from .selectors import active_owner_membership_for_user
 from .services import complete_business_onboarding, update_business_configuration
 
 
@@ -35,6 +36,16 @@ class BusinessOnboardingView(VerifiedUserMixin, FormView):
     form_class = BusinessOnboardingForm
 
     def dispatch(self, request, *args, **kwargs):
+        if (
+            request.user.is_authenticated
+            and request.user.is_staff
+            and active_owner_membership_for_user(request.user) is None
+        ):
+            messages.info(
+                request,
+                "Staff accounts without a customer workspace use the administration site.",
+            )
+            return redirect("admin:index")
         if getattr(request, "business", None) is not None:
             return redirect("workspaces:dashboard")
         return super().dispatch(request, *args, **kwargs)
