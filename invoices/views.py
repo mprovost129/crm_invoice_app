@@ -101,46 +101,97 @@ class InvoiceObjectMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+def _invoice_detail_context(
+    *,
+    request,
+    invoice,
+    email_form=None,
+    reminder_form=None,
+    void_form=None,
+    payment_form=None,
+    reversal_form=None,
+    active_dialog="",
+    active_reversal_payment_id=None,
+    focus_first_error=False,
+):
+    today = timezone.localdate(timezone=ZoneInfo(request.business.timezone))
+    display_context = document_display_context(invoice)
+    recipient = display_context["document_contact"]["email"]
+    suggested = invoice.balance_due
+    if invoice.amount_paid == 0 and invoice.deposit_required > 0:
+        suggested = min(invoice.deposit_required, invoice.balance_due)
+    delivery_queryset = (
+        EmailDelivery.objects.filter(business=request.business)
+        .filter(Q(invoice=invoice) | Q(payment__invoice=invoice))
+        .select_related("payment")
+    )
+    return {
+        **display_context,
+        "invoice": invoice,
+        "lines": invoice.line_items.all(),
+        "payments": invoice.payments.all(),
+        "email_form": email_form
+        if email_form is not None
+        else InvoiceEmailForm(
+            auto_id="invoice-send-%s",
+            initial={"recipient": recipient},
+        ),
+        "reminder_form": reminder_form
+        if reminder_form is not None
+        else InvoiceEmailForm(
+            auto_id="invoice-reminder-%s",
+            initial={"recipient": recipient},
+        ),
+        "void_form": void_form
+        if void_form is not None
+        else VoidInvoiceForm(auto_id="invoice-void-%s"),
+        "payment_form": payment_form
+        if payment_form is not None
+        else PaymentForm(
+            auto_id="invoice-payment-%s",
+            initial={
+                "amount": suggested,
+                "paid_on": today,
+                "receipt_email": recipient,
+            },
+        ),
+        "reversal_form": reversal_form,
+        "active_dialog": active_dialog,
+        "active_reversal_payment_id": active_reversal_payment_id,
+        "focus_first_error": focus_first_error,
+        "recent_deliveries": delivery_queryset[:5],
+        "has_failed_delivery": delivery_queryset.filter(
+            status=EmailDelivery.Status.FAILED
+        ).exists(),
+        "days_overdue": (
+            (today - invoice.due_date).days
+            if invoice.effective_status == "overdue"
+            else 0
+        ),
+    }
+
+
+def _render_invoice_detail(request, invoice, **overrides):
+    return render(
+        request,
+        "invoices/invoice_detail.html",
+        _invoice_detail_context(
+            request=request,
+            invoice=invoice,
+            **overrides,
+        ),
+    )
+
+
 class InvoiceDetailView(OwnerTenantRequiredMixin, InvoiceObjectMixin, TemplateView):
     template_name = "invoices/invoice_detail.html"
 
     def get_context_data(self, **kwargs):
-        today = timezone.localdate(timezone=ZoneInfo(self.request.business.timezone))
-        display_context = document_display_context(self.invoice)
-        suggested = self.invoice.balance_due
-        if self.invoice.amount_paid == 0 and self.invoice.deposit_required > 0:
-            suggested = min(self.invoice.deposit_required, self.invoice.balance_due)
-        delivery_queryset = (
-            EmailDelivery.objects.filter(business=self.request.business)
-            .filter(Q(invoice=self.invoice) | Q(payment__invoice=self.invoice))
-            .select_related("payment")
-        )
         return {
             **super().get_context_data(**kwargs),
-            **display_context,
-            "invoice": self.invoice,
-            "lines": self.invoice.line_items.all(),
-            "payments": self.invoice.payments.all(),
-            "email_form": InvoiceEmailForm(
-                initial={"recipient": display_context["document_contact"]["email"]}
-            ),
-            "void_form": VoidInvoiceForm(),
-            "payment_form": PaymentForm(
-                initial={
-                    "amount": suggested,
-                    "paid_on": today,
-                    "receipt_email": display_context["document_contact"]["email"],
-                }
-            ),
-            "reversal_form": PaymentReversalForm(),
-            "recent_deliveries": delivery_queryset[:5],
-            "has_failed_delivery": delivery_queryset.filter(
-                status=EmailDelivery.Status.FAILED
-            ).exists(),
-            "days_overdue": (
-                (today - self.invoice.due_date).days
-                if self.invoice.effective_status == "overdue"
-                else 0
+            **_invoice_detail_context(
+                request=self.request,
+                invoice=self.invoice,
             ),
         }
 
@@ -309,22 +360,47 @@ class EstimateConvertView(OwnerTenantRequiredMixin, View):
 
 class InvoiceEmailView(OwnerTenantRequiredMixin, InvoiceObjectMixin, View):
     def post(self, request, *args, **kwargs):
-        form = InvoiceEmailForm(request.POST)
+        is_reminder = request.POST.get("action") == "reminder"
+        form = InvoiceEmailForm(
+            request.POST,
+            auto_id=("invoice-reminder-%s" if is_reminder else "invoice-send-%s"),
+        )
         if not form.is_valid():
-            messages.error(request, "Enter a valid recipient email address.")
-        else:
-            try:
-                queue_invoice_email(
-                    actor=request.user,
-                    business_id=request.business.pk,
-                    invoice_id=self.invoice.pk,
-                    recipient=form.cleaned_data["recipient"],
-                    reminder=request.POST.get("action") == "reminder",
-                )
-            except ValidationError as exc:
-                messages.error(request, "; ".join(exc.messages))
-            else:
-                messages.success(request, "Invoice email queued.")
+            return _render_invoice_detail(
+                request,
+                self.invoice,
+                **(
+                    {
+                        "reminder_form": form,
+                        "active_dialog": "sendReminderModal",
+                    }
+                    if is_reminder
+                    else {"email_form": form, "focus_first_error": True}
+                ),
+            )
+        try:
+            queue_invoice_email(
+                actor=request.user,
+                business_id=request.business.pk,
+                invoice_id=self.invoice.pk,
+                recipient=form.cleaned_data["recipient"],
+                reminder=is_reminder,
+            )
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return _render_invoice_detail(
+                request,
+                self.invoice,
+                **(
+                    {
+                        "reminder_form": form,
+                        "active_dialog": "sendReminderModal",
+                    }
+                    if is_reminder
+                    else {"email_form": form, "focus_first_error": True}
+                ),
+            )
+        messages.success(request, "Invoice email queued.")
         return redirect("invoices:detail", invoice_id=self.invoice.pk)
 
 
@@ -354,39 +430,59 @@ class InvoicePublicLinkView(OwnerTenantRequiredMixin, InvoiceObjectMixin, View):
 
 class InvoiceVoidView(OwnerTenantRequiredMixin, InvoiceObjectMixin, View):
     def post(self, request, *args, **kwargs):
-        form = VoidInvoiceForm(request.POST)
-        if form.is_valid():
-            try:
-                void_invoice(
-                    actor=request.user,
-                    business_id=request.business.pk,
-                    invoice_id=self.invoice.pk,
-                    reason=form.cleaned_data["reason"],
-                )
-            except ValidationError as exc:
-                messages.error(request, "; ".join(exc.messages))
-            else:
-                messages.success(request, "Invoice voided.")
+        form = VoidInvoiceForm(request.POST, auto_id="invoice-void-%s")
+        if not form.is_valid():
+            return _render_invoice_detail(
+                request,
+                self.invoice,
+                void_form=form,
+                active_dialog="voidInvoiceModal",
+            )
+        try:
+            void_invoice(
+                actor=request.user,
+                business_id=request.business.pk,
+                invoice_id=self.invoice.pk,
+                reason=form.cleaned_data["reason"],
+            )
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return _render_invoice_detail(
+                request,
+                self.invoice,
+                void_form=form,
+                active_dialog="voidInvoiceModal",
+            )
+        messages.success(request, "Invoice voided.")
         return redirect("invoices:detail", invoice_id=self.invoice.pk)
 
 
 class PaymentCreateView(OwnerTenantRequiredMixin, InvoiceObjectMixin, View):
     def post(self, request, *args, **kwargs):
-        form = PaymentForm(request.POST)
-        if form.is_valid():
-            try:
-                post_manual_payment(
-                    actor=request.user,
-                    business_id=request.business.pk,
-                    invoice_id=self.invoice.pk,
-                    **form.cleaned_data,
-                )
-            except ValidationError as exc:
-                messages.error(request, "; ".join(exc.messages))
-            else:
-                messages.success(request, "Payment recorded.")
-        else:
-            messages.error(request, "Correct the payment details.")
+        form = PaymentForm(request.POST, auto_id="invoice-payment-%s")
+        if not form.is_valid():
+            return _render_invoice_detail(
+                request,
+                self.invoice,
+                payment_form=form,
+                active_dialog="recordPaymentModal",
+            )
+        try:
+            post_manual_payment(
+                actor=request.user,
+                business_id=request.business.pk,
+                invoice_id=self.invoice.pk,
+                **form.cleaned_data,
+            )
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return _render_invoice_detail(
+                request,
+                self.invoice,
+                payment_form=form,
+                active_dialog="recordPaymentModal",
+            )
+        messages.success(request, "Payment recorded.")
         return redirect("invoices:detail", invoice_id=self.invoice.pk)
 
 
@@ -407,20 +503,37 @@ class PaymentObjectMixin(InvoiceObjectMixin):
 
 class PaymentReverseView(OwnerTenantRequiredMixin, PaymentObjectMixin, View):
     def post(self, request, *args, **kwargs):
-        form = PaymentReversalForm(request.POST)
-        if form.is_valid():
-            try:
-                reverse_payment(
-                    actor=request.user,
-                    business_id=request.business.pk,
-                    payment_id=self.get_payment().pk,
-                    amount=form.cleaned_data["amount"],
-                    reason=form.cleaned_data["reason"],
-                )
-            except ValidationError as exc:
-                messages.error(request, "; ".join(exc.messages))
-            else:
-                messages.success(request, "Payment reversal recorded.")
+        payment = self.get_payment()
+        form = PaymentReversalForm(
+            request.POST,
+            auto_id=f"invoice-reversal-{payment.pk}-%s",
+        )
+        if not form.is_valid():
+            return _render_invoice_detail(
+                request,
+                self.invoice,
+                reversal_form=form,
+                active_dialog=f"reversePaymentModal{payment.pk}",
+                active_reversal_payment_id=payment.pk,
+            )
+        try:
+            reverse_payment(
+                actor=request.user,
+                business_id=request.business.pk,
+                payment_id=payment.pk,
+                amount=form.cleaned_data["amount"],
+                reason=form.cleaned_data["reason"],
+            )
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return _render_invoice_detail(
+                request,
+                self.invoice,
+                reversal_form=form,
+                active_dialog=f"reversePaymentModal{payment.pk}",
+                active_reversal_payment_id=payment.pk,
+            )
+        messages.success(request, "Payment reversal recorded.")
         return redirect("invoices:detail", invoice_id=self.invoice.pk)
 
 

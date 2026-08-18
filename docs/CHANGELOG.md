@@ -24,10 +24,14 @@ All meaningful completed changes are recorded here.
 - Print actions now use shared JavaScript rather than inline event handlers.
 - Date-sensitive tests use each Business timezone explicitly, removing a host-midnight
   flake in overdue, expiry, and future-payment scenarios.
+- Invalid acceptance, payment, reminder, reversal, void, and document-email submissions
+  now retain bound values and field errors instead of redirecting away from context.
+- Financial dialogs reopen after invalid submissions and focus the first invalid control;
+  active application and settings navigation now exposes current-page semantics.
 
 ### Verification
 
-- 131 PostgreSQL-backed tests pass.
+- 139 PostgreSQL-backed tests pass.
 - Ruff lint and format, Django system checks, migration drift, production deployment
   checks, launch/provider health, and financial reconciliation pass.
 - The local launch gate reports seven passes and four expected configuration warnings:

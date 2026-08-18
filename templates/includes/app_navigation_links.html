@@ -10,9 +10,9 @@
     </div>
     <div class="app-nav-section">
         <div class="app-nav-label">Manage</div>
-        <a class="app-nav-link{% if namespace == 'dashboards' and url_name == 'reports' %} active{% endif %}" href="{% url 'dashboards:reports' %}"><i class="bi bi-bar-chart" aria-hidden="true"></i><span>Reports</span></a>
-        <a class="app-nav-link{% if namespace == 'dashboards' and url_name == 'communications' %} active{% endif %}" href="{% url 'dashboards:communications' %}"><i class="bi bi-send" aria-hidden="true"></i><span>Delivery</span></a>
-        <a class="app-nav-link{% if namespace == 'workspaces' and url_name == 'settings' or namespace == 'payments' or namespace == 'billing' %} active{% endif %}" href="{% url 'workspaces:settings' %}"><i class="bi bi-gear" aria-hidden="true"></i><span>Settings</span></a>
+        <a class="app-nav-link{% if namespace == 'dashboards' and url_name == 'reports' %} active{% endif %}" href="{% url 'dashboards:reports' %}"{% if namespace == 'dashboards' and url_name == 'reports' %} aria-current="page"{% endif %}><i class="bi bi-bar-chart" aria-hidden="true"></i><span>Reports</span></a>
+        <a class="app-nav-link{% if namespace == 'dashboards' and url_name == 'communications' %} active{% endif %}" href="{% url 'dashboards:communications' %}"{% if namespace == 'dashboards' and url_name == 'communications' %} aria-current="page"{% endif %}><i class="bi bi-send" aria-hidden="true"></i><span>Delivery</span></a>
+        <a class="app-nav-link{% if namespace == 'workspaces' and url_name == 'settings' or namespace == 'payments' or namespace == 'billing' %} active{% endif %}" href="{% url 'workspaces:settings' %}"{% if namespace == 'workspaces' and url_name == 'settings' or namespace == 'payments' or namespace == 'billing' %} aria-current="page"{% endif %}><i class="bi bi-gear" aria-hidden="true"></i><span>Settings</span></a>
     </div>
 </nav>
 {% endwith %}

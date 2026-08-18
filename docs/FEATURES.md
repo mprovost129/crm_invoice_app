@@ -139,7 +139,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 | Feature | Status | Notes |
 | --- | --- | --- |
 | Responsive base templates | Partial | Neutral desktop sidebar, phone offcanvas shell, responsive lists, forms, and document surfaces are implemented; interactive cross-browser review remains pending |
-| Accessible messages/error pages | Partial | Shared templates exist; full accessibility pass pending |
+| Accessible messages/error pages | Partial | Shared templates, current-page navigation semantics, visible field errors, and focus-preserving financial dialog validation exist; interactive screen-reader/keyboard review remains pending |
 | HTMX foundation | Implemented | Self-hosted verified HTMX 2.0.10 with Django CSRF header integration |
 | Neutral visual component system | Implemented | Vendored Bootstrap 5.3.8 and Bootstrap Icons 1.13.1, semantic tokens, page headers, controls, status badges, panels, empty states, loading state, and responsive table-to-card lists |
 | Financial document detail system | Implemented | Estimate/invoice detail screens use responsive line-item presentation, sticky desktop totals, state-aware actions, payment history, and explicit audit/correction language |
@@ -163,7 +163,7 @@ This inventory distinguishes generic starter capabilities from actual CRM/invoic
 
 ## Current Test Evidence
 
-One hundred thirty-seven PostgreSQL-backed tests pass. They cover deterministic financial
+One hundred thirty-nine PostgreSQL-backed tests pass. They cover deterministic financial
 calculations, numbering/conversion/payment concurrency and rollback, immutable documents
 and ledger entries, acceptance evidence, derived states, reconciliation, secure public
 links, PDF/receipt rendering, durable email delivery, owner/public screens, the complete

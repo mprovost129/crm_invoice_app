@@ -1,6 +1,6 @@
 # Test Plan
 
-Last reviewed: 2026-08-12
+Last reviewed: 2026-08-17
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Testing must prove the product is financially correct, tenant-isolated, retry-sa
 
 ## Current Test Baseline
 
-One hundred thirty-one PostgreSQL-backed pytest tests pass through the first Phase 7
+One hundred thirty-nine PostgreSQL-backed pytest tests pass through the current Phase 7
 hardening slice. The suite includes:
 
 - Custom email user is configured and has no username field.
@@ -50,6 +50,8 @@ hardening slice. The suite includes:
   script/eval behavior, validated request IDs, and sensitive log redaction.
 - Cache-backed public-auth rate limits and operational launch/provider-health commands.
 - Business-local date assertions that remain deterministic across host UTC midnight.
+- Invalid manual acceptance, payment, reminder, and reversal actions retain submitted
+  values and field errors while reopening the correct focused dialog.
 
 Real provider failure modes, accessibility, demonstrated backup restore, and
 production-like browser E2E remain roadmap/launch gates.

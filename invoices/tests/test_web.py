@@ -45,6 +45,16 @@ def test_owner_can_open_invoice_download_pdf_record_payment_and_receipt(
     detail_response = client.get(reverse("invoices:detail", args=(invoice.pk,)))
     assert b"Reverse payment on" in detail_response.content
     assert b"The invoice balance will increase" in detail_response.content
+    invalid_reversal = client.post(
+        reverse("invoices:payment-reverse", args=(invoice.pk, payment.pk)),
+        {"amount": "500.00", "reason": "Incorrect amount"},
+    )
+    assert invalid_reversal.status_code == 200
+    assert (
+        f'data-auto-show-modal="reversePaymentModal{payment.pk}"'.encode()
+        in invalid_reversal.content
+    )
+    assert b"cannot exceed the unreversed payment amount" in invalid_reversal.content
     receipt_response = client.get(
         reverse("invoices:payment-receipt", args=(invoice.pk, payment.pk))
     )
@@ -143,3 +153,27 @@ def test_issued_invoice_detail_surfaces_financial_dialogs_and_delivery_failure(c
     assert b"Send reminder for" in response.content
     assert b"Void invoice" in response.content
     assert b"Provider unavailable" in response.content
+
+
+@pytest.mark.django_db
+def test_invalid_payment_and_reminder_reopen_the_correct_dialog(client):
+    user, workspace, _ = create_owner_tenancy()
+    business = create_business(workspace)
+    invoice, _, _ = create_direct_invoice(user=user, business=business)
+    client.force_login(user)
+
+    payment_response = client.post(
+        reverse("invoices:payment-create", args=(invoice.pk,)),
+        {"amount": "", "paid_on": "", "method": "", "reference": "", "note": ""},
+    )
+    reminder_response = client.post(
+        reverse("invoices:email", args=(invoice.pk,)),
+        {"recipient": "not-an-email", "action": "reminder"},
+    )
+
+    assert payment_response.status_code == reminder_response.status_code == 200
+    assert b'data-auto-show-modal="recordPaymentModal"' in payment_response.content
+    assert b'data-auto-show-modal="sendReminderModal"' in reminder_response.content
+    assert b"This field is required" in payment_response.content
+    assert b"Enter a valid email address" in reminder_response.content
+    assert b"not-an-email" in reminder_response.content

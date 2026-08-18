@@ -133,3 +133,25 @@ def test_issued_estimate_detail_surfaces_acceptance_dialog_and_delivery_failure(
     assert b"Mark estimate" in response.content
     assert b"immutable evidence" in response.content
     assert b"Mailbox unavailable" in response.content
+
+
+@pytest.mark.django_db
+def test_invalid_manual_acceptance_reopens_dialog_with_bound_errors(client):
+    user, workspace, _ = create_owner_tenancy()
+    business = create_business(workspace)
+    estimate, _, _ = create_issued_estimate(user=user, business=business)
+    client.force_login(user)
+
+    response = client.post(
+        reverse("estimates:manual-acceptance", args=(estimate.pk,)),
+        {
+            "method": "unsupported",
+            "accepted_by_name": "Jordan Taylor",
+            "evidence_note": "Customer called.",
+        },
+    )
+
+    assert response.status_code == 200
+    assert b'data-auto-show-modal="manualAcceptanceModal"' in response.content
+    assert b"Select a valid choice" in response.content
+    assert b"Jordan Taylor" in response.content

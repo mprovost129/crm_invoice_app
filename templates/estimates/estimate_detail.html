@@ -2,6 +2,8 @@
 {% block title %}{{ estimate.number|default:"Draft Estimate" }} | {{ APP_NAME }}{% endblock %}
 {% block meta_robots %}noindex,nofollow{% endblock %}
 {% block content %}
+{% if active_dialog %}<span hidden data-auto-show-modal="{{ active_dialog }}"></span>{% endif %}
+{% if focus_first_error %}<span hidden data-focus-first-error></span>{% endif %}
 <div class="container py-4">
   <div class="d-print-none"><a href="{% url 'estimates:list' %}" class="text-decoration-none"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Estimates</a></div>
   <header class="page-header mt-3">

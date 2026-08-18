@@ -19,3 +19,30 @@ document.body.addEventListener("htmx:configRequest", (event) => {
 document.querySelectorAll("[data-print-page]").forEach((button) => {
     button.addEventListener("click", () => window.print());
 });
+
+function focusFirstInvalidField(container = document) {
+    const field = container.querySelector(
+        '[aria-invalid="true"], input:invalid, select:invalid, textarea:invalid',
+    );
+    if (field) {
+        field.focus({ preventScroll: true });
+        field.scrollIntoView({ block: "center" });
+    }
+}
+
+const autoShowModal = document.querySelector("[data-auto-show-modal]");
+if (autoShowModal && window.bootstrap) {
+    const modal = document.getElementById(autoShowModal.dataset.autoShowModal);
+    if (modal) {
+        modal.addEventListener(
+            "shown.bs.modal",
+            () => focusFirstInvalidField(modal),
+            { once: true },
+        );
+        window.bootstrap.Modal.getOrCreateInstance(modal).show();
+    }
+}
+
+if (document.querySelector("[data-focus-first-error]")) {
+    window.requestAnimationFrame(() => focusFirstInvalidField());
+}

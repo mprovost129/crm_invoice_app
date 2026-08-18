@@ -16,7 +16,7 @@ No percentage-complete estimate is used because the repository is not yet deep e
 **Milestone 7 - Launch hardening is in progress.** The first provider-independent slice
 adds browser security policy, log redaction, bounded public-auth rate limits, operational
 launch/provider checks, CI enforcement, and backup/restore and incident-response runbooks.
-The complete PostgreSQL regression suite currently passes at 131 tests.
+The complete PostgreSQL regression suite currently passes at 139 tests.
 
 Exact paid pricing, Stripe product/price IDs, credentials, and provider activation remain
 explicit deployment decisions and are not fabricated in seed data. Sandbox activation is
@@ -200,6 +200,9 @@ Manual payments remain independent and available.
 - Provider-independent launch checklist, incident response, backup/restore rehearsal, and
   privacy/retention decision runbooks.
 - Regression tests made deterministic at the business timezone boundary.
+- Financial action validation preserves submitted values and field errors, reopens the
+  correct modal, and moves keyboard focus to the first invalid control; active navigation
+  links expose current-page semantics.
 
 ### Remaining exit work
 

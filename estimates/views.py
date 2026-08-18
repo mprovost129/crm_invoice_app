@@ -99,6 +99,54 @@ class EstimateObjectMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+def _estimate_detail_context(
+    *,
+    request,
+    estimate,
+    email_form=None,
+    acceptance_form=None,
+    active_dialog="",
+    focus_first_error=False,
+):
+    display_context = document_display_context(estimate)
+    delivery_queryset = EmailDelivery.objects.filter(
+        business=request.business,
+        estimate=estimate,
+    )
+    return {
+        **display_context,
+        "estimate": estimate,
+        "lines": estimate.line_items.all(),
+        "email_form": email_form
+        if email_form is not None
+        else EstimateEmailForm(
+            auto_id="estimate-send-%s",
+            initial={"recipient": display_context["document_contact"]["email"]},
+        ),
+        "acceptance_form": acceptance_form
+        if acceptance_form is not None
+        else ManualAcceptanceForm(auto_id="estimate-acceptance-%s"),
+        "recent_deliveries": delivery_queryset[:5],
+        "has_failed_delivery": delivery_queryset.filter(
+            status=EmailDelivery.Status.FAILED
+        ).exists(),
+        "active_dialog": active_dialog,
+        "focus_first_error": focus_first_error,
+    }
+
+
+def _render_estimate_detail(request, estimate, **overrides):
+    return render(
+        request,
+        "estimates/estimate_detail.html",
+        _estimate_detail_context(
+            request=request,
+            estimate=estimate,
+            **overrides,
+        ),
+    )
+
+
 class EstimateDetailView(
     OwnerTenantRequiredMixin,
     EstimateObjectMixin,
@@ -107,28 +155,13 @@ class EstimateDetailView(
     template_name = "estimates/estimate_detail.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        display_context = document_display_context(self.estimate)
-        delivery_queryset = EmailDelivery.objects.filter(
-            business=self.request.business,
-            estimate=self.estimate,
-        )
-        context.update(
-            {
-                **display_context,
-                "estimate": self.estimate,
-                "lines": self.estimate.line_items.all(),
-                "email_form": EstimateEmailForm(
-                    initial={"recipient": display_context["document_contact"]["email"]}
-                ),
-                "acceptance_form": ManualAcceptanceForm(),
-                "recent_deliveries": delivery_queryset[:5],
-                "has_failed_delivery": delivery_queryset.filter(
-                    status=EmailDelivery.Status.FAILED
-                ).exists(),
-            }
-        )
-        return context
+        return {
+            **super().get_context_data(**kwargs),
+            **_estimate_detail_context(
+                request=self.request,
+                estimate=self.estimate,
+            ),
+        }
 
 
 class EstimateUpdateView(
@@ -305,21 +338,30 @@ class EstimateIssueView(OwnerTenantRequiredMixin, EstimateObjectMixin, View):
 
 class EstimateEmailView(OwnerTenantRequiredMixin, EstimateObjectMixin, View):
     def post(self, request, *args, **kwargs):
-        form = EstimateEmailForm(request.POST)
+        form = EstimateEmailForm(request.POST, auto_id="estimate-send-%s")
         if not form.is_valid():
-            messages.error(request, "Enter a valid recipient email address.")
-        else:
-            try:
-                queue_estimate_email(
-                    actor=request.user,
-                    business_id=request.business.pk,
-                    estimate_id=self.estimate.pk,
-                    recipient=form.cleaned_data["recipient"],
-                )
-            except ValidationError as exc:
-                messages.error(request, "; ".join(exc.messages))
-            else:
-                messages.success(request, "Estimate email queued.")
+            return _render_estimate_detail(
+                request,
+                self.estimate,
+                email_form=form,
+                focus_first_error=True,
+            )
+        try:
+            queue_estimate_email(
+                actor=request.user,
+                business_id=request.business.pk,
+                estimate_id=self.estimate.pk,
+                recipient=form.cleaned_data["recipient"],
+            )
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return _render_estimate_detail(
+                request,
+                self.estimate,
+                email_form=form,
+                focus_first_error=True,
+            )
+        messages.success(request, "Estimate email queued.")
         return redirect("estimates:detail", estimate_id=self.estimate.pk)
 
 
@@ -359,23 +401,35 @@ class EstimateManualAcceptanceView(
     View,
 ):
     def post(self, request, *args, **kwargs):
-        form = ManualAcceptanceForm(request.POST)
-        if form.is_valid():
-            try:
-                record_manual_acceptance(
-                    actor=request.user,
-                    business_id=request.business.pk,
-                    estimate_id=self.estimate.pk,
-                    method=form.cleaned_data["method"],
-                    accepted_by_name=form.cleaned_data["accepted_by_name"],
-                    metadata={"evidence_note": form.cleaned_data["evidence_note"]},
-                )
-            except ValidationError as exc:
-                messages.error(request, "; ".join(exc.messages))
-            else:
-                messages.success(request, "Acceptance recorded.")
-        else:
-            messages.error(request, "Correct the acceptance details.")
+        form = ManualAcceptanceForm(
+            request.POST,
+            auto_id="estimate-acceptance-%s",
+        )
+        if not form.is_valid():
+            return _render_estimate_detail(
+                request,
+                self.estimate,
+                acceptance_form=form,
+                active_dialog="manualAcceptanceModal",
+            )
+        try:
+            record_manual_acceptance(
+                actor=request.user,
+                business_id=request.business.pk,
+                estimate_id=self.estimate.pk,
+                method=form.cleaned_data["method"],
+                accepted_by_name=form.cleaned_data["accepted_by_name"],
+                metadata={"evidence_note": form.cleaned_data["evidence_note"]},
+            )
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return _render_estimate_detail(
+                request,
+                self.estimate,
+                acceptance_form=form,
+                active_dialog="manualAcceptanceModal",
+            )
+        messages.success(request, "Acceptance recorded.")
         return redirect("estimates:detail", estimate_id=self.estimate.pk)
 
 
